@@ -77,36 +77,12 @@ const examDefinitions = [
   { match: "TEMPO DE TROMBOPLASTINA PARCIAL ATIVADA", abbr: "TTPA", category: "Coagulação" },
 
   // Sorologias (Micologia)
-  {
-    match: "IMUNODIFUSAO HISTOPLASMA CAPSULATUM",
-    abbr: "ID Histoplasma",
-    category: "Sorologias"
-  },
-  {
-    match: "IMUNODIFUSAO ASPERGILLUS FUMIGATUS",
-    abbr: "ID Aspergillus",
-    category: "Sorologias"
-  },
-  {
-    match: "IMUNODIFUSAO PARACOCCIDIOIDES BRASILIENSIS",
-    abbr: "ID P. brasiliensis",
-    category: "Sorologias"
-  },
-  {
-    match: "CONTRAIMUNO PARACOCCIDIOIDES BRASILIENSIS",
-    abbr: "CI P. brasiliensis",
-    category: "Sorologias"
-  },
-  {
-    match: "CONTRAIMUNO HISTOPLASMA CAPSULATUM",
-    abbr: "CI Histoplasma",
-    category: "Sorologias"
-  },
-  {
-    match: "CONTRAIMUNO ASPERGILLUS FUMIGATUS",
-    abbr: "CI Aspergillus",
-    category: "Sorologias"
-  },
+  { match: "IMUNODIFUSAO HISTOPLASMA CAPSULATUM", abbr: "ID Histoplasma", category: "Sorologias" },
+  { match: "IMUNODIFUSAO ASPERGILLUS FUMIGATUS", abbr: "ID Aspergillus", category: "Sorologias" },
+  { match: "IMUNODIFUSAO PARACOCCIDIOIDES BRASILIENSIS", abbr: "ID P. brasiliensis", category: "Sorologias" },
+  { match: "CONTRAIMUNO PARACOCCIDIOIDES BRASILIENSIS", abbr: "CI P. brasiliensis", category: "Sorologias" },
+  { match: "CONTRAIMUNO HISTOPLASMA CAPSULATUM", abbr: "CI Histoplasma", category: "Sorologias" },
+  { match: "CONTRAIMUNO ASPERGILLUS FUMIGATUS", abbr: "CI Aspergillus", category: "Sorologias" },
 
   // Sorologias virais / IST
   { match: "HEPATITE B - ANTI-HBC TOTAL", abbr: "AntiHBcT", category: "Sorologias" },
@@ -123,7 +99,7 @@ const examDefinitions = [
     category: "Sorologias"
   },
 
-  // Imunológico (CD4/CD8) – ABSOLUTOS
+  // Imunológico (CD4/CD8)
   { match: "CD45/CD3/CD4", abbr: "CD4", category: "Imunológico" },
   { match: "CD45/CD3/CD8", abbr: "CD8", category: "Imunológico" },
   { match: "CD4/CD8", abbr: "CD4/CD8", category: "Imunológico" },
@@ -174,38 +150,23 @@ const categoryOrder = [
   "Gasometria"
 ];
 
-// Abreviações que são sorologias fúngicas (para tratamento especial)
+// Sorologias fúngicas com tratamento especial
 const sorologiaAbbrs = new Set([
   "ID Histoplasma", "CI Histoplasma",
   "ID Aspergillus", "CI Aspergillus",
   "ID P. brasiliensis", "CI P. brasiliensis"
 ]);
 
-// Grupos por organismo para montar "Histoplasma ID NR / CI NR"
 const sorologiaGroups = [
-  {
-    label: "Histoplasma",
-    idAbbr: "ID Histoplasma",
-    ciAbbr: "CI Histoplasma"
-  },
-  {
-    label: "Aspergillus",
-    idAbbr: "ID Aspergillus",
-    ciAbbr: "CI Aspergillus"
-  },
-  {
-    label: "Paracoco",
-    idAbbr: "ID P. brasiliensis",
-    ciAbbr: "CI P. brasiliensis"
-  }
+  { label: "Histoplasma", idAbbr: "ID Histoplasma", ciAbbr: "CI Histoplasma" },
+  { label: "Aspergillus", idAbbr: "ID Aspergillus", ciAbbr: "CI Aspergillus" },
+  { label: "Paracoco", idAbbr: "ID P. brasiliensis", ciAbbr: "CI P. brasiliensis" }
 ];
 
-// Rótulos amigáveis
 function getDisplayName(abbr) {
   return abbr;
 }
 
-// Converte "Reagente", "Não Reagente", etc.
 function formatSorologiaValue(rawValue) {
   const norm = normalize(rawValue);
   if (norm.includes("NAO REAGENTE")) return "NR";
@@ -231,7 +192,6 @@ function buildSorologiaParts(bucket, selectedAbbrs) {
     const segs = [];
     if (idEntry && idSelected) segs.push(`ID ${formatSorologiaValue(idEntry.value)}`);
     if (ciEntry && ciSelected) segs.push(`CI ${formatSorologiaValue(ciEntry.value)}`);
-
     if (segs.length) parts.push(`${group.label} ${segs.join(" / ")}`);
   }
   return parts;
@@ -255,7 +215,7 @@ function parseDateToSortable(str) {
   return new Date(+m[3], +m[2] - 1, +m[1]);
 }
 
-// ---------- PARSER DO LAUDO (exames em geral) ----------
+// ---------- PARSER DOS EXAMES ----------
 
 function parseExams(rawText) {
   const lines = rawText.split(/\r?\n/);
@@ -263,20 +223,19 @@ function parseExams(rawText) {
 
   let currentDate = "";
   let currentSection = "";
-  let pendingTiterExam = null;
 
   for (let rawLine of lines) {
     const line = rawLine.trim();
     if (!line) continue;
 
-    // Data de coleta
+    // Data
     const dateMatch = line.match(/Coletado em:\s*(\d{2}\/\d{2}\/\d{4})/);
     if (dateMatch) {
       currentDate = dateMatch[1];
       continue;
     }
 
-    // Cabeçalho de seção
+    // Cabeçalho da seção (nome do exame/ painel)
     if (
       /- SANGUE - ,/i.test(line) ||
       /HEMOGRAMA COMPLETO/i.test(line) ||
@@ -284,10 +243,10 @@ function parseExams(rawText) {
     ) {
       const section = line.split("- SANGUE")[0].trim();
       currentSection = section || line;
-      continue;
+      return exams;
     }
 
-    // Linhas que não são resultados
+    // Linhas irrelevantes
     if (/Resultado dos 3 últimos exames/i.test(line)) continue;
     if (/Liberado e Validado/i.test(line)) continue;
     if (/DIVISÃO DE LABORATÓRIO CENTRAL/i.test(line)) continue;
@@ -295,11 +254,10 @@ function parseExams(rawText) {
     if (/^Pedido\s*:/i.test(line)) continue;
     if (/^\d{2}\/\d{2}\/\d{4}\s+\d{2}:\d{2}:\d{2}$/.test(line)) continue;
     if (/Novos valores de referência/i.test(line)) continue;
-    if (/Automatizado|Colorimétrico|Enzimático|Eletrodo íon seletivo|Cinético UV|IFCC|Citometria de fluxo|PCR em Tempo Real/i.test(line)) continue;
+    if (/Automatizado|Colorimétrico|Enzimático|Eletrodo íon seletivo|Cinético UV|IFCC|Citometria de fluxo|PCR em Tempo Real|HPLC/i.test(line)) continue;
     if (/Alteração nos valores de referência/i.test(line)) continue;
     if (/Titulos ate 1\/2/i.test(normalize(line))) continue;
 
-    // Split em colunas
     const parts = line.split(/\s{2,}|\t+/).filter(Boolean);
     if (parts.length < 2) continue;
 
@@ -307,7 +265,7 @@ function parseExams(rawText) {
     let normName = normalize(name);
     const valueUnit = parts[1];
 
-    // Linhas "Resultado:" de hepatite/HIV → usar cabeçalho da seção
+    // Linhas tipo "Resultado:" em sorologias → usar nome da seção
     if (normName.startsWith("RESULTADO") && currentSection) {
       name = currentSection;
       normName = normalize(name);
@@ -318,12 +276,11 @@ function parseExams(rawText) {
       const absField = parts[2] || parts[1] || "";
       const mAbs = absField.match(/[\d.,]+/);
       if (mAbs) {
-        const absVal = mAbs[0];
         exams.push({
           date: currentDate || "",
           section: currentSection || "",
           name,
-          value: absVal,
+          value: mAbs[0],
           unit: "cel/mm³",
           normName
         });
@@ -335,45 +292,34 @@ function parseExams(rawText) {
     if (/\d/.test(valueUnit)) {
       const m = valueUnit.match(/^([<>*]?\s*[\d.,]+)\s*(.*)$/);
       if (m) {
-        const value = m[1].trim();
-        const unit = m[2].trim();
         exams.push({
           date: currentDate || "",
           section: currentSection || "",
           name,
-          value,
-          unit,
+          value: m[1].trim(),
+          unit: m[2].trim(),
           normName
         });
       }
     } else {
-      // Qualitativos
+      // Qualitativos (R/NR etc.)
       const value = valueUnit.trim();
       if (!value) continue;
-
-      const examObj = {
+      exams.push({
         date: currentDate || "",
         section: currentSection || "",
         name,
         value,
         unit: "",
         normName
-      };
-      exams.push(examObj);
-
-      // Contraimuno reagente → pode ganhar título depois
-      if (normName.includes("CONTRAIMUNO") && normalize(value).includes("REAGENTE")) {
-        pendingTiterExam = examObj;
-      } else if (normName.includes("CONTRAIMUNO")) {
-        pendingTiterExam = null;
-      }
+      });
     }
   }
 
   return exams;
 }
 
-// ---------- GASOMETRIA (arterial x venosa) ----------
+// ---------- GASOMETRIA (arterial/venosa) ----------
 
 function parseGasometrias(rawText) {
   const lines = rawText.split(/\r?\n/);
@@ -467,7 +413,6 @@ function buildGasometriaTextForDate(date, gasoMap, selectedAbbrs) {
   const lista = gasoMap.get(date);
   const arterialSelecionada = selectedAbbrs.includes("GasArterial");
   const venosaSelecionada = selectedAbbrs.includes("GasVenosa");
-
   if (!arterialSelecionada && !venosaSelecionada) return "";
 
   const ordemArt = ["pH", "pO2", "pCO2", "HCO3", "BE", "SO2", "Lactato"];
@@ -484,7 +429,6 @@ function buildGasometriaTextForDate(date, gasoMap, selectedAbbrs) {
 
   let lastArt = null;
   let lastVen = null;
-
   for (const g of lista) {
     if (g.tipo === "arterial") lastArt = g;
     if (g.tipo === "venosa") lastVen = g;
@@ -503,11 +447,10 @@ function buildGasometriaTextForDate(date, gasoMap, selectedAbbrs) {
   return parts.join(" | ");
 }
 
-// ---------- Construção das estruturas por data ----------
+// ---------- Construção por data ----------
 
 function buildDateMap(exams, selectedAbbrs) {
   const dateMap = new Map();
-
   for (const ex of exams) {
     const def = findExamDefinition(ex.name);
     if (!def) continue;
@@ -521,7 +464,6 @@ function buildDateMap(exams, selectedAbbrs) {
       bucket[def.abbr] = { value: ex.value, category: def.category };
     }
   }
-
   return dateMap;
 }
 
@@ -553,21 +495,17 @@ function generateLinesPerDate(exams, selectedAbbrs, gasoMap) {
     const bucket = dateMap.get(date) || {};
     const parts = [];
 
-    // Exames numéricos/qualitativos normais
     for (const abbr of examOrder) {
       if (sorologiaAbbrs.has(abbr)) continue;
       if (!selectedAbbrs.includes(abbr)) continue;
       if (bucket[abbr]) {
-        const label = getDisplayName(abbr);
-        parts.push(`${label} ${bucket[abbr].value}`);
+        parts.push(`${getDisplayName(abbr)} ${bucket[abbr].value}`);
       }
     }
 
-    // Sorologias fúngicas condensadas
     const sorologiaParts = buildSorologiaParts(bucket, selectedAbbrs);
     parts.push(...sorologiaParts);
 
-    // Gasometria
     const gasoText = buildGasometriaTextForDate(date, gasoMap, selectedAbbrs);
     if (gasoText) parts.push(gasoText);
 
@@ -588,34 +526,29 @@ function generateTextByCategories(exams, selectedAbbrs, gasoMap) {
     const bucket = dateMap.get(date) || {};
     const categoryLines = {};
 
-    // Exames não-sorológicos fúngicos
     for (const abbr of examOrder) {
       if (sorologiaAbbrs.has(abbr)) continue;
       if (!selectedAbbrs.includes(abbr)) continue;
       const entry = bucket[abbr];
       if (!entry) continue;
       const cat = entry.category;
-      const label = getDisplayName(abbr);
       if (!categoryLines[cat]) categoryLines[cat] = [];
-      categoryLines[cat].push(`${label} ${entry.value}`);
+      categoryLines[cat].push(`${getDisplayName(abbr)} ${entry.value}`);
     }
 
-    // Sorologias fúngicas condensadas
     const sorologiaParts = buildSorologiaParts(bucket, selectedAbbrs);
     if (sorologiaParts.length) {
       if (!categoryLines["Sorologias"]) categoryLines["Sorologias"] = [];
       categoryLines["Sorologias"].push(...sorologiaParts);
     }
 
-    // Gasometria
     const gasoText = buildGasometriaTextForDate(date, gasoMap, selectedAbbrs);
     if (gasoText) {
       if (!categoryLines["Gasometria"]) categoryLines["Gasometria"] = [];
       categoryLines["Gasometria"].push(gasoText);
     }
 
-    const linesForDate = [];
-    linesForDate.push(`(${date})`);
+    const linesForDate = [`(${date})`];
     for (const cat of categoryOrder) {
       if (categoryLines[cat] && categoryLines[cat].length) {
         linesForDate.push(`- ${cat}: ${categoryLines[cat].join(" | ")}`);
@@ -651,6 +584,8 @@ function getSelectedAbbrs() {
 }
 
 function generate(mode) {
+  if (!rawInput || !outputText || !statusEl) return;
+
   const raw = rawInput.value.trim();
   statusEl.textContent = "";
 
@@ -671,66 +606,69 @@ function generate(mode) {
   }
 
   let text = "";
-
   if (mode === "line") {
     const lines = generateLinesPerDate(exams, selectedAbbrs, gasoMap);
     text = lines.join("\n") || "Nenhum exame correspondente aos filtros selecionados.";
   } else {
-    text = generateTextByCategories(exams, selectedAbbrs, gasoMap) || "Nenhum exame correspondente aos filtros selecionados.";
+    text = generateTextByCategories(exams, selectedAbbrs, gasoMap) ||
+      "Nenhum exame correspondente aos filtros selecionados.";
   }
 
   outputText.value = text;
-  statusEl.textContent = `Exames reconhecidos: ${exams.length}. Gasometrias reconhecidas: ${gasos.length}. Filtros ativos: ${selectedAbbrs.length}.`;
+  statusEl.textContent =
+    `Exames reconhecidos: ${exams.length}. Gasometrias reconhecidas: ${gasos.length}. Filtros ativos: ${selectedAbbrs.length}.`;
 }
 
-// ---------- Handlers dos botões principais ----------
+// ---------- Eventos (protegidos com if) ----------
 
-btnGenerateLine.addEventListener("click", () => generate("line"));
-btnGenerateCategories.addEventListener("click", () => generate("categories"));
+if (btnGenerateLine) {
+  btnGenerateLine.addEventListener("click", () => generate("line"));
+}
 
-btnCopyText.addEventListener("click", () => {
-  const text = outputText.value.trim();
-  if (!text) {
-    statusEl.textContent = "Nada para copiar ainda. Gere o texto primeiro.";
-    return;
-  }
-  navigator.clipboard
-    .writeText(text)
-    .then(() => {
-      statusEl.textContent = "Texto copiado para a área de transferência.";
-    })
-    .catch(() => {
-      statusEl.textContent = "Não foi possível copiar automaticamente.";
+if (btnGenerateCategories) {
+  btnGenerateCategories.addEventListener("click", () => generate("categories"));
+}
+
+if (btnCopyText && outputText && statusEl) {
+  btnCopyText.addEventListener("click", () => {
+    const text = outputText.value.trim();
+    if (!text) {
+      statusEl.textContent = "Nada para copiar ainda. Gere o texto primeiro.";
+      return;
+    }
+    navigator.clipboard
+      .writeText(text)
+      .then(() => {
+        statusEl.textContent = "Texto copiado para a área de transferência.";
+      })
+      .catch(() => {
+        statusEl.textContent = "Não foi possível copiar automaticamente.";
+      });
+  });
+}
+
+if (btnSelectAllExams && examCheckboxes) {
+  btnSelectAllExams.addEventListener("click", () => {
+    examCheckboxes.forEach((cb) => { cb.checked = true; });
+    if (statusEl) statusEl.textContent = "Todos os exames foram selecionados.";
+  });
+}
+
+if (btnClearAllExams && examCheckboxes) {
+  btnClearAllExams.addEventListener("click", () => {
+    examCheckboxes.forEach((cb) => { cb.checked = false; });
+    if (statusEl) statusEl.textContent = "Todos os exames foram desmarcados.";
+  });
+}
+
+if (btnSelectRoutine && examCheckboxes) {
+  btnSelectRoutine.addEventListener("click", () => {
+    const routineCategories = new Set(["Hemograma", "Eletrólitos/Renal", "Hepático"]);
+    examCheckboxes.forEach((cb) => {
+      const cat = cb.dataset.category;
+      cb.checked = routineCategories.has(cat);
     });
-});
-
-// ---------- Handlers dos botões de seleção em massa ----------
-
-btnSelectAllExams.addEventListener("click", () => {
-  examCheckboxes.forEach((cb) => {
-    cb.checked = true;
+    if (statusEl) statusEl.textContent =
+      "Selecionados exames de rotina (Hemograma, Eletrólitos/Renal, Hepático).";
   });
-  statusEl.textContent = "Todos os exames foram selecionados.";
-});
-
-btnClearAllExams.addEventListener("click", () => {
-  examCheckboxes.forEach((cb) => {
-    cb.checked = false;
-  });
-  statusEl.textContent = "Todos os exames foram desmarcados.";
-});
-
-btnSelectRoutine.addEventListener("click", () => {
-  const routineCategories = new Set([
-    "Hemograma",
-    "Eletrólitos/Renal",
-    "Hepático"
-  ]);
-
-  examCheckboxes.forEach((cb) => {
-    const cat = cb.dataset.category;
-    cb.checked = routineCategories.has(cat);
-  });
-
-  statusEl.textContent = "Selecionados exames de rotina (Hemograma, Eletrólitos/Renal, Hepático).";
-});
+}

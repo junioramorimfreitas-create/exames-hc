@@ -9,39 +9,147 @@
   <div class="page">
     <h1>Organizador de Exames do HC</h1>
     <p class="subtitle">
-      Cole abaixo o laudo bruto dos exames laboratoriais do HCFMUSP (copia/cola da tela) e clique em <b>Organizar exames</b>.
+      Cole abaixo o laudo bruto dos exames laboratoriais do HCFMUSP (copia/cola da tela) e use os botões para gerar o texto no formato de prontuário.
     </p>
 
+    <!-- Entrada do laudo bruto -->
     <div class="row">
       <label for="rawInput">Laudo bruto</label>
       <textarea id="rawInput" placeholder="Cole aqui o laudo inteiro com os exames..."></textarea>
     </div>
 
+    <!-- Seleção de exames -->
+    <div class="row">
+      <label>Exames a incluir no texto</label>
+      <div class="exam-filters">
+
+        <div class="exam-group">
+          <div class="exam-group-title">Hemograma</div>
+          <div class="exam-buttons">
+            <label class="exam-toggle">
+              <input type="checkbox" value="Hb" checked />
+              <span>Hb</span>
+            </label>
+            <label class="exam-toggle">
+              <input type="checkbox" value="Ht" checked />
+              <span>Ht</span>
+            </label>
+            <label class="exam-toggle">
+              <input type="checkbox" value="Leuco" checked />
+              <span>Leuco</span>
+            </label>
+            <label class="exam-toggle">
+              <input type="checkbox" value="Plaq" checked />
+              <span>Plaq</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="exam-group">
+          <div class="exam-group-title">Eletrólitos / Renal</div>
+          <div class="exam-buttons">
+            <label class="exam-toggle">
+              <input type="checkbox" value="Na" checked />
+              <span>Na</span>
+            </label>
+            <label class="exam-toggle">
+              <input type="checkbox" value="K" checked />
+              <span>K</span>
+            </label>
+            <label class="exam-toggle">
+              <input type="checkbox" value="Cl" />
+              <span>Cl</span>
+            </label>
+            <label class="exam-toggle">
+              <input type="checkbox" value="Cr" checked />
+              <span>Cr</span>
+            </label>
+            <label class="exam-toggle">
+              <input type="checkbox" value="Ur" checked />
+              <span>Ur</span>
+            </label>
+            <label class="exam-toggle">
+              <input type="checkbox" value="CaT" />
+              <span>Ca total</span>
+            </label>
+            <label class="exam-toggle">
+              <input type="checkbox" value="CaIon" />
+              <span>Ca ion</span>
+            </label>
+            <label class="exam-toggle">
+              <input type="checkbox" value="Mg" />
+              <span>Mg</span>
+            </label>
+            <label class="exam-toggle">
+              <input type="checkbox" value="P" />
+              <span>P</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="exam-group">
+          <div class="exam-group-title">Hepático</div>
+          <div class="exam-buttons">
+            <label class="exam-toggle">
+              <input type="checkbox" value="ALT" />
+              <span>ALT</span>
+            </label>
+            <label class="exam-toggle">
+              <input type="checkbox" value="AST" />
+              <span>AST</span>
+            </label>
+            <label class="exam-toggle">
+              <input type="checkbox" value="FA" />
+              <span>FA</span>
+            </label>
+            <label class="exam-toggle">
+              <input type="checkbox" value="GGT" />
+              <span>GGT</span>
+            </label>
+            <label class="exam-toggle">
+              <input type="checkbox" value="BT" />
+              <span>BT</span>
+            </label>
+            <label class="exam-toggle">
+              <input type="checkbox" value="BD" />
+              <span>BD</span>
+            </label>
+            <label class="exam-toggle">
+              <input type="checkbox" value="BI" />
+              <span>BI</span>
+            </label>
+          </div>
+        </div>
+
+      </div>
+      <p class="hint">Desmarque o que não quiser que apareça no texto.</p>
+    </div>
+
+    <!-- Botões de ação -->
     <div class="row">
       <div class="actions">
-        <button class="btn-primary" id="btnParse">Organizar exames</button>
-        <button class="btn-secondary" id="btnCopyTable">Copiar tabela</button>
+        <button class="btn-primary" id="btnGenerateLine">
+          Gerar texto (linha única por data)
+        </button>
+        <button class="btn-secondary" id="btnGenerateCategories">
+          Gerar texto separado por categorias
+        </button>
+        <button class="btn-secondary" id="btnCopyText">
+          Copiar texto
+        </button>
         <span id="status" class="status-text"></span>
-      </div>
-
-      <div class="input-inline">
-        <label for="filterInput" class="inline-label">Filtro rápido</label>
-        <input id="filterInput" type="text" placeholder="Ex.: creatinina, sódio, Hb, potássio..." />
-        <span class="badge">Filtra por nome do exame ou seção</span>
       </div>
     </div>
 
+    <!-- Saída do texto formatado -->
     <div class="row">
-      <label>Exames organizados</label>
-      <div id="output">
-        <p class="empty-message">
-          Nenhum exame processado ainda. Cole um laudo e clique em <b>Organizar exames</b>.
-        </p>
-      </div>
+      <label for="outputText">Texto gerado para o prontuário</label>
+      <textarea id="outputText" readonly placeholder="O texto gerado aparecerá aqui..."></textarea>
     </div>
 
     <div class="footer-note">
-      Versão inicial do parser. Refinar depois para formatos específicos (Hb/Ht/Na/K/Cr/Ur etc).
+      Saída padrão: (data) Hb | Ht | Leuco | Plaq | Na | K | Cr | Ur ...  
+      Depois podemos incluir gasometrias e outros painéis.
     </div>
   </div>
 

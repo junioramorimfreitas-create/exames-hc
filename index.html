@@ -1,4 +1,4 @@
-l<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
@@ -103,6 +103,21 @@ l<!DOCTYPE html>
           </div>
         </div>
 
+        <!-- Gasometria -->
+        <div class="exam-group">
+          <div class="exam-group-title">Gasometria</div>
+          <div class="exam-buttons">
+            <label class="exam-toggle">
+              <input type="checkbox" value="GasArterial" data-category="Gasometria" />
+              <span>Gaso arterial</span>
+            </label>
+            <label class="exam-toggle">
+              <input type="checkbox" value="GasVenosa" data-category="Gasometria" />
+              <span>Gaso venosa</span>
+            </label>
+          </div>
+        </div>
+
         <!-- Hepático -->
         <div class="exam-group">
           <div class="exam-group-title">Hepático</div>
@@ -138,22 +153,25 @@ l<!DOCTYPE html>
           </div>
         </div>
 
-        <!-- Gasometria -->
+        <!-- Proteínas -->
         <div class="exam-group">
-          <div class="exam-group-title">Gasometria</div>
+          <div class="exam-group-title">Proteínas</div>
           <div class="exam-buttons">
             <label class="exam-toggle">
-              <input type="checkbox" value="GasArterial" data-category="Gasometria" />
-              <span>Gaso arterial</span>
+              <input type="checkbox" value="ProtTot" data-category="Proteínas" />
+              <span>Proteínas totais</span>
             </label>
             <label class="exam-toggle">
-              <input type="checkbox" value="GasVenosa" data-category="Gasometria" />
-              <span>Gaso venosa</span>
+              <input type="checkbox" value="Alb" data-category="Proteínas" />
+              <span>Albumina</span>
+            </label>
+            <label class="exam-toggle">
+              <input type="checkbox" value="Glob" data-category="Proteínas" />
+              <span>Globulinas</span>
             </label>
           </div>
         </div>
 
-        
         <!-- Perfil lipídico -->
         <div class="exam-group">
           <div class="exam-group-title">Perfil lipídico</div>
@@ -181,6 +199,21 @@ l<!DOCTYPE html>
             <label class="exam-toggle">
               <input type="checkbox" value="nHDL" data-category="Perfil lipídico" />
               <span>não-HDL</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Hormônios / Marcadores -->
+        <div class="exam-group">
+          <div class="exam-group-title">Hormônios / Marcadores</div>
+          <div class="exam-buttons">
+            <label class="exam-toggle">
+              <input type="checkbox" value="PTH" data-category="Hormônios/Marcadores" />
+              <span>PTH</span>
+            </label>
+            <label class="exam-toggle">
+              <input type="checkbox" value="NTproBNP" data-category="Hormônios/Marcadores" />
+              <span>NT-proBNP</span>
             </label>
           </div>
         </div>
@@ -274,7 +307,7 @@ l<!DOCTYPE html>
 
     <div class="footer-note">
       Saída padrão: (data) Hb | Ht | Leuco | Plaq | Na | K | Cr | Ur ...  
-      Depois podemos incluir gasometrias e outros painéis.
+      Agora também com proteínas, hormônios/marcadores e gasometria (arterial/venosa) quando selecionadas.
     </div>
   </div>
 

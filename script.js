@@ -86,7 +86,7 @@ const examDefinitions = [
 
   // --- Sorologias Hepatite B ---
   { match: "HEPATITE B - AGHBS", abbr: "HBsAg", category: "Sorologias" },
-  { match: "HEPATITE B - ANTI-HBC TOTAL", abbr: "Anti-HBc total", category: "Sorologias" },
+  { match: "HEPATITE B - ANTI-HBC TOTAL", abbr: "Anti-HBc Total", category: "Sorologias" },
   { match: "HEPATITE B - ANTI-HBC IGM", abbr: "Anti-HBc IgM", category: "Sorologias" },
   { match: "HEPATITE B - ANTI-HBS", abbr: "Anti-HBs", category: "Sorologias" },
   { match: "HEPATITE B - ANTI-HBE", abbr: "Anti-HBe", category: "Sorologias" },
@@ -128,7 +128,7 @@ const examOrder = [
   "ID Histoplasma", "ID Aspergillus", "ID P. brasiliensis",
   "CI Histoplasma", "CI Aspergillus", "CI P. brasiliensis",
   "HIV",
-  "Anti-HBc Total", "Anti-HBc IgM", "Anti-HBs", "HBsAg", "Anti-HBe", "HBeAg",
+  "HBsAg", "Anti-HBc Total", "Anti-HBc IgM", "Anti-HBs", "Anti-HBe", "HBeAg",
   "Anti-HCV", "Sífilis",
   "CV-HIV", "HBV-DNA"
 ];

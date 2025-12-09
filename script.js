@@ -46,32 +46,32 @@ const examDefinitions = [
   // Sorologias (Micologia)
   {
     match: "IMUNODIFUSAO HISTOPLASMA CAPSULATUM",
-    abbr: "ID Histo",
+    abbr: "ID Histoplasma",
     category: "Sorologias"
   },
   {
     match: "IMUNODIFUSAO ASPERGILLUS FUMIGATUS",
-    abbr: "ID Asp",
+    abbr: "ID Aspergillus",
     category: "Sorologias"
   },
   {
     match: "IMUNODIFUSAO PARACOCCIDIOIDES BRASILIENSIS",
-    abbr: "ID Pcb",
+    abbr: "ID P. brasiliensis",
     category: "Sorologias"
   },
   {
     match: "CONTRAIMUNO PARACOCCIDIOIDES BRASILIENSIS",
-    abbr: "CI Pcb",
+    abbr: "CI P. brasiliensis",
     category: "Sorologias"
   },
   {
     match: "CONTRAIMUNO HISTOPLASMA CAPSULATUM",
-    abbr: "CI Histo",
+    abbr: "CI Histoplasma",
     category: "Sorologias"
   },
   {
     match: "CONTRAIMUNO ASPERGILLUS FUMIGATUS",
-    abbr: "CI Asp",
+    abbr: "CI Aspergillus",
     category: "Sorologias"
   },
 
@@ -90,7 +90,7 @@ const examOrder = [
   "ALT","AST","FA","GGT","BT","BD","BI",
   "TGL","CT","HDL","LDL","VLDL","nHDL",
   "CD4","CD8","CD4/CD8",
-  "ID Histo","ID Asp","ID Pcb","CI Histo","CI Asp","CI Pcb",
+  "ID Histoplasma","ID Aspergillus","ID P. brasiliensis","CI Histoplasma","CI Aspergillus","CI P. brasiliensis",
   "CVHIV"
 ];
 

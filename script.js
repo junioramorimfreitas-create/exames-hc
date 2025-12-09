@@ -15,6 +15,10 @@ const examDefinitions = [
   { match: "LEUCOCITOS", abbr: "Leuco", category: "Hemograma" },
   { match: "PLAQUETAS", abbr: "Plaq", category: "Hemograma" },
 
+  // Marcadores inflamatórios
+  { match: "PROTEÍNA C REATIVA (PCR)", abbr: "PCR", category: "Marcadores inflamatórios" },
+  { match: "VELOCIDADE DE HEMOSSEDIMENTACAO", abbr: "VHS", category: "Marcadores inflamatórios" },
+  
   // Eletrólitos / Renal
   { match: "SODIO", abbr: "Na", category: "Eletrólitos/Renal" },
   { match: "POTASSIO", abbr: "K", category: "Eletrólitos/Renal" },
@@ -84,7 +88,7 @@ const examDefinitions = [
   { match: "CONTRAIMUNO HISTOPLASMA CAPSULATUM", abbr: "CI Histoplasma", category: "Sorologias" },
   { match: "CONTRAIMUNO ASPERGILLUS FUMIGATUS", abbr: "CI Aspergillus", category: "Sorologias" },
 
-  // --- Sorologias Hepatite B ---
+  // --- Hepatite B ---
   { match: "HEPATITE B - AGHBS", abbr: "HBsAg", category: "Sorologias" },
   { match: "HEPATITE B - ANTI-HBC TOTAL", abbr: "Anti-HBc Total", category: "Sorologias" },
   { match: "HEPATITE B - ANTI-HBC IGM", abbr: "Anti-HBc IgM", category: "Sorologias" },
@@ -113,6 +117,7 @@ const examDefinitions = [
 
 const examOrder = [
   "Hb", "Ht", "Leuco", "Plaq",
+  "PCR", "VHS",
   "Na", "K", "Cl", "Cr", "Ur", "CaT", "CaIon", "Mg", "P", "AcUrico",
   "ALT", "AST", "FA", "GGT", "BT", "BD", "BI",
   "TGL", "CT", "HDL", "LDL", "VLDL", "nHDL",
@@ -135,6 +140,7 @@ const examOrder = [
 
 const categoryOrder = [
   "Hemograma",
+  "Marcadores inflamatórios",
   "Eletrólitos/Renal",
   "Hepático",
   "Perfil lipídico",
@@ -699,3 +705,26 @@ if (btnSelectRoutine && examCheckboxes) {
       "Selecionados exames de rotina (Hemograma, Eletrólitos/Renal, Hepático).";
   });
 }
+
+const categorySelectButtons = document.querySelectorAll(".category-select");
+const categoryClearButtons = document.querySelectorAll(".category-clear");
+
+categorySelectButtons.forEach((btn) => {
+  btn.addEventListener("click", () => {
+    const cat = btn.dataset.category;
+    examCheckboxes.forEach((cb) => {
+      if (cb.dataset.category === cat) cb.checked = true;
+    });
+    if (statusEl) statusEl.textContent = `Selecionados todos os exames de ${cat}.`;
+  });
+});
+
+categoryClearButtons.forEach((btn) => {
+  btn.addEventListener("click", () => {
+    const cat = btn.dataset.category;
+    examCheckboxes.forEach((cb) => {
+      if (cb.dataset.category === cat) cb.checked = false;
+    });
+    if (statusEl) statusEl.textContent = `Desmarcados todos os exames de ${cat}.`;
+  });
+});

@@ -14,7 +14,6 @@ const examDefinitions = [
   { match: "HEMOGLOBINA", abbr: "Hb", category: "Hemograma" },
   { match: "HEMATOCRITO", abbr: "Ht", category: "Hemograma" },
   { match: "LEUCOCITOS", abbr: "Leuco", category: "Hemograma" },
-  { match: "LEUCOCITOS", abbr: "LEUCOCITOS", category: "Hemograma" }, // redundante, mas inofensivo
   { match: "PLAQUETAS", abbr: "Plaq", category: "Hemograma" },
 
   // Eletrólitos / Renal
@@ -75,10 +74,10 @@ const examDefinitions = [
     match: "COLESTEROL",
     abbr: "CT",
     category: "Perfil lipídico",
-    exact: true // só "COLESTEROL" isolado (total), não HDL/LDL etc
+    exact: true // só "COLESTEROL" total, não HDL/LDL etc
   },
 
-  // Imunológico (CD4/CD8)
+  // Imunológico (CD4/CD8) – queremos ABSOLUTOS
   {
     match: "CD45/CD3/CD4",
     abbr: "CD4",
@@ -89,12 +88,6 @@ const examDefinitions = [
     abbr: "CD8",
     category: "Imunológico"
   },
-  {
-    match: "CD45/CD3",
-    abbr: "CD3",
-    category: "Imunológico"
-  },
-  { match: "CD45", abbr: "CD45", category: "Imunológico" },
   { match: "CD4/CD8", abbr: "CD4/CD8", category: "Imunológico" },
 
   // Virologia
@@ -133,11 +126,9 @@ const examOrder = [
   "LDL",
   "VLDL",
   "nHDL",
-  "CD3",
   "CD4",
   "CD8",
   "CD4/CD8",
-  "CD45",
   "CVHIV"
 ];
 
@@ -225,6 +216,29 @@ function parseExams(rawText) {
       const name = parts[0];
       const valueUnit = parts[1];
 
+      const normName = normalize(name);
+
+      // CASO ESPECIAL: CD4 / CD8 absolutos
+      if (
+        normName.includes("CD45/CD3/CD4") ||
+        normName.includes("CD45/CD3/CD8")
+      ) {
+        const nums = valueUnit.match(/[\d.,]+/g);
+        if (nums && nums.length) {
+          const absVal = nums[nums.length - 1]; // último número = absoluto
+          exams.push({
+            date: currentDate || "",
+            section: currentSection || "",
+            name,
+            value: absVal,
+            unit: "cel/mm³",
+            normName
+          });
+        }
+        continue;
+      }
+
+      // Relação CD4/CD8 e demais exames "normais"
       if (/\d/.test(valueUnit)) {
         const m = valueUnit.match(/^([<>*]?\s*[\d.,]+)\s*(.*)$/);
         if (m) {
@@ -237,7 +251,7 @@ function parseExams(rawText) {
             name,
             value,
             unit,
-            normName: normalize(name)
+            normName
           });
         }
       }

@@ -200,32 +200,25 @@ const sorologiaGroups = [
   }
 ];
 
-// Rótulos amigáveis (se a gente quiser mexer em outros no futuro)
+// Rótulos amigáveis
 function getDisplayName(abbr) {
   return abbr;
 }
 
-// Converte "Reagente", "Não Reagente", "Reagente (1/32)" em "R", "NR", "R (1/32)"
+// Converte "Reagente", "Não Reagente", etc.
 function formatSorologiaValue(rawValue) {
   const norm = normalize(rawValue);
-  if (norm.includes("NAO REAGENTE")) {
-    return "NR";
-  }
+  if (norm.includes("NAO REAGENTE")) return "NR";
   if (norm.includes("REAGENTE")) {
     const m = rawValue.match(/\(([^)]+)\)/);
-    if (m) {
-      const titer = m[1].trim();
-      return `R (${titer})`;
-    }
+    if (m) return `R (${m[1].trim()})`;
     return "R";
   }
   return rawValue.trim();
 }
 
-// Monta ["Histoplasma ID NR / CI NR", ...]
 function buildSorologiaParts(bucket, selectedAbbrs) {
   const parts = [];
-
   for (const group of sorologiaGroups) {
     const idEntry = bucket[group.idAbbr];
     const ciEntry = bucket[group.ciAbbr];
@@ -235,20 +228,12 @@ function buildSorologiaParts(bucket, selectedAbbrs) {
 
     if ((!idEntry || !idSelected) && (!ciEntry || !ciSelected)) continue;
 
-    const segments = [];
+    const segs = [];
+    if (idEntry && idSelected) segs.push(`ID ${formatSorologiaValue(idEntry.value)}`);
+    if (ciEntry && ciSelected) segs.push(`CI ${formatSorologiaValue(ciEntry.value)}`);
 
-    if (idEntry && idSelected) {
-      segments.push(`ID ${formatSorologiaValue(idEntry.value)}`);
-    }
-    if (ciEntry && ciSelected) {
-      segments.push(`CI ${formatSorologiaValue(ciEntry.value)}`);
-    }
-
-    if (segments.length) {
-      parts.push(`${group.label} ${segments.join(" / ")}`);
-    }
+    if (segs.length) parts.push(`${group.label} ${segs.join(" / ")}`);
   }
-
   return parts;
 }
 
@@ -270,7 +255,7 @@ function parseDateToSortable(str) {
   return new Date(+m[3], +m[2] - 1, +m[1]);
 }
 
-// ---------- PARSER DO LAUDO (CD4/CD8 + sorologias com título) ----------
+// ---------- PARSER DO LAUDO (exames em geral) ----------
 
 function parseExams(rawText) {
   const lines = rawText.split(/\r?\n/);
@@ -278,26 +263,11 @@ function parseExams(rawText) {
 
   let currentDate = "";
   let currentSection = "";
-  let pendingTiterExam = null; // último contraimuno reagente aguardando Título
+  let pendingTiterExam = null;
 
   for (let rawLine of lines) {
     const line = rawLine.trim();
     if (!line) continue;
-
-    // Linha de título (ex.: "Titulo: 1/32") -> anexa ao último contraimuno reagente
-    if (/^Titulo\s*:/i.test(line)) {
-      if (pendingTiterExam) {
-        const mTit = line.match(/^Titulo\s*:\s*(.+)$/i);
-        if (mTit) {
-          const titer = mTit[1].trim();
-          if (titer) {
-            pendingTiterExam.value = `${pendingTiterExam.value} (${titer})`;
-          }
-        }
-        pendingTiterExam = null;
-      }
-      continue;
-    }
 
     // Data de coleta
     const dateMatch = line.match(/Coletado em:\s*(\d{2}\/\d{2}\/\d{4})/);
@@ -306,7 +276,7 @@ function parseExams(rawText) {
       continue;
     }
 
-    // Cabeçalho de seção (ex.: "HEPATITE B - ANTI-HBc TOTAL - SANGUE - ,SORO")
+    // Cabeçalho de seção
     if (
       /- SANGUE - ,/i.test(line) ||
       /HEMOGRAMA COMPLETO/i.test(line) ||
@@ -325,11 +295,11 @@ function parseExams(rawText) {
     if (/^Pedido\s*:/i.test(line)) continue;
     if (/^\d{2}\/\d{2}\/\d{4}\s+\d{2}:\d{2}:\d{2}$/.test(line)) continue;
     if (/Novos valores de referência/i.test(line)) continue;
-    if (/Automatizado|Colorimétrico|Enzimático|Eletrodo íon seletivo|Cinético UV|IFCC|Citometria de fluxo|PCR em Tempo Real|Quimioimunoensaio|Quimioluminometrico|Quimioluminometrico AL|HPLC/i.test(line)) continue;
+    if (/Automatizado|Colorimétrico|Enzimático|Eletrodo íon seletivo|Cinético UV|IFCC|Citometria de fluxo|PCR em Tempo Real/i.test(line)) continue;
     if (/Alteração nos valores de referência/i.test(line)) continue;
     if (/Titulos ate 1\/2/i.test(normalize(line))) continue;
 
-    // Split em colunas (TAB ou >=2 espaços)
+    // Split em colunas
     const parts = line.split(/\s{2,}|\t+/).filter(Boolean);
     if (parts.length < 2) continue;
 
@@ -337,13 +307,13 @@ function parseExams(rawText) {
     let normName = normalize(name);
     const valueUnit = parts[1];
 
-    // Alguns exames de hepatite/HIV vêm como "Resultado:" → usamos o nome da seção
+    // Linhas "Resultado:" de hepatite/HIV → usar cabeçalho da seção
     if (normName.startsWith("RESULTADO") && currentSection) {
       name = currentSection;
       normName = normalize(name);
     }
 
-    // CASO ESPECIAL: CD4/CD8 absolutos (CD45/CD3/CD4 e CD45/CD3/CD8)
+    // CD4/CD8 absolutos
     if (normName.includes("CD45/CD3/CD4") || normName.includes("CD45/CD3/CD8")) {
       const absField = parts[2] || parts[1] || "";
       const mAbs = absField.match(/[\d.,]+/);
@@ -361,9 +331,8 @@ function parseExams(rawText) {
       continue;
     }
 
-    // Relação CD4/CD8 e demais exames (quantitativos e qualitativos)
+    // Quantitativos
     if (/\d/.test(valueUnit)) {
-      // Quantitativos (têm número, ex: "0,72 mg/dL")
       const m = valueUnit.match(/^([<>*]?\s*[\d.,]+)\s*(.*)$/);
       if (m) {
         const value = m[1].trim();
@@ -378,28 +347,25 @@ function parseExams(rawText) {
         });
       }
     } else {
-      // Qualitativos (Reagente / Não Reagente, etc.)
+      // Qualitativos
       const value = valueUnit.trim();
-      if (value) {
-        const examObj = {
-          date: currentDate || "",
-          section: currentSection || "",
-          name,
-          value,
-          unit: "",
-          normName
-        };
-        exams.push(examObj);
+      if (!value) continue;
 
-        // Se for contraimuno REAGENTE, marca para receber título
-        if (
-          normName.includes("CONTRAIMUNO") &&
-          normalize(value).includes("REAGENTE")
-        ) {
-          pendingTiterExam = examObj;
-        } else if (normName.includes("CONTRAIMUNO")) {
-          pendingTiterExam = null;
-        }
+      const examObj = {
+        date: currentDate || "",
+        section: currentSection || "",
+        name,
+        value,
+        unit: "",
+        normName
+      };
+      exams.push(examObj);
+
+      // Contraimuno reagente → pode ganhar título depois
+      if (normName.includes("CONTRAIMUNO") && normalize(value).includes("REAGENTE")) {
+        pendingTiterExam = examObj;
+      } else if (normName.includes("CONTRAIMUNO")) {
+        pendingTiterExam = null;
       }
     }
   }
@@ -407,50 +373,7 @@ function parseExams(rawText) {
   return exams;
 }
 
-// ---------- Construção das estruturas por data ----------
-
-function buildDateMap(exams, selectedAbbrs) {
-  const dateMap = new Map();
-
-  for (const ex of exams) {
-    const def = findExamDefinition(ex.name);
-    if (!def) continue;
-    if (selectedAbbrs && !selectedAbbrs.includes(def.abbr)) continue;
-
-    const dateKey = ex.date || "-";
-    if (!dateMap.has(dateKey)) dateMap.set(dateKey, {});
-    const bucket = dateMap.get(dateKey);
-
-    if (!bucket[def.abbr]) {
-      bucket[def.abbr] = { value: ex.value, category: def.category };
-    }
-  }
-
-  return dateMap;
-}
-
-function sortDates(dateMap) {
-  const dates = Array.from(dateMap.keys());
-  return dates.sort((a, b) => {
-    const da = parseDateToSortable(a);
-    const db = parseDateToSortable(b);
-    if (!da || !db) return 0;
-    return da - db;
-  });
-}
-
-function getAllSortedDates(dateMap, gasoMap) {
-  const set = new Set([...dateMap.keys(), ...(gasoMap ? gasoMap.keys() : [])]);
-  const dates = Array.from(set);
-  return dates.sort((a, b) => {
-    const da = parseDateToSortable(a);
-    const db = parseDateToSortable(b);
-    if (!da || !db) return 0;
-    return da - db;
-  });
-}
-
-// ---------- Gasometria arterial x venosa ----------
+// ---------- GASOMETRIA (arterial x venosa) ----------
 
 function parseGasometrias(rawText) {
   const lines = rawText.split(/\r?\n/);
@@ -539,9 +462,9 @@ function buildGasometriaMap(gasos) {
 }
 
 function buildGasometriaTextForDate(date, gasoMap, selectedAbbrs) {
-  const lista = gasoMap.get(date);
-  if (!lista || !lista.length) return "";
+  if (!gasoMap || !gasoMap.has(date)) return "";
 
+  const lista = gasoMap.get(date);
   const arterialSelecionada = selectedAbbrs.includes("GasArterial");
   const venosaSelecionada = selectedAbbrs.includes("GasVenosa");
 
@@ -553,9 +476,7 @@ function buildGasometriaTextForDate(date, gasoMap, selectedAbbrs) {
   function formatPanel(label, vals, ordem) {
     const sub = [];
     for (const k of ordem) {
-      if (vals && vals[k] != null) {
-        sub.push(`${k} ${vals[k]}`);
-      }
+      if (vals && vals[k] != null) sub.push(`${k} ${vals[k]}`);
     }
     if (!sub.length) return "";
     return `${label}: ${sub.join(" | ")}`;
@@ -570,18 +491,55 @@ function buildGasometriaTextForDate(date, gasoMap, selectedAbbrs) {
   }
 
   const parts = [];
-
   if (arterialSelecionada && lastArt) {
     const t = formatPanel("Gaso art", lastArt.valores, ordemArt);
     if (t) parts.push(t);
   }
-
   if (venosaSelecionada && lastVen) {
     const t = formatPanel("Gaso ven", lastVen.valores, ordemVen);
     if (t) parts.push(t);
   }
 
   return parts.join(" | ");
+}
+
+// ---------- Construção das estruturas por data ----------
+
+function buildDateMap(exams, selectedAbbrs) {
+  const dateMap = new Map();
+
+  for (const ex of exams) {
+    const def = findExamDefinition(ex.name);
+    if (!def) continue;
+    if (selectedAbbrs && !selectedAbbrs.includes(def.abbr)) continue;
+
+    const dateKey = ex.date || "-";
+    if (!dateMap.has(dateKey)) dateMap.set(dateKey, {});
+    const bucket = dateMap.get(dateKey);
+
+    if (!bucket[def.abbr]) {
+      bucket[def.abbr] = { value: ex.value, category: def.category };
+    }
+  }
+
+  return dateMap;
+}
+
+function sortDates(arr) {
+  return arr.sort((a, b) => {
+    const da = parseDateToSortable(a);
+    const db = parseDateToSortable(b);
+    if (!da || !db) return 0;
+    return da - db;
+  });
+}
+
+function getAllSortedDates(dateMap, gasoMap) {
+  const set = new Set([
+    ...Array.from(dateMap.keys()),
+    ...(gasoMap ? Array.from(gasoMap.keys()) : [])
+  ]);
+  return sortDates(Array.from(set));
 }
 
 // ---------- Geração de texto ----------
@@ -595,7 +553,7 @@ function generateLinesPerDate(exams, selectedAbbrs, gasoMap) {
     const bucket = dateMap.get(date) || {};
     const parts = [];
 
-    // Exames "normais" (exceto sorologias fúngicas)
+    // Exames numéricos/qualitativos normais
     for (const abbr of examOrder) {
       if (sorologiaAbbrs.has(abbr)) continue;
       if (!selectedAbbrs.includes(abbr)) continue;
@@ -611,11 +569,11 @@ function generateLinesPerDate(exams, selectedAbbrs, gasoMap) {
 
     // Gasometria
     const gasoText = buildGasometriaTextForDate(date, gasoMap, selectedAbbrs);
-    if (gasoText) {
-      parts.push(gasoText);
-    }
+    if (gasoText) parts.push(gasoText);
 
-    if (parts.length) lines.push(`(${date}) ${parts.join(" | ")}`);
+    if (parts.length) {
+      lines.push(`(${date}) ${parts.join(" | ")}`);
+    }
   }
 
   return lines;
@@ -658,15 +616,10 @@ function generateTextByCategories(exams, selectedAbbrs, gasoMap) {
 
     const linesForDate = [];
     linesForDate.push(`(${date})`);
-
     for (const cat of categoryOrder) {
       if (categoryLines[cat] && categoryLines[cat].length) {
         linesForDate.push(`- ${cat}: ${categoryLines[cat].join(" | ")}`);
       }
-    }
-
-    if (!categoryOrder.includes("Gasometria") && categoryLines["Gasometria"]) {
-      linesForDate.push(`- Gasometria: ${categoryLines["Gasometria"].join(" | ")}`);
     }
 
     if (linesForDate.length > 1) {
@@ -727,7 +680,7 @@ function generate(mode) {
   }
 
   outputText.value = text;
-  statusEl.textContent = `Exames reconhecidos no laudo: ${exams.length}. Gasometrias reconhecidas: ${gasos.length}. Filtros ativos: ${selectedAbbrs.length}.`;
+  statusEl.textContent = `Exames reconhecidos: ${exams.length}. Gasometrias reconhecidas: ${gasos.length}. Filtros ativos: ${selectedAbbrs.length}.`;
 }
 
 // ---------- Handlers dos botões principais ----------

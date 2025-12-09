@@ -1,3 +1,101 @@
+// ---------- Utilidades ----------
+
+function normalize(str) {
+  return (str || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toUpperCase();
+}
+
+// Mapa de exames -> abreviação e categoria
+const examDefinitions = [
+  // Hemograma
+  { match: "HEMOGLOBINA", abbr: "Hb", category: "Hemograma" },
+  { match: "HEMATOCRITO", abbr: "Ht", category: "Hemograma" },
+  { match: "LEUCOCITOS", abbr: "Leuco", category: "Hemograma" },
+  { match: "LEUCOCITOS", abbr: "Leuco", category: "Hemograma" }, // redundância para segurança
+  { match: "LEUCOCITOS", abbr: "Leuco", category: "Hemograma" },
+  { match: "LEUCOCITOS", abbr: "Leuco", category: "Hemograma" },
+  { match: "PLAQUETAS", abbr: "Plaq", category: "Hemograma" },
+
+  // Eletrólitos / Renal
+  { match: "SODIO", abbr: "Na", category: "Eletrólitos/Renal" },
+  { match: "POTASSIO", abbr: "K", category: "Eletrólitos/Renal" },
+  { match: "CLORO", abbr: "Cl", category: "Eletrólitos/Renal" },
+  { match: "CREATININA", abbr: "Cr", category: "Eletrólitos/Renal" },
+  { match: "UREIA", abbr: "Ur", category: "Eletrólitos/Renal" },
+  { match: "MAGNESIO", abbr: "Mg", category: "Eletrólitos/Renal" },
+  { match: "FOSFORO", abbr: "P", category: "Eletrólitos/Renal" },
+  { match: "CALCIO TOTAL", abbr: "CaT", category: "Eletrólitos/Renal" },
+  { match: "CALCIO IONICO", abbr: "CaIon", category: "Eletrólitos/Renal" },
+
+  // Hepático
+  {
+    match: "ALANINA AMINOTRANSFERASE",
+    abbr: "ALT",
+    category: "Hepático"
+  },
+  {
+    match: "ASPARTATO AMINO TRANSFERASE",
+    abbr: "AST",
+    category: "Hepático"
+  },
+  { match: "FOSFATASE ALCALINA", abbr: "FA", category: "Hepático" },
+  {
+    match: "GAMA GLUTAMIL TRANSFERASE",
+    abbr: "GGT",
+    category: "Hepático"
+  },
+  { match: "BILIRRUBINA TOTAL", abbr: "BT", category: "Hepático" },
+  { match: "BILIRRUBINA DIRETA", abbr: "BD", category: "Hepático" },
+  { match: "BILIRRUBINA INDIRETA", abbr: "BI", category: "Hepático" }
+];
+
+// Ordem dos campos na linha
+const examOrder = [
+  "Hb",
+  "Ht",
+  "Leuco",
+  "Plaq",
+  "Na",
+  "K",
+  "Cl",
+  "Cr",
+  "Ur",
+  "CaT",
+  "CaIon",
+  "Mg",
+  "P",
+  "ALT",
+  "AST",
+  "FA",
+  "GGT",
+  "BT",
+  "BD",
+  "BI"
+];
+
+const categoryOrder = ["Hemograma", "Eletrólitos/Renal", "Hepático"];
+
+function findExamDefinition(examName) {
+  const norm = normalize(examName);
+  for (const def of examDefinitions) {
+    if (norm.includes(def.match)) return def;
+  }
+  return null;
+}
+
+function parseDateToSortable(str) {
+  const m = str.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+  if (!m) return null;
+  const d = parseInt(m[1], 10);
+  const mo = parseInt(m[2], 10) - 1;
+  const y = parseInt(m[3], 10);
+  return new Date(y, mo, d);
+}
+
+// ---------- Parser do laudo ----------
+
 function parseExams(rawText) {
   const lines = rawText.split(/\r?\n/);
   const exams = [];
@@ -16,31 +114,33 @@ function parseExams(rawText) {
       continue;
     }
 
-    // Cabeçalho de seção (nome do exame grande)
+    // Cabeçalho de seção
     if (
       /- SANGUE - ,/i.test(line) ||
       /HEMOGRAMA COMPLETO/i.test(line) ||
       /PLAQUETAS - SANGUE/i.test(line)
     ) {
-      // pega o texto antes de "- SANGUE" quando existir
       const section = line.split("- SANGUE")[0].trim();
       currentSection = section || line;
       continue;
     }
 
-    // Linhas claramente não são resultados
+    // Linhas que sabemos que não são resultados
     if (/Resultado dos 3 últimos exames/i.test(line)) continue;
     if (/Liberado e Validado/i.test(line)) continue;
     if (/DIVISÃO DE LABORATÓRIO CENTRAL/i.test(line)) continue;
     if (/^Pedido\s*:/i.test(line)) continue;
     if (/^\d{2}\/\d{2}\/\d{4}\s+\d{2}:\d{2}:\d{2}$/.test(line)) continue;
     if (/Novos valores de referência/i.test(line)) continue;
-    if (/Automatizado|Colorimétrico|Enzimático|Eletrodo íon seletivo|Cinético UV|IFCC/i.test(line)) continue;
+    if (
+      /Automatizado|Colorimétrico|Enzimático|Eletrodo íon seletivo|Cinético UV|IFCC/i.test(
+        line
+      )
+    )
+      continue;
     if (/Alteração nos valores de referência/i.test(line)) continue;
 
     // Heurística para linha de resultado:
-    // - tem pelo menos 2 "blocos" separados por múltiplos espaços ou TAB
-    // - segundo bloco contém número
     const parts = line.split(/\s{2,}|\t+/).filter(Boolean);
     if (parts.length >= 2) {
       const name = parts[0];
@@ -55,9 +155,10 @@ function parseExams(rawText) {
           exams.push({
             date: currentDate || "",
             section: currentSection || "",
-            name: name,
-            value: value,
-            unit: unit
+            name,
+            value,
+            unit,
+            normName: normalize(name)
           });
         }
       }
@@ -67,104 +168,186 @@ function parseExams(rawText) {
   return exams;
 }
 
-function renderTable(exams) {
-  if (!exams.length) {
-    return '<p class="empty-message">Nenhum exame reconhecido. Confira se o texto foi copiado completo do sistema.</p>';
-  }
+// ---------- Construção das estruturas por data ----------
 
-  let html = `
-    <table>
-      <thead>
-        <tr>
-          <th style="width: 90px;">Data</th>
-          <th>Exame</th>
-          <th style="width: 120px;">Resultado</th>
-          <th style="width: 110px;">Unidade</th>
-          <th>Seção / Painel</th>
-        </tr>
-      </thead>
-      <tbody>
-  `;
+function buildDateMap(exams, selectedAbbrs) {
+  const dateMap = new Map(); // date -> { abbr: { value, category } }
 
   for (const ex of exams) {
-    html += `
-      <tr data-name="${(ex.name + " " + ex.section).toLowerCase()}">
-        <td>${ex.date || "-"}</td>
-        <td>${ex.name}</td>
-        <td>${ex.value}</td>
-        <td>${ex.unit}</td>
-        <td>${ex.section}</td>
-      </tr>
-    `;
+    const def = findExamDefinition(ex.name);
+    if (!def) continue;
+
+    if (selectedAbbrs && !selectedAbbrs.includes(def.abbr)) continue;
+
+    const dateKey = ex.date || "-";
+    if (!dateMap.has(dateKey)) {
+      dateMap.set(dateKey, {});
+    }
+    const bucket = dateMap.get(dateKey);
+
+    // só grava o primeiro valor encontrado para aquele exame/data
+    if (!bucket[def.abbr]) {
+      bucket[def.abbr] = { value: ex.value, category: def.category };
+    }
   }
 
-  html += "</tbody></table>";
-  return html;
+  return dateMap;
 }
 
-function copyTableAsText(exams) {
-  if (!exams.length) return false;
-  const lines = exams.map(
-    ex =>
-      `(${ex.date || "-"}) ${ex.name}: ${ex.value} ${ex.unit} [${ex.section}]`
-  );
-  const text = lines.join("\n");
-  navigator.clipboard.writeText(text).catch(() => {});
-  return true;
+function sortDates(dateMap) {
+  const dates = Array.from(dateMap.keys());
+  return dates.sort((a, b) => {
+    const da = parseDateToSortable(a);
+    const db = parseDateToSortable(b);
+    if (!da || !db) return 0;
+    return da - db; // crescente; se quiser mais recente primeiro, inverta
+  });
 }
 
-// --- Eventos da interface ---
+// ---------- Geração de texto ----------
+
+function generateLinesPerDate(exams, selectedAbbrs) {
+  const dateMap = buildDateMap(exams, selectedAbbrs);
+  const orderedDates = sortDates(dateMap);
+  const lines = [];
+
+  for (const date of orderedDates) {
+    const bucket = dateMap.get(date);
+    const parts = [];
+
+    for (const abbr of examOrder) {
+      if (!selectedAbbrs.includes(abbr)) continue;
+      if (bucket[abbr]) {
+        parts.push(`${abbr} ${bucket[abbr].value}`);
+      }
+    }
+
+    if (parts.length) {
+      lines.push(`(${date}) ${parts.join(" | ")}`);
+    }
+  }
+
+  return lines;
+}
+
+function generateTextByCategories(exams, selectedAbbrs) {
+  const dateMap = buildDateMap(exams, selectedAbbrs);
+  const orderedDates = sortDates(dateMap);
+  const blocks = [];
+
+  for (const date of orderedDates) {
+    const bucket = dateMap.get(date);
+
+    // category -> [ "Hb 9,8", "Ht 29" ... ]
+    const categoryLines = {};
+
+    for (const abbr of examOrder) {
+      if (!selectedAbbrs.includes(abbr)) continue;
+      const entry = bucket[abbr];
+      if (!entry) continue;
+
+      const cat = entry.category;
+      if (!categoryLines[cat]) categoryLines[cat] = [];
+      categoryLines[cat].push(`${abbr} ${entry.value}`);
+    }
+
+    const linesForDate = [];
+    linesForDate.push(`(${date})`);
+
+    for (const cat of categoryOrder) {
+      if (categoryLines[cat] && categoryLines[cat].length) {
+        linesForDate.push(
+          `- ${cat}: ${categoryLines[cat].join(" | ")}`
+        );
+      }
+    }
+
+    if (linesForDate.length > 1) {
+      blocks.push(linesForDate.join("\n"));
+    }
+  }
+
+  return blocks.join("\n\n");
+}
+
+// ---------- Integração com a interface ----------
 
 const rawInput = document.getElementById("rawInput");
-const btnParse = document.getElementById("btnParse");
-const btnCopyTable = document.getElementById("btnCopyTable");
-const output = document.getElementById("output");
+const btnGenerateLine = document.getElementById("btnGenerateLine");
+const btnGenerateCategories = document.getElementById(
+  "btnGenerateCategories"
+);
+const btnCopyText = document.getElementById("btnCopyText");
+const outputText = document.getElementById("outputText");
 const statusEl = document.getElementById("status");
-const filterInput = document.getElementById("filterInput");
+const examCheckboxes = document.querySelectorAll(
+  ".exam-toggle input[type=checkbox]"
+);
 
-let currentExams = [];
+function getSelectedAbbrs() {
+  return Array.from(examCheckboxes)
+    .filter((cb) => cb.checked)
+    .map((cb) => cb.value);
+}
 
-btnParse.addEventListener("click", () => {
+function generate(mode) {
   const raw = rawInput.value.trim();
   statusEl.textContent = "";
 
   if (!raw) {
-    output.innerHTML = '<p class="empty-message">Cole o laudo no campo acima antes de processar.</p>';
+    outputText.value =
+      "Cole o laudo bruto no campo acima antes de gerar o texto.";
     return;
   }
 
+  const selectedAbbrs = getSelectedAbbrs();
   const exams = parseExams(raw);
-  currentExams = exams;
 
-  output.innerHTML = renderTable(exams);
-  if (exams.length) {
-    statusEl.textContent = `Foram identificados ${exams.length} resultados.`;
-  } else {
-    statusEl.textContent = "Nenhum resultado reconhecido.";
-  }
-
-  filterInput.value = "";
-});
-
-btnCopyTable.addEventListener("click", () => {
-  if (!currentExams.length) {
-    statusEl.textContent = "Nada para copiar ainda. Organize os exames primeiro.";
+  if (!exams.length) {
+    outputText.value =
+      "Nenhum exame reconhecido. Confira se o texto foi copiado completo do sistema.";
+    statusEl.textContent = "";
     return;
   }
-  const ok = copyTableAsText(currentExams);
-  if (ok) {
-    statusEl.textContent = "Tabela copiada para a área de transferência.";
+
+  let text = "";
+
+  if (mode === "line") {
+    const lines = generateLinesPerDate(exams, selectedAbbrs);
+    text =
+      lines.join("\n") ||
+      "Nenhum exame correspondente aos filtros selecionados.";
   } else {
-    statusEl.textContent = "Não foi possível copiar automaticamente.";
+    text =
+      generateTextByCategories(exams, selectedAbbrs) ||
+      "Nenhum exame correspondente aos filtros selecionados.";
   }
+
+  outputText.value = text;
+  statusEl.textContent = `Exames reconhecidos no laudo: ${exams.length}. Filtros ativos: ${selectedAbbrs.length}.`;
+}
+
+btnGenerateLine.addEventListener("click", () => {
+  generate("line");
 });
 
-filterInput.addEventListener("input", () => {
-  const term = filterInput.value.trim().toLowerCase();
-  const rows = output.querySelectorAll("tbody tr");
-  if (!rows.length) return;
-  rows.forEach(row => {
-    const key = row.getAttribute("data-name") || "";
-    row.style.display = !term || key.includes(term) ? "" : "none";
-  });
+btnGenerateCategories.addEventListener("click", () => {
+  generate("categories");
+});
+
+btnCopyText.addEventListener("click", () => {
+  const text = outputText.value.trim();
+  if (!text) {
+    statusEl.textContent =
+      "Nada para copiar ainda. Gere o texto primeiro.";
+    return;
+  }
+  navigator.clipboard
+    .writeText(text)
+    .then(() => {
+      statusEl.textContent = "Texto copiado para a área de transferência.";
+    })
+    .catch(() => {
+      statusEl.textContent = "Não foi possível copiar automaticamente.";
+    });
 });

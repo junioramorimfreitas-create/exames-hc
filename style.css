@@ -118,7 +118,9 @@ button {
   text-align: right;
 }
 
-/* Filtros de exames */
+/* =========================
+   Filtros de exames
+   ========================= */
 
 .exam-filters {
   border-radius: 10px;
@@ -127,11 +129,15 @@ button {
   background: #f9fafb;
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 16px; /* espaço entre categorias */
 }
 
 .exam-group {
   min-width: 220px;
+  padding: 6px 8px;
+  border-radius: 10px;
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06); /* cartõezinhos suaves */
 }
 
 .exam-group-title {
@@ -140,8 +146,8 @@ button {
   color: #4b5563;
   margin-bottom: 4px;
   display: flex;
-  justify-content: space-between; /* Nome da categoria à esquerda, botões à direita */
-  align-items: center;            /* Alinha verticalmente */
+  justify-content: space-between; /* nome à esquerda, botões à direita */
+  align-items: center;
   width: 100%;
 }
 
@@ -189,14 +195,8 @@ button {
   margin-top: 4px;
 }
 
-@media (max-width: 768px) {
-  .page {
-    margin: 8px;
-    padding: 16px;
-  }
-}
-
 /* --- Botões discretos de seleção por categoria --- */
+
 .category-actions {
   display: flex;
   gap: 6px;
@@ -204,22 +204,43 @@ button {
 }
 
 .category-btn {
-  background: #e5e7eb;          /* cinza bem suave */
+  background: #e5e7eb;
   border: none;
-  padding: 2px 6px;             /* bem compacto */
-  font-size: 0.7rem;            /* pequeno */
+  padding: 2px 6px;
+  font-size: 0.7rem;
   border-radius: 6px;
   cursor: pointer;
-  color: #374151;               /* cinza escuro elegante */
+  color: #374151;
   transition: 0.15s ease-in-out;
+  line-height: 1;
 }
 
 .category-btn:hover {
-  background: #d1d5db;          /* leve escurecimento */
+  background: #d1d5db;
 }
 
 .category-btn:active {
-  background: #9ca3af;          /* clique */
+  background: #9ca3af;
   transform: scale(0.95);
 }
 
+/* =========================
+   Responsivo
+   ========================= */
+
+@media (max-width: 768px) {
+  .page {
+    margin: 8px;
+    padding: 16px;
+  }
+
+  /* Em mobile, empilha as categorias em coluna */
+  .exam-filters {
+    flex-direction: column;
+    flex-wrap: nowrap;
+  }
+
+  .exam-group {
+    min-width: 100%;
+  }
+}

@@ -43,6 +43,20 @@ const examDefinitions = [
   { match: "COLESTEROL NAO HDL", abbr: "nHDL", category: "Perfil lipídico" },
   { match: "COLESTEROL", abbr: "CT", category: "Perfil lipídico", exact: true },
 
+  // Sorologias (Micologia)
+  { match: "IMUNODIFUSAO HISTOPLASMA CAPSULATUM", abbr: "ID Histo", category: "Sorologias" },
+  { match: "IMUNODIFUSAO ASPERGILLUS FUMIGATUS", abbr: "ID Asp", category: "Sorologias" },
+  { match: "IMUNODIFUSAO PARACOCCIDIOIDES BRASILIENSIS", abbr: "ID Pcb", category: "Sorologias" },
+  { match: "CONTRAIMUNO PARACOCCIDIOIDES BRASILIENSIS", abbr: "CI Pcb", category: "Sorologias" },
+  { match: "CONTRAIMUNO HISTOPLASMA CAPSULATUM", abbr: "CI Histo", category: "Sorologias" },
+  { match: "CONTRAIMUNO ASPERGILLUS FUMIGATUS", abbr: "CI Asp", category: "Sorologias" },
+
+  // Imunológico (CD4/CD8) – ABSOLUTOS
+  { match: "CD45/CD3/CD4", abbr: "CD4", category: "Imunológico" },
+  { match: "CD45/CD3/CD8", abbr: "CD8", category: "Imunológico" },
+  { match: "CD4/CD8", abbr: "CD4/CD8", category: "Imunológico" },
+
+  
   // Imunológico (CD4/CD8) – ABSOLUTOS
   { match: "CD45/CD3/CD4", abbr: "CD4", category: "Imunológico" },
   { match: "CD45/CD3/CD8", abbr: "CD8", category: "Imunológico" },
@@ -58,8 +72,10 @@ const examOrder = [
   "ALT","AST","FA","GGT","BT","BD","BI",
   "TGL","CT","HDL","LDL","VLDL","nHDL",
   "CD4","CD8","CD4/CD8",
+  "ID Histo","ID Asp","ID Pcb","CI Histo","CI Asp","CI Pcb",
   "CVHIV"
 ];
+
 
 const categoryOrder = [
   "Hemograma",
@@ -67,6 +83,7 @@ const categoryOrder = [
   "Hepático",
   "Perfil lipídico",
   "Imunológico",
+  "Sorologias",
   "Virologia"
 ];
 
@@ -156,8 +173,9 @@ function parseExams(rawText) {
       continue;
     }
 
-    // Relação CD4/CD8 e demais exames
+    // Relação CD4/CD8 e demais exames (quantitativos e qualitativos)
     if (/\d/.test(valueUnit)) {
+      // Quantitativos (têm número, ex: "0,72 mg/dL")
       const m = valueUnit.match(/^([<>*]?\s*[\d.,]+)\s*(.*)$/);
       if (m) {
         const value = m[1].trim();
@@ -168,6 +186,19 @@ function parseExams(rawText) {
           name,
           value,
           unit,
+          normName
+        });
+      }
+    } else {
+      // Qualitativos (Reagente / Não Reagente, etc.)
+      const value = valueUnit.trim();
+      if (value) {
+        exams.push({
+          date: currentDate || "",
+          section: currentSection || "",
+          name,
+          value,
+          unit: "",
           normName
         });
       }

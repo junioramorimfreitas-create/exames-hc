@@ -44,19 +44,37 @@ const examDefinitions = [
   { match: "COLESTEROL", abbr: "CT", category: "Perfil lipídico", exact: true },
 
   // Sorologias (Micologia)
-  { match: "IMUNODIFUSAO HISTOPLASMA CAPSULATUM", abbr: "ID Histo", category: "Sorologias" },
-  { match: "IMUNODIFUSAO ASPERGILLUS FUMIGATUS", abbr: "ID Asp", category: "Sorologias" },
-  { match: "IMUNODIFUSAO PARACOCCIDIOIDES BRASILIENSIS", abbr: "ID Pcb", category: "Sorologias" },
-  { match: "CONTRAIMUNO PARACOCCIDIOIDES BRASILIENSIS", abbr: "CI Pcb", category: "Sorologias" },
-  { match: "CONTRAIMUNO HISTOPLASMA CAPSULATUM", abbr: "CI Histo", category: "Sorologias" },
-  { match: "CONTRAIMUNO ASPERGILLUS FUMIGATUS", abbr: "CI Asp", category: "Sorologias" },
+  {
+    match: "IMUNODIFUSAO HISTOPLASMA CAPSULATUM",
+    abbr: "ID Histo",
+    category: "Sorologias"
+  },
+  {
+    match: "IMUNODIFUSAO ASPERGILLUS FUMIGATUS",
+    abbr: "ID Asp",
+    category: "Sorologias"
+  },
+  {
+    match: "IMUNODIFUSAO PARACOCCIDIOIDES BRASILIENSIS",
+    abbr: "ID Pcb",
+    category: "Sorologias"
+  },
+  {
+    match: "CONTRAIMUNO PARACOCCIDIOIDES BRASILIENSIS",
+    abbr: "CI Pcb",
+    category: "Sorologias"
+  },
+  {
+    match: "CONTRAIMUNO HISTOPLASMA CAPSULATUM",
+    abbr: "CI Histo",
+    category: "Sorologias"
+  },
+  {
+    match: "CONTRAIMUNO ASPERGILLUS FUMIGATUS",
+    abbr: "CI Asp",
+    category: "Sorologias"
+  },
 
-  // Imunológico (CD4/CD8) – ABSOLUTOS
-  { match: "CD45/CD3/CD4", abbr: "CD4", category: "Imunológico" },
-  { match: "CD45/CD3/CD8", abbr: "CD8", category: "Imunológico" },
-  { match: "CD4/CD8", abbr: "CD4/CD8", category: "Imunológico" },
-
-  
   // Imunológico (CD4/CD8) – ABSOLUTOS
   { match: "CD45/CD3/CD4", abbr: "CD4", category: "Imunológico" },
   { match: "CD45/CD3/CD8", abbr: "CD8", category: "Imunológico" },
@@ -75,7 +93,6 @@ const examOrder = [
   "ID Histo","ID Asp","ID Pcb","CI Histo","CI Asp","CI Pcb",
   "CVHIV"
 ];
-
 
 const categoryOrder = [
   "Hemograma",
@@ -105,7 +122,7 @@ function parseDateToSortable(str) {
   return new Date(+m[3], +m[2] - 1, +m[1]);
 }
 
-// ---------- PARSER DO LAUDO (CD4/CD8 absolutos) ----------
+// ---------- PARSER DO LAUDO (CD4/CD8 + sorologias com título) ----------
 
 function parseExams(rawText) {
   const lines = rawText.split(/\r?\n/);
@@ -113,10 +130,26 @@ function parseExams(rawText) {
 
   let currentDate = "";
   let currentSection = "";
+  let pendingTiterExam = null; // último contraimuno reagente aguardando Título
 
   for (let rawLine of lines) {
     const line = rawLine.trim();
     if (!line) continue;
+
+    // Linha de título (ex.: "Titulo: 1/32") -> anexa ao último contraimuno reagente
+    if (/^Titulo\s*:/i.test(line)) {
+      if (pendingTiterExam) {
+        const mTit = line.match(/^Titulo\s*:\s*(.+)$/i);
+        if (mTit) {
+          const titer = mTit[1].trim();
+          if (titer) {
+            pendingTiterExam.value = `${pendingTiterExam.value} (${titer})`;
+          }
+        }
+        pendingTiterExam = null;
+      }
+      continue;
+    }
 
     // Data de coleta
     const dateMatch = line.match(/Coletado em:\s*(\d{2}\/\d{2}\/\d{4})/);
@@ -146,6 +179,7 @@ function parseExams(rawText) {
     if (/Novos valores de referência/i.test(line)) continue;
     if (/Automatizado|Colorimétrico|Enzimático|Eletrodo íon seletivo|Cinético UV|IFCC|Citometria de fluxo|PCR em Tempo Real/i.test(line)) continue;
     if (/Alteração nos valores de referência/i.test(line)) continue;
+    if (/Titulos ate 1\/2/i.test(normalize(line))) continue;
 
     // Split em colunas (TAB ou >=2 espaços)
     const parts = line.split(/\s{2,}|\t+/).filter(Boolean);
@@ -193,14 +227,26 @@ function parseExams(rawText) {
       // Qualitativos (Reagente / Não Reagente, etc.)
       const value = valueUnit.trim();
       if (value) {
-        exams.push({
+        const examObj = {
           date: currentDate || "",
           section: currentSection || "",
           name,
           value,
           unit: "",
           normName
-        });
+        };
+        exams.push(examObj);
+
+        // Se for contraimuno REAGENTE, marca para receber título
+        if (
+          normName.includes("CONTRAIMUNO") &&
+          normalize(value).includes("REAGENTE")
+        ) {
+          pendingTiterExam = examObj;
+        } else if (normName.includes("CONTRAIMUNO")) {
+          // Se for contraimuno NÃO reagente, não espera título
+          pendingTiterExam = null;
+        }
       }
     }
   }

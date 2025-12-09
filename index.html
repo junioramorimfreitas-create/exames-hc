@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Organizador de Exames - HCFMUSP</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="page">
+    <h1>Organizador de Exames do HC</h1>
+    <p class="subtitle">
+      Cole abaixo o laudo bruto dos exames laboratoriais do HCFMUSP (copia/cola da tela) e clique em <b>Organizar exames</b>.
+    </p>
+
+    <div class="row">
+      <label for="rawInput">Laudo bruto</label>
+      <textarea id="rawInput" placeholder="Cole aqui o laudo inteiro com os exames..."></textarea>
+    </div>
+
+    <div class="row">
+      <div class="actions">
+        <button class="btn-primary" id="btnParse">Organizar exames</button>
+        <button class="btn-secondary" id="btnCopyTable">Copiar tabela</button>
+        <span id="status" class="status-text"></span>
+      </div>
+
+      <div class="input-inline">
+        <label for="filterInput" class="inline-label">Filtro rápido</label>
+        <input id="filterInput" type="text" placeholder="Ex.: creatinina, sódio, Hb, potássio..." />
+        <span class="badge">Filtra por nome do exame ou seção</span>
+      </div>
+    </div>
+
+    <div class="row">
+      <label>Exames organizados</label>
+      <div id="output">
+        <p class="empty-message">
+          Nenhum exame processado ainda. Cole um laudo e clique em <b>Organizar exames</b>.
+        </p>
+      </div>
+    </div>
+
+    <div class="footer-note">
+      Versão inicial do parser. Refinar depois para formatos específicos (Hb/Ht/Na/K/Cr/Ur etc).
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

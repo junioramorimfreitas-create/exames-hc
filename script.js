@@ -8,14 +8,13 @@ function normalize(str) {
 }
 
 // Mapa de exames -> abreviação e categoria
+// match = string normalizada; exact = faz comparação exata em vez de "includes"
 const examDefinitions = [
   // Hemograma
   { match: "HEMOGLOBINA", abbr: "Hb", category: "Hemograma" },
   { match: "HEMATOCRITO", abbr: "Ht", category: "Hemograma" },
   { match: "LEUCOCITOS", abbr: "Leuco", category: "Hemograma" },
-  { match: "LEUCOCITOS", abbr: "Leuco", category: "Hemograma" }, // redundância para segurança
-  { match: "LEUCOCITOS", abbr: "Leuco", category: "Hemograma" },
-  { match: "LEUCOCITOS", abbr: "Leuco", category: "Hemograma" },
+  { match: "LEUCOCITOS", abbr: "LEUCOCITOS", category: "Hemograma" }, // redundante, mas inofensivo
   { match: "PLAQUETAS", abbr: "Plaq", category: "Hemograma" },
 
   // Eletrólitos / Renal
@@ -48,7 +47,62 @@ const examDefinitions = [
   },
   { match: "BILIRRUBINA TOTAL", abbr: "BT", category: "Hepático" },
   { match: "BILIRRUBINA DIRETA", abbr: "BD", category: "Hepático" },
-  { match: "BILIRRUBINA INDIRETA", abbr: "BI", category: "Hepático" }
+  { match: "BILIRRUBINA INDIRETA", abbr: "BI", category: "Hepático" },
+
+  // Perfil lipídico
+  { match: "TRIGLICERIDES", abbr: "TGL", category: "Perfil lipídico" },
+  {
+    match: "VLDL - COLESTEROL",
+    abbr: "VLDL",
+    category: "Perfil lipídico"
+  },
+  {
+    match: "HDL - COLESTEROL",
+    abbr: "HDL",
+    category: "Perfil lipídico"
+  },
+  {
+    match: "LDL - COLESTEROL",
+    abbr: "LDL",
+    category: "Perfil lipídico"
+  },
+  {
+    match: "COLESTEROL NAO HDL",
+    abbr: "nHDL",
+    category: "Perfil lipídico"
+  },
+  {
+    match: "COLESTEROL",
+    abbr: "CT",
+    category: "Perfil lipídico",
+    exact: true // só "COLESTEROL" isolado (total), não HDL/LDL etc
+  },
+
+  // Imunológico (CD4/CD8)
+  {
+    match: "CD45/CD3/CD4",
+    abbr: "CD4",
+    category: "Imunológico"
+  },
+  {
+    match: "CD45/CD3/CD8",
+    abbr: "CD8",
+    category: "Imunológico"
+  },
+  {
+    match: "CD45/CD3",
+    abbr: "CD3",
+    category: "Imunológico"
+  },
+  { match: "CD45", abbr: "CD45", category: "Imunológico" },
+  { match: "CD4/CD8", abbr: "CD4/CD8", category: "Imunológico" },
+
+  // Virologia
+  {
+    match: "CARGA VIRAL HIV-1",
+    abbr: "CVHIV",
+    category: "Virologia"
+  }
 ];
 
 // Ordem dos campos na linha
@@ -72,15 +126,38 @@ const examOrder = [
   "GGT",
   "BT",
   "BD",
-  "BI"
+  "BI",
+  "TGL",
+  "CT",
+  "HDL",
+  "LDL",
+  "VLDL",
+  "nHDL",
+  "CD3",
+  "CD4",
+  "CD8",
+  "CD4/CD8",
+  "CD45",
+  "CVHIV"
 ];
 
-const categoryOrder = ["Hemograma", "Eletrólitos/Renal", "Hepático"];
+const categoryOrder = [
+  "Hemograma",
+  "Eletrólitos/Renal",
+  "Hepático",
+  "Perfil lipídico",
+  "Imunológico",
+  "Virologia"
+];
 
 function findExamDefinition(examName) {
   const norm = normalize(examName);
   for (const def of examDefinitions) {
-    if (norm.includes(def.match)) return def;
+    if (def.exact) {
+      if (norm === def.match) return def;
+    } else {
+      if (norm.includes(def.match)) return def;
+    }
   }
   return null;
 }
@@ -125,15 +202,17 @@ function parseExams(rawText) {
       continue;
     }
 
-    // Linhas que sabemos que não são resultados
+    // Linhas que não são resultados
     if (/Resultado dos 3 últimos exames/i.test(line)) continue;
     if (/Liberado e Validado/i.test(line)) continue;
     if (/DIVISÃO DE LABORATÓRIO CENTRAL/i.test(line)) continue;
+    if (/LABORATORIO DE INVESTIGACAO MEDICA/i.test(normalize(line)))
+      continue;
     if (/^Pedido\s*:/i.test(line)) continue;
     if (/^\d{2}\/\d{2}\/\d{4}\s+\d{2}:\d{2}:\d{2}$/.test(line)) continue;
     if (/Novos valores de referência/i.test(line)) continue;
     if (
-      /Automatizado|Colorimétrico|Enzimático|Eletrodo íon seletivo|Cinético UV|IFCC/i.test(
+      /Automatizado|Colorimétrico|Enzimático|Eletrodo íon seletivo|Cinético UV|IFCC|Citometria de fluxo|PCR em Tempo Real/i.test(
         line
       )
     )
@@ -200,7 +279,7 @@ function sortDates(dateMap) {
     const da = parseDateToSortable(a);
     const db = parseDateToSortable(b);
     if (!da || !db) return 0;
-    return da - db; // crescente; se quiser mais recente primeiro, inverta
+    return da - db; // crescente
   });
 }
 
@@ -256,9 +335,7 @@ function generateTextByCategories(exams, selectedAbbrs) {
 
     for (const cat of categoryOrder) {
       if (categoryLines[cat] && categoryLines[cat].length) {
-        linesForDate.push(
-          `- ${cat}: ${categoryLines[cat].join(" | ")}`
-        );
+        linesForDate.push(`- ${cat}: ${categoryLines[cat].join(" | ")}`);
       }
     }
 

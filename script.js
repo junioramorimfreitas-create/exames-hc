@@ -104,6 +104,91 @@ const categoryOrder = [
   "Virologia"
 ];
 
+// Abreviações que são sorologias (para tratamento especial)
+const sorologiaAbbrs = new Set([
+  "ID Histoplasma","CI Histoplasma",
+  "ID Aspergillus","CI Aspergillus",
+  "ID P. brasiliensis","CI P. brasiliensis"
+]);
+
+// Grupos por organismo para montar "Histoplasma ID NR / CI NR"
+const sorologiaGroups = [
+  {
+    label: "Histoplasma",
+    idAbbr: "ID Histoplasma",
+    ciAbbr: "CI Histoplasma"
+  },
+  {
+    label: "Aspergillus",
+    idAbbr: "ID Aspergillus",
+    ciAbbr: "CI Aspergillus"
+  },
+  {
+    label: "Paracoco",
+    idAbbr: "ID P. brasiliensis",
+    ciAbbr: "CI P. brasiliensis"
+  }
+];
+
+// Rótulos amigáveis (se a gente quiser mexer em outros no futuro)
+function getDisplayName(abbr) {
+  // Para agora, só mudamos sorologias no formato especial.
+  // No restante, deixamos Hg, Na, etc. como estão.
+  return abbr;
+}
+
+// Converte "Reagente", "Não Reagente", "Reagente (1/32)" em "R", "NR", "R (1/32)"
+function formatSorologiaValue(rawValue) {
+  const norm = normalize(rawValue);
+  // Não Reagente
+  if (norm.includes("NAO REAGENTE")) {
+    return "NR";
+  }
+  // Reagente (pode ter título junto)
+  if (norm.includes("REAGENTE")) {
+    // tenta extrair o título entre parênteses, se houver
+    const m = rawValue.match(/\(([^)]+)\)/);
+    if (m) {
+      const titer = m[1].trim();
+      return `R (${titer})`;
+    }
+    return "R";
+  }
+  // fallback
+  return rawValue.trim();
+}
+
+// Monta ["Histoplasma ID NR / CI NR", "Aspergillus ID R / CI R (1/32)", ...]
+function buildSorologiaParts(bucket, selectedAbbrs) {
+  const parts = [];
+
+  for (const group of sorologiaGroups) {
+    const idEntry = bucket[group.idAbbr];
+    const ciEntry = bucket[group.ciAbbr];
+
+    const idSelected = selectedAbbrs.includes(group.idAbbr);
+    const ciSelected = selectedAbbrs.includes(group.ciAbbr);
+
+    // Se nenhum está selecionado ou nenhum existe, pula
+    if ((!idEntry || !idSelected) && (!ciEntry || !ciSelected)) continue;
+
+    const segments = [];
+
+    if (idEntry && idSelected) {
+      segments.push(`ID ${formatSorologiaValue(idEntry.value)}`);
+    }
+    if (ciEntry && ciSelected) {
+      segments.push(`CI ${formatSorologiaValue(ciEntry.value)}`);
+    }
+
+    if (segments.length) {
+      parts.push(`${group.label} ${segments.join(" / ")}`);
+    }
+  }
+
+  return parts;
+}
+
 function findExamDefinition(examName) {
   const norm = normalize(examName);
   for (const def of examDefinitions) {
@@ -297,10 +382,19 @@ function generateLinesPerDate(exams, selectedAbbrs) {
     const bucket = dateMap.get(date);
     const parts = [];
 
+    // Exames "normais" (exceto sorologias)
     for (const abbr of examOrder) {
+      if (sorologiaAbbrs.has(abbr)) continue; // sorologias tratadas à parte
       if (!selectedAbbrs.includes(abbr)) continue;
-      if (bucket[abbr]) parts.push(`${abbr} ${bucket[abbr].value}`);
+      if (bucket[abbr]) {
+        const label = getDisplayName(abbr);
+        parts.push(`${label} ${bucket[abbr].value}`);
+      }
     }
+
+    // Sorologias condensadas por organismo
+    const sorologiaParts = buildSorologiaParts(bucket, selectedAbbrs);
+    parts.push(...sorologiaParts);
 
     if (parts.length) lines.push(`(${date}) ${parts.join(" | ")}`);
   }
@@ -317,13 +411,23 @@ function generateTextByCategories(exams, selectedAbbrs) {
     const bucket = dateMap.get(date);
     const categoryLines = {};
 
+    // Exames não-sorológicos
     for (const abbr of examOrder) {
+      if (sorologiaAbbrs.has(abbr)) continue;
       if (!selectedAbbrs.includes(abbr)) continue;
       const entry = bucket[abbr];
       if (!entry) continue;
       const cat = entry.category;
+      const label = getDisplayName(abbr);
       if (!categoryLines[cat]) categoryLines[cat] = [];
-      categoryLines[cat].push(`${abbr} ${entry.value}`);
+      categoryLines[cat].push(`${label} ${entry.value}`);
+    }
+
+    // Sorologias condensadas
+    const sorologiaParts = buildSorologiaParts(bucket, selectedAbbrs);
+    if (sorologiaParts.length) {
+      if (!categoryLines["Sorologias"]) categoryLines["Sorologias"] = [];
+      categoryLines["Sorologias"].push(...sorologiaParts);
     }
 
     const linesForDate = [];

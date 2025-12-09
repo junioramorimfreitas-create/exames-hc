@@ -84,33 +84,31 @@ const examDefinitions = [
   { match: "CONTRAIMUNO HISTOPLASMA CAPSULATUM", abbr: "CI Histoplasma", category: "Sorologias" },
   { match: "CONTRAIMUNO ASPERGILLUS FUMIGATUS", abbr: "CI Aspergillus", category: "Sorologias" },
 
-  // Sorologias virais / IST
-  { match: "HEPATITE B - ANTI-HBC TOTAL", abbr: "AntiHBcT", category: "Sorologias" },
-  { match: "HEPATITE B - ANTI-HBC IGM", abbr: "AntiHBcIgM", category: "Sorologias" },
-  { match: "HEPATITE B - ANTI-HBS", abbr: "AntiHBs", category: "Sorologias" },
-  { match: "HEPATITE B - ANTI-HBE", abbr: "AntiHBe", category: "Sorologias" },
-  { match: "HEPATITE B - AGHBS", abbr: "AgHBs", category: "Sorologias" },
-  { match: "HEPATITE B - AGHBE", abbr: "AgHBe", category: "Sorologias" },
-  { match: "HEPATITE C - SOROLOGIA", abbr: "AntiHCV", category: "Sorologias" },
-  { match: "SOROLOGIA PARA TREPONEMA PALLIDUM", abbr: "Trep", category: "Sorologias" },
-  {
-    match: "PESQUISA DE ANTICORPOS CONTRA HIV1/2 E DO ANTIGENO P24 DO HIV1",
-    abbr: "HIVscr",
-    category: "Sorologias"
-  },
+  // --- Sorologias Hepatite B ---
+  { match: "HEPATITE B - AGHBS", abbr: "HBsAg", category: "Sorologias" },
+  { match: "HEPATITE B - ANTI-HBC TOTAL", abbr: "Anti-HBc total", category: "Sorologias" },
+  { match: "HEPATITE B - ANTI-HBC IGM", abbr: "Anti-HBc IgM", category: "Sorologias" },
+  { match: "HEPATITE B - ANTI-HBS", abbr: "Anti-HBs", category: "Sorologias" },
+  { match: "HEPATITE B - ANTI-HBE", abbr: "Anti-HBe", category: "Sorologias" },
+  { match: "HEPATITE B - AGHBE", abbr: "HBeAg", category: "Sorologias" },
+  { match: "DETECÇÃO QUANTITATIVA DE DNA DO VIRUS DA HEPATITE B", abbr: "HBV-DNA", category: "Virologia" },
+  
+  // --- Sífilis ---
+  { match: "TREPONEMA PALLIDUM", abbr: "Sífilis", category: "Sorologias" },
+  
+  // --- HIV ---
+  { match: "ANTICORPOS CONTRA HIV1/2", abbr: "HIV", category: "Sorologias" },
+  { match: "CARGA VIRAL HIV-1", abbr: "CV-HIV", category: "Virologia" },
+
+  // --- HCV ---
+  { match: "HEPATITE C - SOROLOGIA", abbr: "Anti-HCV", category: "Sorologias" },
 
   // Imunológico (CD4/CD8)
   { match: "CD45/CD3/CD4", abbr: "CD4", category: "Imunológico" },
   { match: "CD45/CD3/CD8", abbr: "CD8", category: "Imunológico" },
   { match: "CD4/CD8", abbr: "CD4/CD8", category: "Imunológico" },
 
-  // Virologia (cargas virais)
-  { match: "CARGA VIRAL HIV-1", abbr: "CVHIV", category: "Virologia" },
-  {
-    match: "DETECCAO QUANTITATIVA DE DNA DO VIRUS DA HEPATITE B (HBV)",
-    abbr: "HBVDNA",
-    category: "Virologia"
-  }
+
 ];
 
 const examOrder = [
@@ -129,9 +127,10 @@ const examOrder = [
   "CD4", "CD8", "CD4/CD8",
   "ID Histoplasma", "ID Aspergillus", "ID P. brasiliensis",
   "CI Histoplasma", "CI Aspergillus", "CI P. brasiliensis",
-  "AntiHBcT", "AntiHBcIgM", "AntiHBs", "AgHBs", "AntiHBe", "AgHBe",
-  "AntiHCV", "Trep", "HIVscr",
-  "CVHIV", "HBVDNA"
+  "HIV",
+  "Anti-HBc Total", "Anti-HBc IgM", "Anti-HBs", "HBsAg", "Anti-HBe", "HBeAg",
+  "Anti-HCV", "Sífilis",
+  "CV-HIV", "HBV-DNA"
 ];
 
 const categoryOrder = [

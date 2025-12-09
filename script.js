@@ -8,7 +8,6 @@ function normalize(str) {
 }
 
 // Mapa de exames -> abreviação e categoria
-// match = string normalizada; exact = faz comparação exata em vez de "includes"
 const examDefinitions = [
   // Hemograma
   { match: "HEMOGLOBINA", abbr: "Hb", category: "Hemograma" },
@@ -28,107 +27,37 @@ const examDefinitions = [
   { match: "CALCIO IONICO", abbr: "CaIon", category: "Eletrólitos/Renal" },
 
   // Hepático
-  {
-    match: "ALANINA AMINOTRANSFERASE",
-    abbr: "ALT",
-    category: "Hepático"
-  },
-  {
-    match: "ASPARTATO AMINO TRANSFERASE",
-    abbr: "AST",
-    category: "Hepático"
-  },
+  { match: "ALANINA AMINOTRANSFERASE", abbr: "ALT", category: "Hepático" },
+  { match: "ASPARTATO AMINO TRANSFERASE", abbr: "AST", category: "Hepático" },
   { match: "FOSFATASE ALCALINA", abbr: "FA", category: "Hepático" },
-  {
-    match: "GAMA GLUTAMIL TRANSFERASE",
-    abbr: "GGT",
-    category: "Hepático"
-  },
+  { match: "GAMA GLUTAMIL TRANSFERASE", abbr: "GGT", category: "Hepático" },
   { match: "BILIRRUBINA TOTAL", abbr: "BT", category: "Hepático" },
   { match: "BILIRRUBINA DIRETA", abbr: "BD", category: "Hepático" },
   { match: "BILIRRUBINA INDIRETA", abbr: "BI", category: "Hepático" },
 
   // Perfil lipídico
   { match: "TRIGLICERIDES", abbr: "TGL", category: "Perfil lipídico" },
-  {
-    match: "VLDL - COLESTEROL",
-    abbr: "VLDL",
-    category: "Perfil lipídico"
-  },
-  {
-    match: "HDL - COLESTEROL",
-    abbr: "HDL",
-    category: "Perfil lipídico"
-  },
-  {
-    match: "LDL - COLESTEROL",
-    abbr: "LDL",
-    category: "Perfil lipídico"
-  },
-  {
-    match: "COLESTEROL NAO HDL",
-    abbr: "nHDL",
-    category: "Perfil lipídico"
-  },
-  {
-    match: "COLESTEROL",
-    abbr: "CT",
-    category: "Perfil lipídico",
-    exact: true // só "COLESTEROL" total, não HDL/LDL etc
-  },
+  { match: "VLDL - COLESTEROL", abbr: "VLDL", category: "Perfil lipídico" },
+  { match: "HDL - COLESTEROL", abbr: "HDL", category: "Perfil lipídico" },
+  { match: "LDL - COLESTEROL", abbr: "LDL", category: "Perfil lipídico" },
+  { match: "COLESTEROL NAO HDL", abbr: "nHDL", category: "Perfil lipídico" },
+  { match: "COLESTEROL", abbr: "CT", category: "Perfil lipídico", exact: true },
 
-  // Imunológico (CD4/CD8) – queremos ABSOLUTOS
-  {
-    match: "CD45/CD3/CD4",
-    abbr: "CD4",
-    category: "Imunológico"
-  },
-  {
-    match: "CD45/CD3/CD8",
-    abbr: "CD8",
-    category: "Imunológico"
-  },
+  // Imunológico (CD4/CD8) – ABSOLUTOS
+  { match: "CD45/CD3/CD4", abbr: "CD4", category: "Imunológico" },
+  { match: "CD45/CD3/CD8", abbr: "CD8", category: "Imunológico" },
   { match: "CD4/CD8", abbr: "CD4/CD8", category: "Imunológico" },
 
   // Virologia
-  {
-    match: "CARGA VIRAL HIV-1",
-    abbr: "CVHIV",
-    category: "Virologia"
-  }
+  { match: "CARGA VIRAL HIV-1", abbr: "CVHIV", category: "Virologia" }
 ];
 
-// Ordem dos campos na linha
 const examOrder = [
-  "Hb",
-  "Ht",
-  "Leuco",
-  "Plaq",
-  "Na",
-  "K",
-  "Cl",
-  "Cr",
-  "Ur",
-  "CaT",
-  "CaIon",
-  "Mg",
-  "P",
-  "ALT",
-  "AST",
-  "FA",
-  "GGT",
-  "BT",
-  "BD",
-  "BI",
-  "TGL",
-  "CT",
-  "HDL",
-  "LDL",
-  "VLDL",
-  "nHDL",
-  "CD4",
-  "CD8",
-  "CD4/CD8",
+  "Hb","Ht","Leuco","Plaq",
+  "Na","K","Cl","Cr","Ur","CaT","CaIon","Mg","P",
+  "ALT","AST","FA","GGT","BT","BD","BI",
+  "TGL","CT","HDL","LDL","VLDL","nHDL",
+  "CD4","CD8","CD4/CD8",
   "CVHIV"
 ];
 
@@ -156,13 +85,10 @@ function findExamDefinition(examName) {
 function parseDateToSortable(str) {
   const m = str.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
   if (!m) return null;
-  const d = parseInt(m[1], 10);
-  const mo = parseInt(m[2], 10) - 1;
-  const y = parseInt(m[3], 10);
-  return new Date(y, mo, d);
+  return new Date(+m[3], +m[2] - 1, +m[1]);
 }
 
-// ---------- Parser do laudo ----------
+// ---------- PARSER DO LAUDO (AJUSTADO CD4/CD8) ----------
 
 function parseExams(rawText) {
   const lines = rawText.split(/\r?\n/);
@@ -197,63 +123,54 @@ function parseExams(rawText) {
     if (/Resultado dos 3 últimos exames/i.test(line)) continue;
     if (/Liberado e Validado/i.test(line)) continue;
     if (/DIVISÃO DE LABORATÓRIO CENTRAL/i.test(line)) continue;
-    if (/LABORATORIO DE INVESTIGACAO MEDICA/i.test(normalize(line)))
-      continue;
+    if (/LABORATORIO DE INVESTIGACAO MEDICA/i.test(normalize(line))) continue;
     if (/^Pedido\s*:/i.test(line)) continue;
     if (/^\d{2}\/\d{2}\/\d{4}\s+\d{2}:\d{2}:\d{2}$/.test(line)) continue;
     if (/Novos valores de referência/i.test(line)) continue;
-    if (
-      /Automatizado|Colorimétrico|Enzimático|Eletrodo íon seletivo|Cinético UV|IFCC|Citometria de fluxo|PCR em Tempo Real/i.test(
-        line
-      )
-    )
-      continue;
+    if (/Automatizado|Colorimétrico|Enzimático|Eletrodo íon seletivo|Cinético UV|IFCC|Citometria de fluxo|PCR em Tempo Real/i.test(line)) continue;
     if (/Alteração nos valores de referência/i.test(line)) continue;
 
-    // Heurística para linha de resultado:
+    // Split em colunas (TAB ou >=2 espaços)
     const parts = line.split(/\s{2,}|\t+/).filter(Boolean);
-    if (parts.length >= 2) {
-      const name = parts[0];
-      const valueUnit = parts[1];
+    if (parts.length < 2) continue;
 
-      const normName = normalize(name);
+    const name = parts[0];
+    const normName = normalize(name);
+    const valueUnit = parts[1];
 
-      // CASO ESPECIAL: CD4 / CD8 absolutos
-      if (
-        normName.includes("CD45/CD3/CD4") ||
-        normName.includes("CD45/CD3/CD8")
-      ) {
-        const nums = valueUnit.match(/[\d.,]+/g);
-        if (nums && nums.length) {
-          const absVal = nums[nums.length - 1]; // último número = absoluto
-          exams.push({
-            date: currentDate || "",
-            section: currentSection || "",
-            name,
-            value: absVal,
-            unit: "cel/mm³",
-            normName
-          });
-        }
-        continue;
+    // 🔴 CASO ESPECIAL: CD4/CD8 absolutos (CD45/CD3/CD4 e CD45/CD3/CD8)
+    if (normName.includes("CD45/CD3/CD4") || normName.includes("CD45/CD3/CD8")) {
+      // Na prática a coluna 3 (parts[2]) é "218 células/mm³" ou "737 células/mm³"
+      const absField = parts[2] || parts[1] || "";
+      const mAbs = absField.match(/[\d.,]+/);
+      if (mAbs) {
+        const absVal = mAbs[0];
+        exams.push({
+          date: currentDate || "",
+          section: currentSection || "",
+          name,
+          value: absVal,
+          unit: "cel/mm³",
+          normName
+        });
       }
+      continue;
+    }
 
-      // Relação CD4/CD8 e demais exames "normais"
-      if (/\d/.test(valueUnit)) {
-        const m = valueUnit.match(/^([<>*]?\s*[\d.,]+)\s*(.*)$/);
-        if (m) {
-          const value = m[1].trim();
-          const unit = m[2].trim();
-
-          exams.push({
-            date: currentDate || "",
-            section: currentSection || "",
-            name,
-            value,
-            unit,
-            normName
-          });
-        }
+    // Relação CD4/CD8 e demais exames "normais"
+    if (/\d/.test(valueUnit)) {
+      const m = valueUnit.match(/^([<>*]?\s*[\d.,]+)\s*(.*)$/);
+      if (m) {
+        const value = m[1].trim();
+        const unit = m[2].trim();
+        exams.push({
+          date: currentDate || "",
+          section: currentSection || "",
+          name,
+          value,
+          unit,
+          normName
+        });
       }
     }
   }
@@ -264,21 +181,17 @@ function parseExams(rawText) {
 // ---------- Construção das estruturas por data ----------
 
 function buildDateMap(exams, selectedAbbrs) {
-  const dateMap = new Map(); // date -> { abbr: { value, category } }
+  const dateMap = new Map();
 
   for (const ex of exams) {
     const def = findExamDefinition(ex.name);
     if (!def) continue;
-
     if (selectedAbbrs && !selectedAbbrs.includes(def.abbr)) continue;
 
     const dateKey = ex.date || "-";
-    if (!dateMap.has(dateKey)) {
-      dateMap.set(dateKey, {});
-    }
+    if (!dateMap.has(dateKey)) dateMap.set(dateKey, {});
     const bucket = dateMap.get(dateKey);
 
-    // só grava o primeiro valor encontrado para aquele exame/data
     if (!bucket[def.abbr]) {
       bucket[def.abbr] = { value: ex.value, category: def.category };
     }
@@ -293,7 +206,7 @@ function sortDates(dateMap) {
     const da = parseDateToSortable(a);
     const db = parseDateToSortable(b);
     if (!da || !db) return 0;
-    return da - db; // crescente
+    return da - db;
   });
 }
 
@@ -310,14 +223,10 @@ function generateLinesPerDate(exams, selectedAbbrs) {
 
     for (const abbr of examOrder) {
       if (!selectedAbbrs.includes(abbr)) continue;
-      if (bucket[abbr]) {
-        parts.push(`${abbr} ${bucket[abbr].value}`);
-      }
+      if (bucket[abbr]) parts.push(`${abbr} ${bucket[abbr].value}`);
     }
 
-    if (parts.length) {
-      lines.push(`(${date}) ${parts.join(" | ")}`);
-    }
+    if (parts.length) lines.push(`(${date}) ${parts.join(" | ")}`);
   }
 
   return lines;
@@ -330,15 +239,12 @@ function generateTextByCategories(exams, selectedAbbrs) {
 
   for (const date of orderedDates) {
     const bucket = dateMap.get(date);
-
-    // category -> [ "Hb 9,8", "Ht 29" ... ]
     const categoryLines = {};
 
     for (const abbr of examOrder) {
       if (!selectedAbbrs.includes(abbr)) continue;
       const entry = bucket[abbr];
       if (!entry) continue;
-
       const cat = entry.category;
       if (!categoryLines[cat]) categoryLines[cat] = [];
       categoryLines[cat].push(`${abbr} ${entry.value}`);
@@ -346,7 +252,6 @@ function generateTextByCategories(exams, selectedAbbrs) {
 
     const linesForDate = [];
     linesForDate.push(`(${date})`);
-
     for (const cat of categoryOrder) {
       if (categoryLines[cat] && categoryLines[cat].length) {
         linesForDate.push(`- ${cat}: ${categoryLines[cat].join(" | ")}`);
@@ -365,15 +270,11 @@ function generateTextByCategories(exams, selectedAbbrs) {
 
 const rawInput = document.getElementById("rawInput");
 const btnGenerateLine = document.getElementById("btnGenerateLine");
-const btnGenerateCategories = document.getElementById(
-  "btnGenerateCategories"
-);
+const btnGenerateCategories = document.getElementById("btnGenerateCategories");
 const btnCopyText = document.getElementById("btnCopyText");
 const outputText = document.getElementById("outputText");
 const statusEl = document.getElementById("status");
-const examCheckboxes = document.querySelectorAll(
-  ".exam-toggle input[type=checkbox]"
-);
+const examCheckboxes = document.querySelectorAll(".exam-toggle input[type=checkbox]");
 
 function getSelectedAbbrs() {
   return Array.from(examCheckboxes)
@@ -386,8 +287,7 @@ function generate(mode) {
   statusEl.textContent = "";
 
   if (!raw) {
-    outputText.value =
-      "Cole o laudo bruto no campo acima antes de gerar o texto.";
+    outputText.value = "Cole o laudo bruto no campo acima antes de gerar o texto.";
     return;
   }
 
@@ -395,8 +295,7 @@ function generate(mode) {
   const exams = parseExams(raw);
 
   if (!exams.length) {
-    outputText.value =
-      "Nenhum exame reconhecido. Confira se o texto foi copiado completo do sistema.";
+    outputText.value = "Nenhum exame reconhecido. Confira se o texto foi copiado completo do sistema.";
     statusEl.textContent = "";
     return;
   }
@@ -405,32 +304,21 @@ function generate(mode) {
 
   if (mode === "line") {
     const lines = generateLinesPerDate(exams, selectedAbbrs);
-    text =
-      lines.join("\n") ||
-      "Nenhum exame correspondente aos filtros selecionados.";
+    text = lines.join("\n") || "Nenhum exame correspondente aos filtros selecionados.";
   } else {
-    text =
-      generateTextByCategories(exams, selectedAbbrs) ||
-      "Nenhum exame correspondente aos filtros selecionados.";
+    text = generateTextByCategories(exams, selectedAbbrs) || "Nenhum exame correspondente aos filtros selecionados.";
   }
 
   outputText.value = text;
   statusEl.textContent = `Exames reconhecidos no laudo: ${exams.length}. Filtros ativos: ${selectedAbbrs.length}.`;
 }
 
-btnGenerateLine.addEventListener("click", () => {
-  generate("line");
-});
-
-btnGenerateCategories.addEventListener("click", () => {
-  generate("categories");
-});
-
+btnGenerateLine.addEventListener("click", () => generate("line"));
+btnGenerateCategories.addEventListener("click", () => generate("categories"));
 btnCopyText.addEventListener("click", () => {
   const text = outputText.value.trim();
   if (!text) {
-    statusEl.textContent =
-      "Nada para copiar ainda. Gere o texto primeiro.";
+    statusEl.textContent = "Nada para copiar ainda. Gere o texto primeiro.";
     return;
   }
   navigator.clipboard

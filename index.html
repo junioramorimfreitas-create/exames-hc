@@ -21,6 +21,20 @@
     <!-- Seleção de exames -->
     <div class="row">
       <label>Exames a incluir no texto</label>
+
+      <!-- Botões de seleção em massa -->
+      <div class="exam-mass-actions">
+        <button type="button" class="btn-secondary btn-small" id="btnSelectAllExams">
+          Selecionar todos
+        </button>
+        <button type="button" class="btn-secondary btn-small" id="btnClearAllExams">
+          Desselecionar todos
+        </button>
+        <button type="button" class="btn-secondary btn-small" id="btnSelectRoutine">
+          Rotina (Hemo + Eletrólitos + Hepático)
+        </button>
+      </div>
+
       <div class="exam-filters">
 
         <!-- Hemograma -->
@@ -28,19 +42,19 @@
           <div class="exam-group-title">Hemograma</div>
           <div class="exam-buttons">
             <label class="exam-toggle">
-              <input type="checkbox" value="Hb" checked />
+              <input type="checkbox" value="Hb" data-category="Hemograma" checked />
               <span>Hb</span>
             </label>
             <label class="exam-toggle">
-              <input type="checkbox" value="Ht" checked />
+              <input type="checkbox" value="Ht" data-category="Hemograma" checked />
               <span>Ht</span>
             </label>
             <label class="exam-toggle">
-              <input type="checkbox" value="Leuco" checked />
+              <input type="checkbox" value="Leuco" data-category="Hemograma" checked />
               <span>Leuco</span>
             </label>
             <label class="exam-toggle">
-              <input type="checkbox" value="Plaq" checked />
+              <input type="checkbox" value="Plaq" data-category="Hemograma" checked />
               <span>Plaq</span>
             </label>
           </div>
@@ -51,39 +65,39 @@
           <div class="exam-group-title">Eletrólitos / Renal</div>
           <div class="exam-buttons">
             <label class="exam-toggle">
-              <input type="checkbox" value="Na" checked />
+              <input type="checkbox" value="Na" data-category="Eletrólitos/Renal" checked />
               <span>Na</span>
             </label>
             <label class="exam-toggle">
-              <input type="checkbox" value="K" checked />
+              <input type="checkbox" value="K" data-category="Eletrólitos/Renal" checked />
               <span>K</span>
             </label>
             <label class="exam-toggle">
-              <input type="checkbox" value="Cl" />
+              <input type="checkbox" value="Cl" data-category="Eletrólitos/Renal" />
               <span>Cl</span>
             </label>
             <label class="exam-toggle">
-              <input type="checkbox" value="Cr" checked />
+              <input type="checkbox" value="Cr" data-category="Eletrólitos/Renal" checked />
               <span>Cr</span>
             </label>
             <label class="exam-toggle">
-              <input type="checkbox" value="Ur" checked />
+              <input type="checkbox" value="Ur" data-category="Eletrólitos/Renal" checked />
               <span>Ur</span>
             </label>
             <label class="exam-toggle">
-              <input type="checkbox" value="CaT" />
+              <input type="checkbox" value="CaT" data-category="Eletrólitos/Renal" />
               <span>Ca total</span>
             </label>
             <label class="exam-toggle">
-              <input type="checkbox" value="CaIon" />
+              <input type="checkbox" value="CaIon" data-category="Eletrólitos/Renal" />
               <span>Ca ion</span>
             </label>
             <label class="exam-toggle">
-              <input type="checkbox" value="Mg" />
+              <input type="checkbox" value="Mg" data-category="Eletrólitos/Renal" />
               <span>Mg</span>
             </label>
             <label class="exam-toggle">
-              <input type="checkbox" value="P" />
+              <input type="checkbox" value="P" data-category="Eletrólitos/Renal" />
               <span>P</span>
             </label>
           </div>
@@ -94,31 +108,31 @@
           <div class="exam-group-title">Hepático</div>
           <div class="exam-buttons">
             <label class="exam-toggle">
-              <input type="checkbox" value="ALT" />
+              <input type="checkbox" value="ALT" data-category="Hepático" />
               <span>ALT</span>
             </label>
             <label class="exam-toggle">
-              <input type="checkbox" value="AST" />
+              <input type="checkbox" value="AST" data-category="Hepático" />
               <span>AST</span>
             </label>
             <label class="exam-toggle">
-              <input type="checkbox" value="FA" />
+              <input type="checkbox" value="FA" data-category="Hepático" />
               <span>FA</span>
             </label>
             <label class="exam-toggle">
-              <input type="checkbox" value="GGT" />
+              <input type="checkbox" value="GGT" data-category="Hepático" />
               <span>GGT</span>
             </label>
             <label class="exam-toggle">
-              <input type="checkbox" value="BT" />
+              <input type="checkbox" value="BT" data-category="Hepático" />
               <span>BT</span>
             </label>
             <label class="exam-toggle">
-              <input type="checkbox" value="BD" />
+              <input type="checkbox" value="BD" data-category="Hepático" />
               <span>BD</span>
             </label>
             <label class="exam-toggle">
-              <input type="checkbox" value="BI" />
+              <input type="checkbox" value="BI" data-category="Hepático" />
               <span>BI</span>
             </label>
           </div>
@@ -129,27 +143,27 @@
           <div class="exam-group-title">Perfil lipídico</div>
           <div class="exam-buttons">
             <label class="exam-toggle">
-              <input type="checkbox" value="TGL" />
+              <input type="checkbox" value="TGL" data-category="Perfil lipídico" />
               <span>TGL</span>
             </label>
             <label class="exam-toggle">
-              <input type="checkbox" value="CT" />
+              <input type="checkbox" value="CT" data-category="Perfil lipídico" />
               <span>CT</span>
             </label>
             <label class="exam-toggle">
-              <input type="checkbox" value="HDL" />
+              <input type="checkbox" value="HDL" data-category="Perfil lipídico" />
               <span>HDL</span>
             </label>
             <label class="exam-toggle">
-              <input type="checkbox" value="LDL" />
+              <input type="checkbox" value="LDL" data-category="Perfil lipídico" />
               <span>LDL</span>
             </label>
             <label class="exam-toggle">
-              <input type="checkbox" value="VLDL" />
+              <input type="checkbox" value="VLDL" data-category="Perfil lipídico" />
               <span>VLDL</span>
             </label>
             <label class="exam-toggle">
-              <input type="checkbox" value="nHDL" />
+              <input type="checkbox" value="nHDL" data-category="Perfil lipídico" />
               <span>não-HDL</span>
             </label>
           </div>
@@ -160,15 +174,15 @@
           <div class="exam-group-title">Imunológico (CD4/CD8)</div>
           <div class="exam-buttons">
             <label class="exam-toggle">
-              <input type="checkbox" value="CD4" />
-              <span>CD4</span>
+              <input type="checkbox" value="CD4" data-category="Imunológico" />
+              <span>CD4 (abs)</span>
             </label>
             <label class="exam-toggle">
-              <input type="checkbox" value="CD8" />
-              <span>CD8</span>
+              <input type="checkbox" value="CD8" data-category="Imunológico" />
+              <span>CD8 (abs)</span>
             </label>
             <label class="exam-toggle">
-              <input type="checkbox" value="CD4/CD8" />
+              <input type="checkbox" value="CD4/CD8" data-category="Imunológico" />
               <span>CD4/CD8</span>
             </label>
           </div>
@@ -179,7 +193,7 @@
           <div class="exam-group-title">Virologia</div>
           <div class="exam-buttons">
             <label class="exam-toggle">
-              <input type="checkbox" value="CVHIV" />
+              <input type="checkbox" value="CVHIV" data-category="Virologia" />
               <span>CV HIV</span>
             </label>
           </div>

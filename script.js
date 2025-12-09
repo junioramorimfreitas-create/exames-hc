@@ -43,6 +43,15 @@ const examDefinitions = [
   { match: "COLESTEROL NAO HDL", abbr: "nHDL", category: "Perfil lipídico" },
   { match: "COLESTEROL", abbr: "CT", category: "Perfil lipídico", exact: true },
 
+  // Proteínas
+  { match: "PROTEINAS TOTAIS", abbr: "ProtTot", category: "Proteínas" },
+  { match: "ALBUMINA", abbr: "Alb", category: "Proteínas" },
+  { match: "GLOBULINAS", abbr: "Glob", category: "Proteínas" },
+
+  // Hormônios / marcadores
+  { match: "PARATORMONIO (PTH)", abbr: "PTH", category: "Hormônios/Marcadores" },
+  { match: "NT-PROBNP", abbr: "NTproBNP", category: "Hormônios/Marcadores" },
+
   // Sorologias (Micologia)
   {
     match: "IMUNODIFUSAO HISTOPLASMA CAPSULATUM",
@@ -85,12 +94,14 @@ const examDefinitions = [
 ];
 
 const examOrder = [
-  "Hb","Ht","Leuco","Plaq",
-  "Na","K","Cl","Cr","Ur","CaT","CaIon","Mg","P",
-  "ALT","AST","FA","GGT","BT","BD","BI",
-  "TGL","CT","HDL","LDL","VLDL","nHDL",
-  "CD4","CD8","CD4/CD8",
-  "ID Histoplasma","ID Aspergillus","ID P. brasiliensis","CI Histoplasma","CI Aspergillus","CI P. brasiliensis",
+  "Hb", "Ht", "Leuco", "Plaq",
+  "Na", "K", "Cl", "Cr", "Ur", "CaT", "CaIon", "Mg", "P",
+  "ALT", "AST", "FA", "GGT", "BT", "BD", "BI",
+  "TGL", "CT", "HDL", "LDL", "VLDL", "nHDL",
+  "ProtTot", "Alb", "Glob",
+  "PTH", "NTproBNP",
+  "CD4", "CD8", "CD4/CD8",
+  "ID Histoplasma", "ID Aspergillus", "ID P. brasiliensis", "CI Histoplasma", "CI Aspergillus", "CI P. brasiliensis",
   "CVHIV"
 ];
 
@@ -99,16 +110,19 @@ const categoryOrder = [
   "Eletrólitos/Renal",
   "Hepático",
   "Perfil lipídico",
+  "Proteínas",
+  "Hormônios/Marcadores",
   "Imunológico",
   "Sorologias",
-  "Virologia"
+  "Virologia",
+  "Gasometria"
 ];
 
 // Abreviações que são sorologias (para tratamento especial)
 const sorologiaAbbrs = new Set([
-  "ID Histoplasma","CI Histoplasma",
-  "ID Aspergillus","CI Aspergillus",
-  "ID P. brasiliensis","CI P. brasiliensis"
+  "ID Histoplasma", "CI Histoplasma",
+  "ID Aspergillus", "CI Aspergillus",
+  "ID P. brasiliensis", "CI P. brasiliensis"
 ]);
 
 // Grupos por organismo para montar "Histoplasma ID NR / CI NR"
@@ -132,8 +146,8 @@ const sorologiaGroups = [
 
 // Rótulos amigáveis (se a gente quiser mexer em outros no futuro)
 function getDisplayName(abbr) {
-  // Para agora, só mudamos sorologias no formato especial.
-  // No restante, deixamos Hg, Na, etc. como estão.
+  // Para agora, só mudamos sorologias no formato especial se quisermos.
+  // No restante, deixamos Hb, Na, etc. como estão.
   return abbr;
 }
 
@@ -371,15 +385,166 @@ function sortDates(dateMap) {
   });
 }
 
+function getAllSortedDates(dateMap, gasoMap) {
+  const set = new Set([...dateMap.keys(), ...(gasoMap ? gasoMap.keys() : [])]);
+  const dates = Array.from(set);
+  return dates.sort((a, b) => {
+    const da = parseDateToSortable(a);
+    const db = parseDateToSortable(b);
+    if (!da || !db) return 0;
+    return da - db;
+  });
+}
+
+// ---------- Gasometria arterial x venosa ----------
+
+function parseGasometrias(rawText) {
+  const lines = rawText.split(/\r?\n/);
+  const gasos = [];
+
+  let currentDate = "";
+  let inGaso = false;
+  let currentTipo = "";
+  let currentValores = null;
+
+  function finalizarBloco() {
+    if (inGaso && currentValores) {
+      gasos.push({
+        date: currentDate || "-",
+        tipo: currentTipo,
+        valores: currentValores
+      });
+    }
+    inGaso = false;
+    currentTipo = "";
+    currentValores = null;
+  }
+
+  for (let rawLine of lines) {
+    const line = rawLine.trim();
+    if (!line) {
+      // linha em branco geralmente marca fim do bloco da gasometria
+      finalizarBloco();
+      continue;
+    }
+
+    const dateMatch = line.match(/Coletado em:\s*(\d{2}\/\d{2}\/\d{4})/);
+    if (dateMatch) {
+      currentDate = dateMatch[1];
+      continue;
+    }
+
+    // Início de um bloco de gasometria
+    if (/GASOMETRIA/i.test(line)) {
+      finalizarBloco();
+      inGaso = true;
+      currentValores = {};
+      const norm = normalize(line);
+      if (norm.includes("ARTERIAL")) currentTipo = "arterial";
+      else if (norm.includes("VENOSO") || norm.includes("VENOSA")) currentTipo = "venosa";
+      else currentTipo = "desconhecido";
+      continue;
+    }
+
+    if (!inGaso) continue;
+
+    // Linhas de resultados dentro do bloco de gasometria
+    const parts = line.split(/\s{2,}|\t+/).filter(Boolean);
+    if (parts.length < 2) continue;
+
+    const name = parts[0];
+    const valueRaw = parts[1].trim(); // ex: "7,400"
+    const normName = normalize(name);
+
+    if (/^PH\b/i.test(name)) {
+      currentValores.pH = valueRaw;
+    } else if (/^PO2\b/i.test(name)) {
+      currentValores.pO2 = valueRaw;
+    } else if (/^PCO2\b/i.test(name)) {
+      currentValores.pCO2 = valueRaw;
+    } else if (/CTHCO3|HCO3/i.test(normName)) {
+      currentValores.HCO3 = valueRaw;
+    } else if (/^BE\b/i.test(name)) {
+      currentValores.BE = valueRaw;
+    } else if (/^SO2\b/i.test(name)) {
+      currentValores.SO2 = valueRaw;
+    } else if (/LACTATO/i.test(normName)) {
+      currentValores.Lactato = valueRaw;
+    }
+    // Anion Gap, Na, K, Cl etc. são ignorados aqui (se quiser, tratamos depois)
+  }
+
+  // garante o último bloco
+  finalizarBloco();
+
+  return gasos;
+}
+
+function buildGasometriaMap(gasos) {
+  const map = new Map();
+  for (const g of gasos) {
+    const dateKey = g.date || "-";
+    if (!map.has(dateKey)) map.set(dateKey, []);
+    map.get(dateKey).push(g);
+  }
+  return map;
+}
+
+function buildGasometriaTextForDate(date, gasoMap, selectedAbbrs) {
+  const lista = gasoMap.get(date);
+  if (!lista || !lista.length) return "";
+
+  const arterialSelecionada = selectedAbbrs.includes("GasArterial");
+  const venosaSelecionada = selectedAbbrs.includes("GasVenosa");
+
+  if (!arterialSelecionada && !venosaSelecionada) return "";
+
+  const ordemArt = ["pH", "pO2", "pCO2", "HCO3", "BE", "SO2", "Lactato"];
+  const ordemVen = ["pH", "HCO3", "BE", "Lactato"];
+
+  function formatPanel(label, vals, ordem) {
+    const sub = [];
+    for (const k of ordem) {
+      if (vals && vals[k] != null) {
+        sub.push(`${k} ${vals[k]}`);
+      }
+    }
+    if (!sub.length) return "";
+    return `${label}: ${sub.join(" | ")}`;
+  }
+
+  let lastArt = null;
+  let lastVen = null;
+
+  for (const g of lista) {
+    if (g.tipo === "arterial") lastArt = g;
+    if (g.tipo === "venosa") lastVen = g;
+  }
+
+  const parts = [];
+
+  if (arterialSelecionada && lastArt) {
+    const t = formatPanel("Gaso art", lastArt.valores, ordemArt);
+    if (t) parts.push(t);
+  }
+
+  if (venosaSelecionada && lastVen) {
+    const t = formatPanel("Gaso ven", lastVen.valores, ordemVen);
+    if (t) parts.push(t);
+  }
+
+  return parts.join(" | ");
+}
+
 // ---------- Geração de texto ----------
 
-function generateLinesPerDate(exams, selectedAbbrs) {
+function generateLinesPerDate(exams, selectedAbbrs, gasoMap) {
   const dateMap = buildDateMap(exams, selectedAbbrs);
-  const orderedDates = sortDates(dateMap);
+  const orderedDates = getAllSortedDates(dateMap, gasoMap);
   const lines = [];
 
   for (const date of orderedDates) {
-    const bucket = dateMap.get(date);
+    const bucket = dateMap.get(date) || {};
     const parts = [];
 
     // Exames "normais" (exceto sorologias)
@@ -396,19 +561,25 @@ function generateLinesPerDate(exams, selectedAbbrs) {
     const sorologiaParts = buildSorologiaParts(bucket, selectedAbbrs);
     parts.push(...sorologiaParts);
 
+    // Gasometria arterial/venosa (se houver e se estiver selecionada)
+    const gasoText = buildGasometriaTextForDate(date, gasoMap, selectedAbbrs);
+    if (gasoText) {
+      parts.push(gasoText);
+    }
+
     if (parts.length) lines.push(`(${date}) ${parts.join(" | ")}`);
   }
 
   return lines;
 }
 
-function generateTextByCategories(exams, selectedAbbrs) {
+function generateTextByCategories(exams, selectedAbbrs, gasoMap) {
   const dateMap = buildDateMap(exams, selectedAbbrs);
-  const orderedDates = sortDates(dateMap);
+  const orderedDates = getAllSortedDates(dateMap, gasoMap);
   const blocks = [];
 
   for (const date of orderedDates) {
-    const bucket = dateMap.get(date);
+    const bucket = dateMap.get(date) || {};
     const categoryLines = {};
 
     // Exames não-sorológicos
@@ -430,12 +601,25 @@ function generateTextByCategories(exams, selectedAbbrs) {
       categoryLines["Sorologias"].push(...sorologiaParts);
     }
 
+    // Gasometria em categoria própria
+    const gasoText = buildGasometriaTextForDate(date, gasoMap, selectedAbbrs);
+    if (gasoText) {
+      if (!categoryLines["Gasometria"]) categoryLines["Gasometria"] = [];
+      categoryLines["Gasometria"].push(gasoText);
+    }
+
     const linesForDate = [];
     linesForDate.push(`(${date})`);
+
     for (const cat of categoryOrder) {
       if (categoryLines[cat] && categoryLines[cat].length) {
         linesForDate.push(`- ${cat}: ${categoryLines[cat].join(" | ")}`);
       }
+    }
+
+    // garante que Gasometria apareça mesmo se não estiver no categoryOrder
+    if (!categoryOrder.includes("Gasometria") && categoryLines["Gasometria"]) {
+      linesForDate.push(`- Gasometria: ${categoryLines["Gasometria"].join(" | ")}`);
     }
 
     if (linesForDate.length > 1) {
@@ -478,8 +662,10 @@ function generate(mode) {
 
   const selectedAbbrs = getSelectedAbbrs();
   const exams = parseExams(raw);
+  const gasos = parseGasometrias(raw);
+  const gasoMap = buildGasometriaMap(gasos);
 
-  if (!exams.length) {
+  if (!exams.length && !gasos.length) {
     outputText.value = "Nenhum exame reconhecido. Confira se o texto foi copiado completo do sistema.";
     statusEl.textContent = "";
     return;
@@ -488,14 +674,14 @@ function generate(mode) {
   let text = "";
 
   if (mode === "line") {
-    const lines = generateLinesPerDate(exams, selectedAbbrs);
+    const lines = generateLinesPerDate(exams, selectedAbbrs, gasoMap);
     text = lines.join("\n") || "Nenhum exame correspondente aos filtros selecionados.";
   } else {
-    text = generateTextByCategories(exams, selectedAbbrs) || "Nenhum exame correspondente aos filtros selecionados.";
+    text = generateTextByCategories(exams, selectedAbbrs, gasoMap) || "Nenhum exame correspondente aos filtros selecionados.";
   }
 
   outputText.value = text;
-  statusEl.textContent = `Exames reconhecidos no laudo: ${exams.length}. Filtros ativos: ${selectedAbbrs.length}.`;
+  statusEl.textContent = `Exames reconhecidos no laudo: ${exams.length}. Gasometrias reconhecidas: ${gasos.length}. Filtros ativos: ${selectedAbbrs.length}.`;
 }
 
 // ---------- Handlers dos botões principais ----------

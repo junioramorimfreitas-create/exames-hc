@@ -33,13 +33,22 @@ h1 {
 
 textarea {
   width: 100%;
-  min-height: 220px;
   border-radius: 8px;
   padding: 12px;
   border: 1px solid #d1d5db;
   resize: vertical;
-  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco,
+    Consolas, "Liberation Mono", "Courier New", monospace;
   font-size: 0.85rem;
+  background: #f9fafb;
+}
+
+#rawInput {
+  min-height: 220px;
+}
+
+#outputText {
+  min-height: 160px;
   background: #f9fafb;
 }
 
@@ -57,7 +66,7 @@ label {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin: 12px 0 18px;
+  margin: 12px 0 8px;
   align-items: center;
 }
 
@@ -91,71 +100,9 @@ button {
   background: #d1d5db;
 }
 
-.input-inline {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  align-items: center;
-  margin-top: 6px;
-}
-
-.input-inline input {
-  flex: 1;
-  min-width: 200px;
-  padding: 6px 10px;
-  border-radius: 999px;
-  border: 1px solid #d1d5db;
-  font-size: 0.85rem;
-  background: #f9fafb;
-}
-
-.inline-label {
-  margin: 0;
-}
-
-.badge {
-  display: inline-block;
-  padding: 3px 8px;
-  border-radius: 999px;
-  font-size: 0.7rem;
-  background: #e5e7eb;
-  color: #374151;
-  margin-left: 4px;
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 8px;
-  font-size: 0.85rem;
-}
-
-thead {
-  background: #f9fafb;
-}
-
-th,
-td {
-  padding: 6px 8px;
-  border-bottom: 1px solid #e5e7eb;
-  vertical-align: top;
-}
-
-th {
-  text-align: left;
-  font-weight: 600;
+.status-text {
   font-size: 0.8rem;
-  color: #4b5563;
-}
-
-tbody tr:nth-child(even) {
-  background: #f9fafb;
-}
-
-.empty-message {
-  font-size: 0.9rem;
   color: #6b7280;
-  margin-top: 8px;
 }
 
 .footer-note {
@@ -165,23 +112,69 @@ tbody tr:nth-child(even) {
   text-align: right;
 }
 
-.status-text {
+/* Filtros de exames */
+
+.exam-filters {
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  padding: 10px 12px;
+  background: #f9fafb;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.exam-group {
+  min-width: 220px;
+}
+
+.exam-group-title {
   font-size: 0.8rem;
+  font-weight: 600;
+  color: #4b5563;
+  margin-bottom: 4px;
+}
+
+.exam-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.exam-toggle {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.exam-toggle input {
+  display: none;
+}
+
+.exam-toggle span {
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid #d1d5db;
+  font-size: 0.8rem;
+  background: white;
+  color: #111827;
+}
+
+.exam-toggle input:checked + span {
+  background: #2563eb;
+  color: white;
+  border-color: #2563eb;
+}
+
+.hint {
+  font-size: 0.75rem;
   color: #6b7280;
+  margin-top: 4px;
 }
 
 @media (max-width: 768px) {
   .page {
     margin: 8px;
     padding: 16px;
-  }
-
-  table,
-  thead,
-  tbody,
-  th,
-  td,
-  tr {
-    font-size: 0.8rem;
   }
 }

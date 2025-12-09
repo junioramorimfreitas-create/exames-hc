@@ -100,6 +100,10 @@
               <input type="checkbox" value="P" data-category="Eletrólitos/Renal" />
               <span>P</span>
             </label>
+            <label class="exam-toggle">
+              <input type="checkbox" value="AcUrico" data-category="Eletrólitos/Renal" />
+              <span>Ácido úrico</span>
+            </label>
           </div>
         </div>
 
@@ -172,6 +176,29 @@
           </div>
         </div>
 
+        <!-- Metabólico / Vitamínico -->
+        <div class="exam-group">
+          <div class="exam-group-title">Metabólico / Vitamínico</div>
+          <div class="exam-buttons">
+            <label class="exam-toggle">
+              <input type="checkbox" value="VitD25" data-category="Metabólico/Vitamínico" />
+              <span>25-OH Vit D</span>
+            </label>
+            <label class="exam-toggle">
+              <input type="checkbox" value="VitB12" data-category="Metabólico/Vitamínico" />
+              <span>Vitamina B12</span>
+            </label>
+            <label class="exam-toggle">
+              <input type="checkbox" value="Ferro" data-category="Metabólico/Vitamínico" />
+              <span>Ferro</span>
+            </label>
+            <label class="exam-toggle">
+              <input type="checkbox" value="Ferritina" data-category="Metabólico/Vitamínico" />
+              <span>Ferritina</span>
+            </label>
+          </div>
+        </div>
+
         <!-- Perfil lipídico -->
         <div class="exam-group">
           <div class="exam-group-title">Perfil lipídico</div>
@@ -215,6 +242,72 @@
               <input type="checkbox" value="NTproBNP" data-category="Hormônios/Marcadores" />
               <span>NT-proBNP</span>
             </label>
+            <label class="exam-toggle">
+              <input type="checkbox" value="Insulina" data-category="Hormônios/Marcadores" />
+              <span>Insulina</span>
+            </label>
+            <label class="exam-toggle">
+              <input type="checkbox" value="HbA1c" data-category="Hormônios/Marcadores" />
+              <span>HbA1c</span>
+            </label>
+            <label class="exam-toggle">
+              <input type="checkbox" value="TSH" data-category="Hormônios/Marcadores" />
+              <span>TSH</span>
+            </label>
+            <label class="exam-toggle">
+              <input type="checkbox" value="T3" data-category="Hormônios/Marcadores" />
+              <span>T3</span>
+            </label>
+            <label class="exam-toggle">
+              <input type="checkbox" value="T4" data-category="Hormônios/Marcadores" />
+              <span>T4</span>
+            </label>
+            <label class="exam-toggle">
+              <input type="checkbox" value="T4L" data-category="Hormônios/Marcadores" />
+              <span>T4 livre</span>
+            </label>
+            <label class="exam-toggle">
+              <input type="checkbox" value="AFP" data-category="Hormônios/Marcadores" />
+              <span>Alfafetoproteína</span>
+            </label>
+            <label class="exam-toggle">
+              <input type="checkbox" value="CPK" data-category="Hormônios/Marcadores" />
+              <span>CPK</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Pancreático -->
+        <div class="exam-group">
+          <div class="exam-group-title">Pancreático</div>
+          <div class="exam-buttons">
+            <label class="exam-toggle">
+              <input type="checkbox" value="Amilase" data-category="Pancreático" />
+              <span>Amilase</span>
+            </label>
+            <label class="exam-toggle">
+              <input type="checkbox" value="Lipase" data-category="Pancreático" />
+              <span>Lipase</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Coagulação -->
+        <div class="exam-group">
+          <div class="exam-group-title">Coagulação</div>
+          <div class="exam-buttons">
+            <label class="exam-toggle">
+              <input type="checkbox" value="TP" data-category="Coagulação" />
+              <span>TP</span>
+            </label>
+            <label class="exam-toggle">
+              <input type="checkbox" value="INR" data-category="Coagulação" />
+              <span>INR</span>
+            </label>
+            <label class="exam-toggle">
+              <input type="checkbox" value="TTPA" data-category="Coagulação" />
+              <span>TTPA</span>
+            </label>
           </div>
         </div>
 
@@ -237,10 +330,11 @@
           </div>
         </div>
 
-        <!-- Sorologias -->
+        <!-- Sorologias (micologia + hepatites / IST / HIV scr) -->
         <div class="exam-group">
           <div class="exam-group-title">Sorologias</div>
           <div class="exam-buttons">
+            <!-- Micologia -->
             <label class="exam-toggle">
               <input type="checkbox" value="ID Histoplasma" data-category="Sorologias" />
               <span>ID Histoplasma</span>
@@ -265,16 +359,60 @@
               <input type="checkbox" value="CI P. brasiliensis" data-category="Sorologias" />
               <span>CI P. brasiliensis</span>
             </label>
+
+            <!-- Hepatite B / C -->
+            <label class="exam-toggle">
+              <input type="checkbox" value="AntiHBcT" data-category="Sorologias" />
+              <span>Anti-HBc total</span>
+            </label>
+            <label class="exam-toggle">
+              <input type="checkbox" value="AntiHBcIgM" data-category="Sorologias" />
+              <span>Anti-HBc IgM</span>
+            </label>
+            <label class="exam-toggle">
+              <input type="checkbox" value="AntiHBs" data-category="Sorologias" />
+              <span>Anti-HBs</span>
+            </label>
+            <label class="exam-toggle">
+              <input type="checkbox" value="AntiHBe" data-category="Sorologias" />
+              <span>Anti-HBe</span>
+            </label>
+            <label class="exam-toggle">
+              <input type="checkbox" value="AgHBs" data-category="Sorologias" />
+              <span>AgHBs</span>
+            </label>
+            <label class="exam-toggle">
+              <input type="checkbox" value="AgHBe" data-category="Sorologias" />
+              <span>AgHBe</span>
+            </label>
+            <label class="exam-toggle">
+              <input type="checkbox" value="AntiHCV" data-category="Sorologias" />
+              <span>Anti-HCV</span>
+            </label>
+
+            <!-- Sífilis / HIV scr -->
+            <label class="exam-toggle">
+              <input type="checkbox" value="Trep" data-category="Sorologias" />
+              <span>Treponema</span>
+            </label>
+            <label class="exam-toggle">
+              <input type="checkbox" value="HIVscr" data-category="Sorologias" />
+              <span>HIV teste combinado</span>
+            </label>
           </div>
         </div>
 
-        <!-- Virologia -->
+        <!-- Virologia (cargas virais) -->
         <div class="exam-group">
-          <div class="exam-group-title">Virologia</div>
+          <div class="exam-group-title">Virologia (carga viral)</div>
           <div class="exam-buttons">
             <label class="exam-toggle">
               <input type="checkbox" value="CVHIV" data-category="Virologia" />
               <span>CV HIV</span>
+            </label>
+            <label class="exam-toggle">
+              <input type="checkbox" value="HBVDNA" data-category="Virologia" />
+              <span>HBV DNA</span>
             </label>
           </div>
         </div>
@@ -306,11 +444,6 @@
     </div>
 
     <div class="footer-note">
-      Saída padrão: (data) Hb | Ht | Leuco | Plaq | Na | K | Cr | Ur ...  
-      Agora também com proteínas, hormônios/marcadores e gasometria (arterial/venosa) quando selecionadas.
-    </div>
-  </div>
-
-  <script src="script.js"></script>
-</body>
-</html>
+      Saída padrão: (data) Hb | Ht | Leuco | Plaq | Na | K | Cr | Ur ...<br />
+      Agora também com proteínas, painel metabólico/vitamínico, hormônios, pancreático, coagulação,
+      sorologias, cargas virais e gasometria (art

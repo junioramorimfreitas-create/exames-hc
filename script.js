@@ -223,10 +223,26 @@ function parseExams(rawText) {
 
   let currentDate = "";
   let currentSection = "";
+  let pendingTiterExam = null;
 
   for (let rawLine of lines) {
     const line = rawLine.trim();
     if (!line) continue;
+
+    // Linha de título (ex.: "Titulo: 1/32") -> anexa ao último contraimuno reagente
+    if (/^Titulo\s*:/i.test(line)) {
+      if (pendingTiterExam) {
+        const mTit = line.match(/^Titulo\s*:\s*(.+)$/i);
+        if (mTit) {
+          const titer = mTit[1].trim();
+          if (titer) {
+            pendingTiterExam.value = `${pendingTiterExam.value} (${titer})`;
+          }
+        }
+        pendingTiterExam = null;
+      }
+      continue;
+    }
 
     // Data
     const dateMatch = line.match(/Coletado em:\s*(\d{2}\/\d{2}\/\d{4})/);
@@ -235,7 +251,7 @@ function parseExams(rawText) {
       continue;
     }
 
-    // Cabeçalho da seção (nome do exame/ painel)
+    // Cabeçalho da seção (nome do exame/painel)
     if (
       /- SANGUE - ,/i.test(line) ||
       /HEMOGRAMA COMPLETO/i.test(line) ||
@@ -243,7 +259,7 @@ function parseExams(rawText) {
     ) {
       const section = line.split("- SANGUE")[0].trim();
       currentSection = section || line;
-      return exams;
+      continue; // <<<<< AQUI era o bug: tinha um "return exams"
     }
 
     // Linhas irrelevantes
@@ -305,14 +321,26 @@ function parseExams(rawText) {
       // Qualitativos (R/NR etc.)
       const value = valueUnit.trim();
       if (!value) continue;
-      exams.push({
+
+      const examObj = {
         date: currentDate || "",
         section: currentSection || "",
         name,
         value,
         unit: "",
         normName
-      });
+      };
+      exams.push(examObj);
+
+      // Contraimuno reagente → pode ganhar título depois
+      if (
+        normName.includes("CONTRAIMUNO") &&
+        normalize(value).includes("REAGENTE")
+      ) {
+        pendingTiterExam = examObj;
+      } else if (normName.includes("CONTRAIMUNO")) {
+        pendingTiterExam = null;
+      }
     }
   }
 

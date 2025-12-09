@@ -100,6 +100,12 @@ button {
   background: #d1d5db;
 }
 
+/* Versão menor para botões de seleção em massa */
+.btn-small {
+  font-size: 0.8rem;
+  padding: 4px 10px;
+}
+
 .status-text {
   font-size: 0.8rem;
   color: #6b7280;
@@ -164,6 +170,13 @@ button {
   background: #2563eb;
   color: white;
   border-color: #2563eb;
+}
+
+.exam-mass-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
 }
 
 .hint {

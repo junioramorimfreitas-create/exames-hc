@@ -88,7 +88,7 @@ function parseDateToSortable(str) {
   return new Date(+m[3], +m[2] - 1, +m[1]);
 }
 
-// ---------- PARSER DO LAUDO (AJUSTADO CD4/CD8) ----------
+// ---------- PARSER DO LAUDO (CD4/CD8 absolutos) ----------
 
 function parseExams(rawText) {
   const lines = rawText.split(/\r?\n/);
@@ -138,9 +138,8 @@ function parseExams(rawText) {
     const normName = normalize(name);
     const valueUnit = parts[1];
 
-    // 🔴 CASO ESPECIAL: CD4/CD8 absolutos (CD45/CD3/CD4 e CD45/CD3/CD8)
+    // CASO ESPECIAL: CD4/CD8 absolutos (CD45/CD3/CD4 e CD45/CD3/CD8)
     if (normName.includes("CD45/CD3/CD4") || normName.includes("CD45/CD3/CD8")) {
-      // Na prática a coluna 3 (parts[2]) é "218 células/mm³" ou "737 células/mm³"
       const absField = parts[2] || parts[1] || "";
       const mAbs = absField.match(/[\d.,]+/);
       if (mAbs) {
@@ -157,7 +156,7 @@ function parseExams(rawText) {
       continue;
     }
 
-    // Relação CD4/CD8 e demais exames "normais"
+    // Relação CD4/CD8 e demais exames
     if (/\d/.test(valueUnit)) {
       const m = valueUnit.match(/^([<>*]?\s*[\d.,]+)\s*(.*)$/);
       if (m) {
@@ -276,6 +275,11 @@ const outputText = document.getElementById("outputText");
 const statusEl = document.getElementById("status");
 const examCheckboxes = document.querySelectorAll(".exam-toggle input[type=checkbox]");
 
+// novos botões
+const btnSelectAllExams = document.getElementById("btnSelectAllExams");
+const btnClearAllExams = document.getElementById("btnClearAllExams");
+const btnSelectRoutine = document.getElementById("btnSelectRoutine");
+
 function getSelectedAbbrs() {
   return Array.from(examCheckboxes)
     .filter((cb) => cb.checked)
@@ -313,8 +317,11 @@ function generate(mode) {
   statusEl.textContent = `Exames reconhecidos no laudo: ${exams.length}. Filtros ativos: ${selectedAbbrs.length}.`;
 }
 
+// ---------- Handlers dos botões principais ----------
+
 btnGenerateLine.addEventListener("click", () => generate("line"));
 btnGenerateCategories.addEventListener("click", () => generate("categories"));
+
 btnCopyText.addEventListener("click", () => {
   const text = outputText.value.trim();
   if (!text) {
@@ -329,4 +336,35 @@ btnCopyText.addEventListener("click", () => {
     .catch(() => {
       statusEl.textContent = "Não foi possível copiar automaticamente.";
     });
+});
+
+// ---------- Handlers dos botões de seleção em massa ----------
+
+btnSelectAllExams.addEventListener("click", () => {
+  examCheckboxes.forEach((cb) => {
+    cb.checked = true;
+  });
+  statusEl.textContent = "Todos os exames foram selecionados.";
+});
+
+btnClearAllExams.addEventListener("click", () => {
+  examCheckboxes.forEach((cb) => {
+    cb.checked = false;
+  });
+  statusEl.textContent = "Todos os exames foram desmarcados.";
+});
+
+btnSelectRoutine.addEventListener("click", () => {
+  const routineCategories = new Set([
+    "Hemograma",
+    "Eletrólitos/Renal",
+    "Hepático"
+  ]);
+
+  examCheckboxes.forEach((cb) => {
+    const cat = cb.dataset.category;
+    cb.checked = routineCategories.has(cat);
+  });
+
+  statusEl.textContent = "Selecionados exames de rotina (Hemograma, Eletrólitos/Renal, Hepático).";
 });

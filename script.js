@@ -25,6 +25,7 @@ const examDefinitions = [
   { match: "FOSFORO", abbr: "P", category: "Eletrólitos/Renal" },
   { match: "CALCIO TOTAL", abbr: "CaT", category: "Eletrólitos/Renal" },
   { match: "CALCIO IONICO", abbr: "CaIon", category: "Eletrólitos/Renal" },
+  { match: "ACIDO URICO", abbr: "AcUrico", category: "Eletrólitos/Renal" },
 
   // Hepático
   { match: "ALANINA AMINOTRANSFERASE", abbr: "ALT", category: "Hepático" },
@@ -48,9 +49,32 @@ const examDefinitions = [
   { match: "ALBUMINA", abbr: "Alb", category: "Proteínas" },
   { match: "GLOBULINAS", abbr: "Glob", category: "Proteínas" },
 
+  // Metabólico / vitamínico / ferro
+  { match: "25-HIDROXIVITAMINA D", abbr: "VitD25", category: "Metabólico/Vitamínico" },
+  { match: "VITAMINA B 12", abbr: "VitB12", category: "Metabólico/Vitamínico" },
+  { match: "FERRO", abbr: "Ferro", category: "Metabólico/Vitamínico" },
+  { match: "FERRITINA", abbr: "Ferritina", category: "Metabólico/Vitamínico" },
+
   // Hormônios / marcadores
   { match: "PARATORMONIO (PTH)", abbr: "PTH", category: "Hormônios/Marcadores" },
   { match: "NT-PROBNP", abbr: "NTproBNP", category: "Hormônios/Marcadores" },
+  { match: "INSULINA", abbr: "Insulina", category: "Hormônios/Marcadores" },
+  { match: "HEMOGLOBINA GLICADA", abbr: "HbA1c", category: "Hormônios/Marcadores" },
+  { match: "TRIIODOTIRONINA (T3)", abbr: "T3", category: "Hormônios/Marcadores" },
+  { match: "TIROXINA (T4)", abbr: "T4", category: "Hormônios/Marcadores" },
+  { match: "TIROXINA LIVRE (T4L)", abbr: "T4L", category: "Hormônios/Marcadores" },
+  { match: "HORMONIO TIREO-ESTIMULANTE (TSH)", abbr: "TSH", category: "Hormônios/Marcadores" },
+  { match: "ALFAFETOPROTEINA", abbr: "AFP", category: "Hormônios/Marcadores" },
+  { match: "CREATINO FOSFOQUINASE", abbr: "CPK", category: "Hormônios/Marcadores" },
+
+  // Pancreático
+  { match: "AMILASE", abbr: "Amilase", category: "Pancreático" },
+  { match: "LIPASE", abbr: "Lipase", category: "Pancreático" },
+
+  // Coagulação
+  { match: "TEMPO DE PROTROMBINA", abbr: "TP", category: "Coagulação" },
+  { match: "INR =", abbr: "INR", category: "Coagulação" },
+  { match: "TEMPO DE TROMBOPLASTINA PARCIAL ATIVADA", abbr: "TTPA", category: "Coagulação" },
 
   // Sorologias (Micologia)
   {
@@ -84,25 +108,54 @@ const examDefinitions = [
     category: "Sorologias"
   },
 
+  // Sorologias virais / IST
+  { match: "HEPATITE B - ANTI-HBC TOTAL", abbr: "AntiHBcT", category: "Sorologias" },
+  { match: "HEPATITE B - ANTI-HBC IGM", abbr: "AntiHBcIgM", category: "Sorologias" },
+  { match: "HEPATITE B - ANTI-HBS", abbr: "AntiHBs", category: "Sorologias" },
+  { match: "HEPATITE B - ANTI-HBE", abbr: "AntiHBe", category: "Sorologias" },
+  { match: "HEPATITE B - AGHBS", abbr: "AgHBs", category: "Sorologias" },
+  { match: "HEPATITE B - AGHBE", abbr: "AgHBe", category: "Sorologias" },
+  { match: "HEPATITE C - SOROLOGIA", abbr: "AntiHCV", category: "Sorologias" },
+  { match: "SOROLOGIA PARA TREPONEMA PALLIDUM", abbr: "Trep", category: "Sorologias" },
+  {
+    match: "PESQUISA DE ANTICORPOS CONTRA HIV1/2 E DO ANTIGENO P24 DO HIV1",
+    abbr: "HIVscr",
+    category: "Sorologias"
+  },
+
   // Imunológico (CD4/CD8) – ABSOLUTOS
   { match: "CD45/CD3/CD4", abbr: "CD4", category: "Imunológico" },
   { match: "CD45/CD3/CD8", abbr: "CD8", category: "Imunológico" },
   { match: "CD4/CD8", abbr: "CD4/CD8", category: "Imunológico" },
 
-  // Virologia
-  { match: "CARGA VIRAL HIV-1", abbr: "CVHIV", category: "Virologia" }
+  // Virologia (cargas virais)
+  { match: "CARGA VIRAL HIV-1", abbr: "CVHIV", category: "Virologia" },
+  {
+    match: "DETECCAO QUANTITATIVA DE DNA DO VIRUS DA HEPATITE B (HBV)",
+    abbr: "HBVDNA",
+    category: "Virologia"
+  }
 ];
 
 const examOrder = [
   "Hb", "Ht", "Leuco", "Plaq",
-  "Na", "K", "Cl", "Cr", "Ur", "CaT", "CaIon", "Mg", "P",
+  "Na", "K", "Cl", "Cr", "Ur", "CaT", "CaIon", "Mg", "P", "AcUrico",
   "ALT", "AST", "FA", "GGT", "BT", "BD", "BI",
   "TGL", "CT", "HDL", "LDL", "VLDL", "nHDL",
   "ProtTot", "Alb", "Glob",
+  "VitD25", "VitB12", "Ferro", "Ferritina",
   "PTH", "NTproBNP",
+  "Insulina", "HbA1c",
+  "TSH", "T3", "T4", "T4L",
+  "AFP", "CPK",
+  "Amilase", "Lipase",
+  "TP", "INR", "TTPA",
   "CD4", "CD8", "CD4/CD8",
-  "ID Histoplasma", "ID Aspergillus", "ID P. brasiliensis", "CI Histoplasma", "CI Aspergillus", "CI P. brasiliensis",
-  "CVHIV"
+  "ID Histoplasma", "ID Aspergillus", "ID P. brasiliensis",
+  "CI Histoplasma", "CI Aspergillus", "CI P. brasiliensis",
+  "AntiHBcT", "AntiHBcIgM", "AntiHBs", "AgHBs", "AntiHBe", "AgHBe",
+  "AntiHCV", "Trep", "HIVscr",
+  "CVHIV", "HBVDNA"
 ];
 
 const categoryOrder = [
@@ -111,14 +164,17 @@ const categoryOrder = [
   "Hepático",
   "Perfil lipídico",
   "Proteínas",
+  "Metabólico/Vitamínico",
   "Hormônios/Marcadores",
+  "Pancreático",
+  "Coagulação",
   "Imunológico",
   "Sorologias",
   "Virologia",
   "Gasometria"
 ];
 
-// Abreviações que são sorologias (para tratamento especial)
+// Abreviações que são sorologias fúngicas (para tratamento especial)
 const sorologiaAbbrs = new Set([
   "ID Histoplasma", "CI Histoplasma",
   "ID Aspergillus", "CI Aspergillus",
@@ -146,21 +202,16 @@ const sorologiaGroups = [
 
 // Rótulos amigáveis (se a gente quiser mexer em outros no futuro)
 function getDisplayName(abbr) {
-  // Para agora, só mudamos sorologias no formato especial se quisermos.
-  // No restante, deixamos Hb, Na, etc. como estão.
   return abbr;
 }
 
 // Converte "Reagente", "Não Reagente", "Reagente (1/32)" em "R", "NR", "R (1/32)"
 function formatSorologiaValue(rawValue) {
   const norm = normalize(rawValue);
-  // Não Reagente
   if (norm.includes("NAO REAGENTE")) {
     return "NR";
   }
-  // Reagente (pode ter título junto)
   if (norm.includes("REAGENTE")) {
-    // tenta extrair o título entre parênteses, se houver
     const m = rawValue.match(/\(([^)]+)\)/);
     if (m) {
       const titer = m[1].trim();
@@ -168,11 +219,10 @@ function formatSorologiaValue(rawValue) {
     }
     return "R";
   }
-  // fallback
   return rawValue.trim();
 }
 
-// Monta ["Histoplasma ID NR / CI NR", "Aspergillus ID R / CI R (1/32)", ...]
+// Monta ["Histoplasma ID NR / CI NR", ...]
 function buildSorologiaParts(bucket, selectedAbbrs) {
   const parts = [];
 
@@ -183,7 +233,6 @@ function buildSorologiaParts(bucket, selectedAbbrs) {
     const idSelected = selectedAbbrs.includes(group.idAbbr);
     const ciSelected = selectedAbbrs.includes(group.ciAbbr);
 
-    // Se nenhum está selecionado ou nenhum existe, pula
     if ((!idEntry || !idSelected) && (!ciEntry || !ciSelected)) continue;
 
     const segments = [];
@@ -257,7 +306,7 @@ function parseExams(rawText) {
       continue;
     }
 
-    // Cabeçalho de seção
+    // Cabeçalho de seção (ex.: "HEPATITE B - ANTI-HBc TOTAL - SANGUE - ,SORO")
     if (
       /- SANGUE - ,/i.test(line) ||
       /HEMOGRAMA COMPLETO/i.test(line) ||
@@ -276,7 +325,7 @@ function parseExams(rawText) {
     if (/^Pedido\s*:/i.test(line)) continue;
     if (/^\d{2}\/\d{2}\/\d{4}\s+\d{2}:\d{2}:\d{2}$/.test(line)) continue;
     if (/Novos valores de referência/i.test(line)) continue;
-    if (/Automatizado|Colorimétrico|Enzimático|Eletrodo íon seletivo|Cinético UV|IFCC|Citometria de fluxo|PCR em Tempo Real/i.test(line)) continue;
+    if (/Automatizado|Colorimétrico|Enzimático|Eletrodo íon seletivo|Cinético UV|IFCC|Citometria de fluxo|PCR em Tempo Real|Quimioimunoensaio|Quimioluminometrico|Quimioluminometrico AL|HPLC/i.test(line)) continue;
     if (/Alteração nos valores de referência/i.test(line)) continue;
     if (/Titulos ate 1\/2/i.test(normalize(line))) continue;
 
@@ -284,9 +333,15 @@ function parseExams(rawText) {
     const parts = line.split(/\s{2,}|\t+/).filter(Boolean);
     if (parts.length < 2) continue;
 
-    const name = parts[0];
-    const normName = normalize(name);
+    let name = parts[0];
+    let normName = normalize(name);
     const valueUnit = parts[1];
+
+    // Alguns exames de hepatite/HIV vêm como "Resultado:" → usamos o nome da seção
+    if (normName.startsWith("RESULTADO") && currentSection) {
+      name = currentSection;
+      normName = normalize(name);
+    }
 
     // CASO ESPECIAL: CD4/CD8 absolutos (CD45/CD3/CD4 e CD45/CD3/CD8)
     if (normName.includes("CD45/CD3/CD4") || normName.includes("CD45/CD3/CD8")) {
@@ -343,7 +398,6 @@ function parseExams(rawText) {
         ) {
           pendingTiterExam = examObj;
         } else if (normName.includes("CONTRAIMUNO")) {
-          // Se for contraimuno NÃO reagente, não espera título
           pendingTiterExam = null;
         }
       }
@@ -423,7 +477,6 @@ function parseGasometrias(rawText) {
   for (let rawLine of lines) {
     const line = rawLine.trim();
     if (!line) {
-      // linha em branco geralmente marca fim do bloco da gasometria
       finalizarBloco();
       continue;
     }
@@ -434,7 +487,6 @@ function parseGasometrias(rawText) {
       continue;
     }
 
-    // Início de um bloco de gasometria
     if (/GASOMETRIA/i.test(line)) {
       finalizarBloco();
       inGaso = true;
@@ -448,12 +500,11 @@ function parseGasometrias(rawText) {
 
     if (!inGaso) continue;
 
-    // Linhas de resultados dentro do bloco de gasometria
     const parts = line.split(/\s{2,}|\t+/).filter(Boolean);
     if (parts.length < 2) continue;
 
     const name = parts[0];
-    const valueRaw = parts[1].trim(); // ex: "7,400"
+    const valueRaw = parts[1].trim();
     const normName = normalize(name);
 
     if (/^PH\b/i.test(name)) {
@@ -471,12 +522,9 @@ function parseGasometrias(rawText) {
     } else if (/LACTATO/i.test(normName)) {
       currentValores.Lactato = valueRaw;
     }
-    // Anion Gap, Na, K, Cl etc. são ignorados aqui (se quiser, tratamos depois)
   }
 
-  // garante o último bloco
   finalizarBloco();
-
   return gasos;
 }
 
@@ -547,9 +595,9 @@ function generateLinesPerDate(exams, selectedAbbrs, gasoMap) {
     const bucket = dateMap.get(date) || {};
     const parts = [];
 
-    // Exames "normais" (exceto sorologias)
+    // Exames "normais" (exceto sorologias fúngicas)
     for (const abbr of examOrder) {
-      if (sorologiaAbbrs.has(abbr)) continue; // sorologias tratadas à parte
+      if (sorologiaAbbrs.has(abbr)) continue;
       if (!selectedAbbrs.includes(abbr)) continue;
       if (bucket[abbr]) {
         const label = getDisplayName(abbr);
@@ -557,11 +605,11 @@ function generateLinesPerDate(exams, selectedAbbrs, gasoMap) {
       }
     }
 
-    // Sorologias condensadas por organismo
+    // Sorologias fúngicas condensadas
     const sorologiaParts = buildSorologiaParts(bucket, selectedAbbrs);
     parts.push(...sorologiaParts);
 
-    // Gasometria arterial/venosa (se houver e se estiver selecionada)
+    // Gasometria
     const gasoText = buildGasometriaTextForDate(date, gasoMap, selectedAbbrs);
     if (gasoText) {
       parts.push(gasoText);
@@ -582,7 +630,7 @@ function generateTextByCategories(exams, selectedAbbrs, gasoMap) {
     const bucket = dateMap.get(date) || {};
     const categoryLines = {};
 
-    // Exames não-sorológicos
+    // Exames não-sorológicos fúngicos
     for (const abbr of examOrder) {
       if (sorologiaAbbrs.has(abbr)) continue;
       if (!selectedAbbrs.includes(abbr)) continue;
@@ -594,14 +642,14 @@ function generateTextByCategories(exams, selectedAbbrs, gasoMap) {
       categoryLines[cat].push(`${label} ${entry.value}`);
     }
 
-    // Sorologias condensadas
+    // Sorologias fúngicas condensadas
     const sorologiaParts = buildSorologiaParts(bucket, selectedAbbrs);
     if (sorologiaParts.length) {
       if (!categoryLines["Sorologias"]) categoryLines["Sorologias"] = [];
       categoryLines["Sorologias"].push(...sorologiaParts);
     }
 
-    // Gasometria em categoria própria
+    // Gasometria
     const gasoText = buildGasometriaTextForDate(date, gasoMap, selectedAbbrs);
     if (gasoText) {
       if (!categoryLines["Gasometria"]) categoryLines["Gasometria"] = [];
@@ -617,7 +665,6 @@ function generateTextByCategories(exams, selectedAbbrs, gasoMap) {
       }
     }
 
-    // garante que Gasometria apareça mesmo se não estiver no categoryOrder
     if (!categoryOrder.includes("Gasometria") && categoryLines["Gasometria"]) {
       linesForDate.push(`- Gasometria: ${categoryLines["Gasometria"].join(" | ")}`);
     }
@@ -640,7 +687,6 @@ const outputText = document.getElementById("outputText");
 const statusEl = document.getElementById("status");
 const examCheckboxes = document.querySelectorAll(".exam-toggle input[type=checkbox]");
 
-// novos botões
 const btnSelectAllExams = document.getElementById("btnSelectAllExams");
 const btnClearAllExams = document.getElementById("btnClearAllExams");
 const btnSelectRoutine = document.getElementById("btnSelectRoutine");

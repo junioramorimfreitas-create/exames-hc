@@ -139,6 +139,10 @@ button {
   font-weight: 600;
   color: #4b5563;
   margin-bottom: 4px;
+  display: flex;
+  justify-content: space-between; /* Nome da categoria à esquerda, botões à direita */
+  align-items: center;            /* Alinha verticalmente */
+  width: 100%;
 }
 
 .exam-buttons {

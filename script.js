@@ -16,7 +16,7 @@ const examDefinitions = [
   { match: "PLAQUETAS", abbr: "Plaq", category: "Hemograma" },
 
   // Marcadores inflamatórios
-  { match: "PROTEÍNA C REATIVA (PCR)", abbr: "PCR", category: "Marcadores inflamatórios" },
+  { match: "PROTEÍNA C REATIVA", abbr: "PCR", category: "Marcadores inflamatórios" },
   { match: "VELOCIDADE DE HEMOSSEDIMENTACAO", abbr: "VHS", category: "Marcadores inflamatórios" },
   
   // Eletrólitos / Renal

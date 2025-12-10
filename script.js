@@ -143,7 +143,7 @@ const examOrder = [
   "HIV",
   "HBsAg", "Anti-HBc Total", "Anti-HBc IgM", "Anti-HBs", "Anti-HBe", "HBeAg",
   "Anti-HCV", "Sífilis",
-  "CV-HIV", "HBV-DNA"
+  "CV-HIV", "HBV-DNA",
   "FK", "Fluconazol", "Itraconazol", "Voriconazol",
 ];
 

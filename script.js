@@ -144,7 +144,7 @@ const examOrder = [
   "HBsAg", "Anti-HBc Total", "Anti-HBc IgM", "Anti-HBs", "Anti-HBe", "HBeAg",
   "Anti-HCV", "Sífilis",
   "CV-HIV", "HBV-DNA"
-  "FK", "Fluconazol", "Itraconazol", "Voriconazol"
+  "FK", "Fluconazol", "Itraconazol", "Voriconazol",
 ];
 
 const categoryOrder = [
@@ -162,7 +162,7 @@ const categoryOrder = [
   "Imunológico",
   "Sorologias",
   "Virologia",
-  "Fármacos"
+  "Fármacos",
 ];
 
 // Sorologias fúngicas com tratamento especial

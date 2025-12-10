@@ -56,16 +56,26 @@ const examDefinitions = [
   { match: "PROTEINAS TOTAIS", abbr: "ProtTot", category: "Proteínas" },
   { match: "ALBUMINA", abbr: "Alb", category: "Proteínas" },
   { match: "GLOBULINAS", abbr: "Glob", category: "Proteínas" },
+  { match: "CREATINO FOSFOQUINASE", abbr: "CPK", category: "Proteínas" },
+  { match: "DESIDROGENASE LACTICA", abbr: "LDH", category: "Proteínas" },
 
-  // Metabólico / vitamínico / ferro
-  { match: "25-HIDROXIVITAMINA D", abbr: "VitD25", category: "Metabólico/Vitamínico" },
-  { match: "VITAMINA B 12", abbr: "VitB12", category: "Metabólico/Vitamínico" },
-  { match: "FERRO", abbr: "Ferro", category: "Metabólico/Vitamínico" },
-  { match: "FERRITINA", abbr: "Ferritina", category: "Metabólico/Vitamínico" },
-
+  // Anemia
+  { match: "RETICULOCITOS", abbr: "Ret", category: "Anemia" },
+  { match: "HAPTOGLOBINA", abbr: "Hapto", category: "Anemia" },
+  { match: "VITAMINA B 12", abbr: "VitB12", category: "Anemia" },
+  { match: "ACIDO FOLICO", abbr: "AF", category: "Anemia" },
+  { match: "FERRO", abbr: "Ferro", category: "Anemia" },
+  { match: "FERRITINA", abbr: "Ferritina", category: "Anemia" },
+  { match: "CAPACIDADE TOTAL DE LIGAÇÃO DE FERRO", abbr: "CTLF", category: "Anemia" },
+  { match: "SATURACAO DA TRANSFERRINA", abbr: "SatTransf", category: "Anemia" },
+  { match: "TRANSFERRINA", abbr: "Transf", category: "Anemia" },
+  
   // Hormônios / marcadores
+  { match: "25-HIDROXIVITAMINA D", abbr: "VitD25", category: "Hormônios/Marcadores" },
   { match: "PARATORMONIO (PTH)", abbr: "PTH", category: "Hormônios/Marcadores" },
+  { match: "TROPONINA", abbr: "Tropo", category: "Hormônios/Marcadores" },
   { match: "NT-PROBNP", abbr: "NTproBNP", category: "Hormônios/Marcadores" },
+  { match: "GLICOSE", abbr: "Glic", category: "Hormônios/Marcadores" },
   { match: "INSULINA", abbr: "Insulina", category: "Hormônios/Marcadores" },
   { match: "HEMOGLOBINA GLICADA", abbr: "HbA1c", category: "Hormônios/Marcadores" },
   { match: "TRIIODOTIRONINA (T3)", abbr: "T3", category: "Hormônios/Marcadores" },
@@ -73,8 +83,7 @@ const examDefinitions = [
   { match: "TIROXINA LIVRE (T4L)", abbr: "T4L", category: "Hormônios/Marcadores" },
   { match: "HORMONIO TIREO-ESTIMULANTE (TSH)", abbr: "TSH", category: "Hormônios/Marcadores" },
   { match: "ALFAFETOPROTEINA", abbr: "AFP", category: "Hormônios/Marcadores" },
-  { match: "CREATINO FOSFOQUINASE", abbr: "CPK", category: "Hormônios/Marcadores" },
-
+  
   // Pancreático
   { match: "AMILASE", abbr: "Amilase", category: "Pancreático" },
   { match: "LIPASE", abbr: "Lipase", category: "Pancreático" },
@@ -83,34 +92,42 @@ const examDefinitions = [
   { match: "TEMPO DE PROTROMBINA", abbr: "TP", category: "Coagulação" },
   { match: "INR =", abbr: "INR", category: "Coagulação" },
   { match: "TEMPO DE TROMBOPLASTINA PARCIAL ATIVADA", abbr: "TTPA", category: "Coagulação" },
+  { match: "R =", abbr: "R", category: "Coagulação" },
+  { match: "DOSAGEM DO DIMERO-D QUANTITATIVO", abbr: "DD", category: "Coagulação" },
 
-  // Sorologias (Micologia)
+  // Sorologias
   { match: "IMUNODIFUSAO HISTOPLASMA CAPSULATUM", abbr: "ID Histoplasma", category: "Sorologias" },
   { match: "IMUNODIFUSAO ASPERGILLUS FUMIGATUS", abbr: "ID Aspergillus", category: "Sorologias" },
   { match: "IMUNODIFUSAO PARACOCCIDIOIDES BRASILIENSIS", abbr: "ID P. brasiliensis", category: "Sorologias" },
   { match: "CONTRAIMUNO PARACOCCIDIOIDES BRASILIENSIS", abbr: "CI P. brasiliensis", category: "Sorologias" },
   { match: "CONTRAIMUNO HISTOPLASMA CAPSULATUM", abbr: "CI Histoplasma", category: "Sorologias" },
   { match: "CONTRAIMUNO ASPERGILLUS FUMIGATUS", abbr: "CI Aspergillus", category: "Sorologias" },
-
-  // --- Hepatite B ---
+  { match: "ANTICORPOS CONTRA HIV1/2", abbr: "HIV", category: "Sorologias" },
   { match: "HEPATITE B - AGHBS", abbr: "HBsAg", category: "Sorologias" },
   { match: "HEPATITE B - ANTI-HBC TOTAL", abbr: "Anti-HBc Total", category: "Sorologias" },
   { match: "HEPATITE B - ANTI-HBC IGM", abbr: "Anti-HBc IgM", category: "Sorologias" },
   { match: "HEPATITE B - ANTI-HBS", abbr: "Anti-HBs", category: "Sorologias" },
   { match: "HEPATITE B - ANTI-HBE", abbr: "Anti-HBe", category: "Sorologias" },
   { match: "HEPATITE B - AGHBE", abbr: "HBeAg", category: "Sorologias" },
-  { match: "DETECÇÃO QUANTITATIVA DE DNA DO VIRUS DA HEPATITE B", abbr: "HBV-DNA", category: "Virologia" },
-  
-  // --- Sífilis ---
-  { match: "TREPONEMA PALLIDUM", abbr: "Sífilis", category: "Sorologias" },
-  
-  // --- HIV ---
-  { match: "ANTICORPOS CONTRA HIV1/2", abbr: "HIV", category: "Sorologias" },
-  { match: "CARGA VIRAL HIV-1", abbr: "CV-HIV", category: "Virologia" },
-
-  // --- HCV ---
   { match: "HEPATITE C - SOROLOGIA", abbr: "Anti-HCV", category: "Sorologias" },
+  { match: "HEPATITE A - ANTICORPOS IGM", abbr: "HAV IgM", category: "Sorologias" },
+  { match: "HEPATITE A - ANTICORPOS IGG", abbr: "HAV IgG", category: "Sorologias" },
+  { match: "TREPONEMA PALLIDUM", abbr: "Sífilis", category: "Sorologias" },
+  { match: "VDRL", abbr: "VDRL", category: "Sorologias" },
+  { match: "CHAGAS", abbr: "Chagas", category: "Sorologias" },
+  { match: "HTLV", abbr: "HTLV", category: "Sorologias" },
+  { match: "ANTI - VCA - IGM", abbr: "EBV IgM", category: "Sorologias" },
+  { match: "ANTI - VCA - IGG", abbr: "EBV IgG", category: "Sorologias" },
+  { match: "CITOMEGALOVIRUS - IGM", abbr: "CMV IgM", category: "Sorologias" },
+  { match: "CITOMEGALOVIRUS - IGG", abbr: "CMV IgG", category: "Sorologias" },
+  { match: "TOXOPLASMOSE - IGM", abbr: "Toxo IgM", category: "Sorologias" },
+  { match: "TOXOPLASMOSE - IGG", abbr: "Toxo IgG", category: "Sorologias" },
 
+  // Virologia
+  { match: "DETECÇÃO QUANTITATIVA DE DNA DE CITOMEGALOVIRUS (CMV) - PLASMA", abbr: "PCR-CMV", category: "Virologia" },
+  { match: "DETECÇÃO QUANTITATIVA DE DNA DO VIRUS DA HEPATITE B", abbr: "HBV-DNA", category: "Virologia" },
+  { match: "CARGA VIRAL HIV-1", abbr: "CV-HIV", category: "Virologia" },
+  
   // Imunológico (CD4/CD8)
   { match: "CD45/CD3/CD4", abbr: "CD4", category: "Imunológico" },
   { match: "CD45/CD3/CD8", abbr: "CD8", category: "Imunológico" },
@@ -121,6 +138,7 @@ const examDefinitions = [
   { match: "FLUCONAZOL", abbr: "Fluconazol", category: "Fármacos" },
   { match: "ITRACONAZOL", abbr: "Itraconazol", category: "Fármacos" },
   { match: "VORICONAZOL", abbr: "Voriconazol", category: "Fármacos" },
+   
 ];
 
 const examOrder = [
@@ -129,23 +147,25 @@ const examOrder = [
   "Na", "K", "Cl", "Cr", "Ur", "CaT", "CaIon", "Mg", "P", "AcUrico",
   "ALT", "AST", "FA", "GGT", "BT", "BD", "BI",
   "TGL", "CT", "HDL", "LDL", "VLDL", "nHDL",
-  "ProtTot", "Alb", "Glob",
-  "VitD25", "VitB12", "Ferro", "Ferritina",
-  "PTH", "NTproBNP",
-  "Insulina", "HbA1c",
-  "TSH", "T3", "T4", "T4L",
-  "AFP", "CPK",
+  "ProtTot", "Alb", "Glob", "CPK", "LDH",
+  "Ret", "Hapto", "VitB12", "AF", "Ferro", "Ferritina", "CTLF", "SatTransf", "Transf",
+  "VitD25", "PTH", "Tropo", "NTproBNP", "Glic", "Insulina", "HbA1c", "T3", "T4", "T4L", "TSH", "AFP",
   "Amilase", "Lipase",
-  "TP", "INR", "TTPA",
-  "CD4", "CD8", "CD4/CD8",
+  "TP", "INR", "TTPA", "R", "DD",
   "ID Histoplasma", "ID Aspergillus", "ID P. brasiliensis",
   "CI Histoplasma", "CI Aspergillus", "CI P. brasiliensis",
   "HIV",
   "HBsAg", "Anti-HBc Total", "Anti-HBc IgM", "Anti-HBs", "Anti-HBe", "HBeAg",
-  "Anti-HCV", "Sífilis",
-  "CV-HIV", "HBV-DNA",
+  "Anti-HCV",
+  "HAV IgM", "HAV IgG",
+  "Sífilis", "VDRL",
+  "Chagas", "HTLV",
+  "EBV IgM", "EBV IgG", "CMV IgM", "CMV IgG", "Toxo IgM", "Toxo IgG",
+  "PCR-CMV", "HBV-DNA", "CV-HIV",
+  "CD4", "CD8", "CD4/CD8",
   "FK", "Fluconazol", "Itraconazol", "Voriconazol",
 ];
+
 
 const categoryOrder = [
   "Hemograma",
@@ -155,13 +175,13 @@ const categoryOrder = [
   "Hepático",
   "Perfil lipídico",
   "Proteínas",
-  "Metabólico/Vitamínico",
+  "Anemia",
   "Hormônios/Marcadores",
   "Pancreático",
   "Coagulação",
-  "Imunológico",
   "Sorologias",
   "Virologia",
+  "Imunológico",
   "Fármacos",
 ];
 

@@ -115,6 +115,12 @@ const examDefinitions = [
   { match: "CD45/CD3/CD4", abbr: "CD4", category: "Imunológico" },
   { match: "CD45/CD3/CD8", abbr: "CD8", category: "Imunológico" },
   { match: "CD4/CD8", abbr: "CD4/CD8", category: "Imunológico" }
+
+  // Imunológico (CD4/CD8)
+  { match: "Tacrolimus", abbr: "FK", category: "Fármacos" },
+  { match: "Fluconazol", abbr: "Fluconazol", category: "Fármacos" },
+  { match: "Itraconazol", abbr: "Itraconazol", category: "Fármacos" },
+  { match: "Voriconazol", abbr: "Voriconazol", category: "Fármacos" },
 ];
 
 const examOrder = [
@@ -138,12 +144,14 @@ const examOrder = [
   "HBsAg", "Anti-HBc Total", "Anti-HBc IgM", "Anti-HBs", "Anti-HBe", "HBeAg",
   "Anti-HCV", "Sífilis",
   "CV-HIV", "HBV-DNA"
+  "FK", "Fluconazol", "Itraconazol", "Voriconazol"
 ];
 
 const categoryOrder = [
   "Hemograma",
   "Marcadores inflamatórios",
   "Eletrólitos/Renal",
+  "Gasometria",
   "Hepático",
   "Perfil lipídico",
   "Proteínas",
@@ -154,7 +162,7 @@ const categoryOrder = [
   "Imunológico",
   "Sorologias",
   "Virologia",
-  "Gasometria"
+  "Fármacos"
 ];
 
 // Sorologias fúngicas com tratamento especial

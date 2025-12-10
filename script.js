@@ -117,10 +117,10 @@ const examDefinitions = [
   { match: "CD4/CD8", abbr: "CD4/CD8", category: "Imunológico" },
 
   // Fármacos
-  { match: "Tacrolimus", abbr: "FK", category: "Fármacos" },
-  { match: "Fluconazol", abbr: "Fluconazol", category: "Fármacos" },
-  { match: "Itraconazol", abbr: "Itraconazol", category: "Fármacos" },
-  { match: "Voriconazol", abbr: "Voriconazol", category: "Fármacos" },
+  { match: "TACROLIMUS", abbr: "FK", category: "Fármacos" },
+  { match: "FLUCONAZOL", abbr: "Fluconazol", category: "Fármacos" },
+  { match: "ITRACONAZOL", abbr: "Itraconazol", category: "Fármacos" },
+  { match: "VORICONAZOL", abbr: "Voriconazol", category: "Fármacos" },
 ];
 
 const examOrder = [

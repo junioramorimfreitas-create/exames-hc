@@ -114,9 +114,9 @@ const examDefinitions = [
   // Imunológico (CD4/CD8)
   { match: "CD45/CD3/CD4", abbr: "CD4", category: "Imunológico" },
   { match: "CD45/CD3/CD8", abbr: "CD8", category: "Imunológico" },
-  { match: "CD4/CD8", abbr: "CD4/CD8", category: "Imunológico" }
+  { match: "CD4/CD8", abbr: "CD4/CD8", category: "Imunológico" },
 
-  // Imunológico (CD4/CD8)
+  // Fármacos
   { match: "Tacrolimus", abbr: "FK", category: "Fármacos" },
   { match: "Fluconazol", abbr: "Fluconazol", category: "Fármacos" },
   { match: "Itraconazol", abbr: "Itraconazol", category: "Fármacos" },

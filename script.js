@@ -16,7 +16,7 @@ const examDefinitions = [
   { match: "PLAQUETAS", abbr: "Plaq", category: "Hemograma" },
 
   // Marcadores inflamatórios
-  { match: "PROTEÍNA C REATIVA", abbr: "PCR", category: "Marcadores inflamatórios" },
+  { match: "PROTEINA C REATIVA", abbr: "PCR", category: "Marcadores inflamatórios" },
   { match: "VELOCIDADE DE HEMOSSEDIMENTACAO", abbr: "VHS", category: "Marcadores inflamatórios" },
   
   // Eletrólitos / Renal
@@ -30,6 +30,10 @@ const examDefinitions = [
   { match: "CALCIO TOTAL", abbr: "CaT", category: "Eletrólitos/Renal" },
   { match: "CALCIO IONICO", abbr: "CaIon", category: "Eletrólitos/Renal" },
   { match: "ACIDO URICO", abbr: "AcUrico", category: "Eletrólitos/Renal" },
+
+  // Gasometria (entrada manual só serve para filtros; a leitura é por parser separado)
+  { match: "GASOMETRIA ARTERIAL", abbr: "GasArterial", category: "Gasometria" },
+  { match: "GASOMETRIA VENOSA", abbr: "GasVenosa", category: "Gasometria" },
 
   // Hepático
   { match: "ALANINA AMINOTRANSFERASE", abbr: "ALT", category: "Hepático" },
@@ -110,9 +114,7 @@ const examDefinitions = [
   // Imunológico (CD4/CD8)
   { match: "CD45/CD3/CD4", abbr: "CD4", category: "Imunológico" },
   { match: "CD45/CD3/CD8", abbr: "CD8", category: "Imunológico" },
-  { match: "CD4/CD8", abbr: "CD4/CD8", category: "Imunológico" },
-
-
+  { match: "CD4/CD8", abbr: "CD4/CD8", category: "Imunológico" }
 ];
 
 const examOrder = [
@@ -257,6 +259,11 @@ function parseExams(rawText) {
     }
 
     // Cabeçalho da seção (nome do exame/painel)
+    if (/GASOMETRIA/i.test(line)) {
+      currentSection = line.trim();
+      continue;
+    }
+
     if (
       /- SANGUE - ,/i.test(line) ||
       /HEMOGRAMA COMPLETO/i.test(line) ||
@@ -264,7 +271,7 @@ function parseExams(rawText) {
     ) {
       const section = line.split("- SANGUE")[0].trim();
       currentSection = section || line;
-      continue; // <<<<< AQUI era o bug: tinha um "return exams"
+      continue;
     }
 
     // Linhas irrelevantes
@@ -311,7 +318,7 @@ function parseExams(rawText) {
 
     // Quantitativos
     if (/\d/.test(valueUnit)) {
-      const m = valueUnit.match(/^([<>*]?\s*[\d.,]+)\s*(.*)$/);
+      const m = valueUnit.match(/^([<>*]?\s*[\d.,+-]+)\s*(.*)$/);
       if (m) {
         exams.push({
           date: currentDate || "",
@@ -364,7 +371,7 @@ function parseGasometrias(rawText) {
   let currentValores = null;
 
   function finalizarBloco() {
-    if (inGaso && currentValores) {
+    if (inGaso && currentValores && Object.keys(currentValores).length > 0) {
       gasos.push({
         date: currentDate || "-",
         tipo: currentTipo,
@@ -378,17 +385,20 @@ function parseGasometrias(rawText) {
 
   for (let rawLine of lines) {
     const line = rawLine.trim();
+
+    // ⚠️ NÃO vamos mais fechar bloco em linha em branco: gaso do HC tem blank logo após o cabeçalho
     if (!line) {
-      finalizarBloco();
       continue;
     }
 
+    // Data
     const dateMatch = line.match(/Coletado em:\s*(\d{2}\/\d{2}\/\d{4})/);
     if (dateMatch) {
       currentDate = dateMatch[1];
       continue;
     }
 
+    // Início de bloco de gasometria
     if (/GASOMETRIA/i.test(line)) {
       finalizarBloco();
       inGaso = true;
@@ -402,27 +412,58 @@ function parseGasometrias(rawText) {
 
     if (!inGaso) continue;
 
-    const parts = line.split(/\s{2,}|\t+/).filter(Boolean);
-    if (parts.length < 2) continue;
+    const normLine = normalize(line);
 
-    const name = parts[0];
-    const valueRaw = parts[1].trim();
-    const normName = normalize(name);
+    // Helper genérico: pega o primeiro número depois do rótulo
+    function extractAfter(labelRegex, sourceLine) {
+      const m = sourceLine.match(labelRegex);
+      if (!m) return null;
+      const rest = sourceLine.slice(m.index + m[0].length);
+      const mNum = rest.match(/([<>*]?\s*[\d.,+-]+)/);
+      return mNum ? mNum[1].trim() : null;
+    }
 
-    if (/^PH\b/i.test(name)) {
-      currentValores.pH = valueRaw;
-    } else if (/^PO2\b/i.test(name)) {
-      currentValores.pO2 = valueRaw;
-    } else if (/^PCO2\b/i.test(name)) {
-      currentValores.pCO2 = valueRaw;
-    } else if (/CTHCO3|HCO3/i.test(normName)) {
-      currentValores.HCO3 = valueRaw;
-    } else if (/^BE\b/i.test(name)) {
-      currentValores.BE = valueRaw;
-    } else if (/^SO2\b/i.test(name)) {
-      currentValores.SO2 = valueRaw;
-    } else if (/LACTATO/i.test(normName)) {
-      currentValores.Lactato = valueRaw;
+    // Ordem importante: PCO2 antes de PO2
+    if (/PCO2/i.test(line)) {
+      const v = extractAfter(/PCO2/i, line);
+      if (v) currentValores.pCO2 = v;
+      continue;
+    }
+
+    if (/PO2/i.test(line)) {
+      const v = extractAfter(/PO2/i, line);
+      if (v) currentValores.pO2 = v;
+      continue;
+    }
+
+    if (/PH\b/i.test(line)) {
+      const v = extractAfter(/PH\b/i, line);
+      if (v) currentValores.pH = v;
+      continue;
+    }
+
+    if (/HCO3|CTHCO3/i.test(normLine)) {
+      const v = extractAfter(/HCO3|CTHCO3/i, line);
+      if (v) currentValores.HCO3 = v;
+      continue;
+    }
+
+    if (/\bBE\b/i.test(line)) {
+      const v = extractAfter(/\bBE\b/i, line);
+      if (v) currentValores.BE = v;
+      continue;
+    }
+
+    if (/SO2/i.test(line)) {
+      const v = extractAfter(/SO2/i, line);
+      if (v) currentValores.SO2 = v;
+      continue;
+    }
+
+    if (/LACTATO/i.test(normLine)) {
+      const v = extractAfter(/LACTATO/i, line);
+      if (v) currentValores.Lactato = v;
+      continue;
     }
   }
 
@@ -652,7 +693,7 @@ function generate(mode) {
     `Exames reconhecidos: ${exams.length}. Gasometrias reconhecidas: ${gasos.length}. Filtros ativos: ${selectedAbbrs.length}.`;
 }
 
-// ---------- Eventos (protegidos com if) ----------
+// ---------- Eventos ----------
 
 if (btnGenerateLine) {
   btnGenerateLine.addEventListener("click", () => generate("line"));
@@ -684,6 +725,7 @@ if (btnSelectAllExams && examCheckboxes) {
   btnSelectAllExams.addEventListener("click", () => {
     examCheckboxes.forEach((cb) => { cb.checked = true; });
     if (statusEl) statusEl.textContent = "Todos os exames foram selecionados.";
+    autoGenerate();
   });
 }
 
@@ -691,18 +733,20 @@ if (btnClearAllExams && examCheckboxes) {
   btnClearAllExams.addEventListener("click", () => {
     examCheckboxes.forEach((cb) => { cb.checked = false; });
     if (statusEl) statusEl.textContent = "Todos os exames foram desmarcados.";
+    autoGenerate();
   });
 }
 
 if (btnSelectRoutine && examCheckboxes) {
   btnSelectRoutine.addEventListener("click", () => {
-    const routineCategories = new Set(["Hemograma", "Eletrólitos/Renal", "Hepático"]);
+    const routineCategories = new Set(["Hemograma", "Marcadores inflamatórios", "Eletrólitos/Renal", "Gasometria", "Hepático", "Coagulação"]);
     examCheckboxes.forEach((cb) => {
       const cat = cb.dataset.category;
       cb.checked = routineCategories.has(cat);
     });
     if (statusEl) statusEl.textContent =
-      "Selecionados exames de rotina (Hemograma, Eletrólitos/Renal, Hepático).";
+      "Selecionados exames de rotina (Hemograma, Marcadores, Inflamatórios, Eletrólitos/Renal, Gasometria, Hepático e Coagulação).";
+    autoGenerate();
   });
 }
 
@@ -716,6 +760,7 @@ categorySelectButtons.forEach((btn) => {
       if (cb.dataset.category === cat) cb.checked = true;
     });
     if (statusEl) statusEl.textContent = `Selecionados todos os exames de ${cat}.`;
+    autoGenerate();
   });
 });
 
@@ -726,5 +771,41 @@ categoryClearButtons.forEach((btn) => {
       if (cb.dataset.category === cat) cb.checked = false;
     });
     if (statusEl) statusEl.textContent = `Desmarcados todos os exames de ${cat}.`;
+    autoGenerate();
   });
 });
+
+// Atualiza output automaticamente quando um checkbox é marcado/desmarcado
+examCheckboxes.forEach(cb => {
+  cb.addEventListener("change", () => {
+    autoGenerate();
+  });
+});
+
+if (rawInput) {
+  rawInput.addEventListener("input", () => {
+    autoGenerate();
+  });
+}
+
+function autoGenerate() {
+  if (!rawInput || !outputText || !statusEl) return;
+
+  const raw = rawInput.value.trim();
+  if (!raw) {
+    outputText.value = "";
+    statusEl.textContent = "";
+    return;
+  }
+
+  const selectedAbbrs = getSelectedAbbrs();
+  const exams = parseExams(raw);
+  const gasos = parseGasometrias(raw);
+  const gasoMap = buildGasometriaMap(gasos);
+
+  const lines = generateLinesPerDate(exams, selectedAbbrs, gasoMap);
+
+  outputText.value = lines.join("\n");
+  statusEl.textContent =
+    `Exames reconhecidos: ${exams.length}. Gasometrias reconhecidas: ${gasos.length}.`;
+}

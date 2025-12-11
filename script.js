@@ -112,7 +112,7 @@ const examDefinitions = [
   { match: "HEPATITE C - SOROLOGIA", abbr: "Anti-HCV", category: "Sorologias" },
   { match: "HEPATITE A - ANTICORPOS IGM", abbr: "HAV IgM", category: "Sorologias" },
   { match: "HEPATITE A - ANTICORPOS IGG", abbr: "HAV IgG", category: "Sorologias" },
-  { match: "TREPONEMA PALLIDUM", abbr: "Sífilis", category: "Sorologias" },
+  { match: "SOROLOGIA PARA TREPONEMA PALLIDUM", abbr: "Sífilis", category: "Sorologias" },
   { match: "VDRL", abbr: "VDRL", category: "Sorologias" },
   { match: "CHAGAS", abbr: "Chagas", category: "Sorologias" },
   { match: "HTLV", abbr: "HTLV", category: "Sorologias" },
@@ -234,14 +234,27 @@ function buildSorologiaParts(bucket, selectedAbbrs) {
 
 function findExamDefinition(examName) {
   const norm = normalize(examName);
+  let bestDef = null;
+
   for (const def of examDefinitions) {
+    const matchNorm = def.match; // já está em MAIÚSCULO sem acento na definição
+
+    let ok = false;
     if (def.exact) {
-      if (norm === def.match) return def;
+      ok = norm === matchNorm;
     } else {
-      if (norm.includes(def.match)) return def;
+      ok = norm.includes(matchNorm);
+    }
+
+    if (!ok) continue;
+
+    // Se ainda não temos melhor, ou se este "match" é mais específico (string maior)
+    if (!bestDef || matchNorm.length > bestDef.match.length) {
+      bestDef = def;
     }
   }
-  return null;
+
+  return bestDef;
 }
 
 function parseDateToSortable(str) {

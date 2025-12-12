@@ -7,6 +7,39 @@ function normalize(str) {
     .toUpperCase();
 }
 
+// ---------- Preferências de exibição (Data/Hora) ----------
+const prefs = {
+  dateFormat: "ddmmyy",  // ddmm | ddmmyy | ddmmyyyy
+  showTime: false
+};
+
+function parseColetadoEmLine(line) {
+  // Coletado em: 09/12/2025 08:29
+  const m = line.match(/Coletado em:\s*(\d{2}\/\d{2}\/\d{4})(?:\s+(\d{2}):(\d{2}))?/i);
+  if (!m) return null;
+  return {
+    date: m[1],
+    time: (m[2] && m[3]) ? `${m[2]}:${m[3]}` : ""
+  };
+}
+
+function formatDateStr(dateStr) {
+  const m = dateStr.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+  if (!m) return dateStr;
+  const dd = m[1], mm = m[2], yyyy = m[3];
+
+  if (prefs.dateFormat === "ddmm") return `${dd}/${mm}`;
+  if (prefs.dateFormat === "ddmmyy") return `${dd}/${mm}/${yyyy.slice(-2)}`;
+  return `${dd}/${mm}/${yyyy}`; // ddmmyyyy
+}
+
+function formatDateTimeLabel(dateStr, timeStr) {
+  const d = formatDateStr(dateStr);
+  if (!prefs.showTime) return d;
+  if (!timeStr) return d;
+  return `${d} ${timeStr}`;
+}
+
 // Mapa de exames -> abreviação e categoria
 const examDefinitions = [
   // Hemograma
@@ -134,6 +167,7 @@ const examDefinitions = [
   { match: "CD4/CD8", abbr: "CD4/CD8", category: "Imunológico" },
 
   // Fármacos
+  { match: "VANCOMICINA", abbr: "Vancomicina", category: "Fármacos" },
   { match: "TACROLIMUS", abbr: "FK", category: "Fármacos" },
   { match: "FLUCONAZOL", abbr: "Fluconazol", category: "Fármacos" },
   { match: "ITRACONAZOL", abbr: "Itraconazol", category: "Fármacos" },
@@ -163,7 +197,7 @@ const examOrder = [
   "EBV IgM", "EBV IgG", "CMV IgM", "CMV IgG", "Toxo IgM", "Toxo IgG",
   "PCR-CMV", "HBV-DNA", "CV-HIV",
   "CD4", "CD8", "CD4/CD8",
-  "FK", "Fluconazol", "Itraconazol", "Voriconazol",
+  "Vancomicina", "FK", "Fluconazol", "Itraconazol", "Voriconazol",
 ];
 
 
@@ -270,6 +304,7 @@ function parseExams(rawText) {
   const exams = [];
 
   let currentDate = "";
+  let currentTime = "";
   let currentSection = "";
   let pendingTiterExam = null;
 
@@ -292,10 +327,11 @@ function parseExams(rawText) {
       continue;
     }
 
-    // Data
-    const dateMatch = line.match(/Coletado em:\s*(\d{2}\/\d{2}\/\d{4})/);
-    if (dateMatch) {
-      currentDate = dateMatch[1];
+    // Data + hora (Coletado em)
+    const coletado = parseColetadoEmLine(line);
+    if (coletado) {
+      currentDate = coletado.date;
+      currentTime = coletado.time || "";
       continue;
     }
 
@@ -347,6 +383,7 @@ function parseExams(rawText) {
       if (mAbs) {
         exams.push({
           date: currentDate || "",
+          time: currentTime || "",
           section: currentSection || "",
           name,
           value: mAbs[0],
@@ -363,6 +400,7 @@ function parseExams(rawText) {
       if (m) {
         exams.push({
           date: currentDate || "",
+          time: currentTime || "",
           section: currentSection || "",
           name,
           value: m[1].trim(),
@@ -377,6 +415,7 @@ function parseExams(rawText) {
 
       const examObj = {
         date: currentDate || "",
+        time: currentTime || "",
         section: currentSection || "",
         name,
         value,
@@ -407,6 +446,7 @@ function parseGasometrias(rawText) {
   const gasos = [];
 
   let currentDate = "";
+  let currentTime = "";
   let inGaso = false;
   let currentTipo = "";
   let currentValores = null;
@@ -415,6 +455,7 @@ function parseGasometrias(rawText) {
     if (inGaso && currentValores && Object.keys(currentValores).length > 0) {
       gasos.push({
         date: currentDate || "-",
+        time: currentTime || "-",
         tipo: currentTipo,
         valores: currentValores
       });
@@ -433,11 +474,13 @@ function parseGasometrias(rawText) {
     }
 
     // Data
-    const dateMatch = line.match(/Coletado em:\s*(\d{2}\/\d{2}\/\d{4})/);
-    if (dateMatch) {
-      currentDate = dateMatch[1];
+    const coletado = parseColetadoEmLine(line);
+    if (coletado) {
+      currentDate = coletado.date;
+      currentTime = coletado.time || "";
       continue;
     }
+
 
     // Início de bloco de gasometria
     if (/GASOMETRIA/i.test(line)) {
@@ -575,6 +618,8 @@ function buildDateMap(exams, selectedAbbrs) {
     if (!dateMap.has(dateKey)) dateMap.set(dateKey, {});
     const bucket = dateMap.get(dateKey);
 
+    if (!bucket.__time && ex.time) bucket.__time = ex.time;
+
     if (!bucket[def.abbr]) {
       bucket[def.abbr] = { value: ex.value, category: def.category };
     }
@@ -625,7 +670,9 @@ function generateLinesPerDate(exams, selectedAbbrs, gasoMap) {
     if (gasoText) parts.push(gasoText);
 
     if (parts.length) {
-      lines.push(`(${date}) ${parts.join(" | ")}`);
+      const time = (bucket && bucket.__time) ? bucket.__time : "";
+      const label = formatDateTimeLabel(date, time);
+      lines.push(`(${label}) ${parts.join(" | ")}`);
     }
   }
 
@@ -663,7 +710,10 @@ function generateTextByCategories(exams, selectedAbbrs, gasoMap) {
       categoryLines["Gasometria"].push(gasoText);
     }
 
-    const linesForDate = [`(${date})`];
+    const time = (bucket && bucket.__time) ? bucket.__time : "";
+    const label = formatDateTimeLabel(date, time);
+    const linesForDate = [`(${label})`];
+
     for (const cat of categoryOrder) {
       if (categoryLines[cat] && categoryLines[cat].length) {
         linesForDate.push(`- ${cat}: ${categoryLines[cat].join(" | ")}`);
@@ -732,6 +782,20 @@ function generate(mode) {
   outputText.value = text;
   statusEl.textContent =
     `Exames reconhecidos: ${exams.length}. Gasometrias reconhecidas: ${gasos.length}. Filtros ativos: ${selectedAbbrs.length}.`;
+
+window.__EXAMES_APP__.last = {
+  raw,
+  selectedAbbrs,
+  exams,
+  gasos,
+  gasoMap,
+  dateMap: buildDateMap(exams, selectedAbbrs),
+  lines: mode === "line"
+    ? generateLinesPerDate(exams, selectedAbbrs, gasoMap)
+    : []
+};
+
+
 }
 
 // ---------- Eventos ----------
@@ -849,4 +913,121 @@ function autoGenerate() {
   outputText.value = lines.join("\n");
   statusEl.textContent =
     `Exames reconhecidos: ${exams.length}. Gasometrias reconhecidas: ${gasos.length}.`;
+
+  window.__EXAMES_APP__.last = {
+    raw: raw,
+    selectedAbbrs,
+    exams,
+    gasos,
+    gasoMap,
+    dateMap: buildDateMap(exams, selectedAbbrs),
+    lines: generateLinesPerDate(exams, selectedAbbrs, gasoMap)
+  };
+
+  
 }
+
+function setupSegmented(containerId, onPick) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+
+  el.addEventListener("click", (e) => {
+    const btn = e.target.closest("button");
+    if (!btn) return;
+
+    [...el.querySelectorAll("button")].forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+
+    onPick(btn.dataset);
+    autoGenerate();
+  });
+}
+
+setupSegmented("dateFormat", (ds) => {
+  prefs.dateFormat = ds.format || "ddmmyy";
+});
+
+setupSegmented("showTime", (ds) => {
+  prefs.showTime = (ds.showtime === "yes");
+});
+
+// ---- Expor helpers pro tableExport.js (SEM APAGAR .last) ----
+window.__EXAMES_APP__ = window.__EXAMES_APP__ || {};
+
+Object.assign(window.__EXAMES_APP__, {
+  parseExams,
+  parseGasometrias,
+  buildGasometriaMap,
+  buildDateMap,
+  getAllSortedDates,
+  buildGasometriaTextForDate,
+  examOrder,
+  sorologiaAbbrs,
+  buildSorologiaParts,
+  sorologiaGroups, // opcional
+  getSelectedAbbrs,
+  formatDateTimeLabel,
+  prefs
+});
+
+// ---------- Cálculo de AUC/MIC da vancomicina ----------
+
+const btnVancoCalc = document.getElementById("vancoCalc");
+const vancoResult = document.getElementById("vancoResult");
+const vancoStatus = document.getElementById("vancoStatus");
+
+btnVancoCalc?.addEventListener("click", () => {
+  try {
+    const levels = window.__VANCO_AUC__.readLevelsFromUI
+      ? window.__VANCO_AUC__.readLevelsFromUI()
+      : [];
+
+    const result = window.__VANCO_AUC__.calculateAucMic({
+      steady: document.getElementById("vancoSteady").value === "yes",
+      dialysis: document.getElementById("vancoDialysis").value === "yes",
+      sex: document.getElementById("vancoSex").value,
+      critical: document.getElementById("vancoCritical").value === "yes",
+      age: +document.getElementById("vancoAge").value,
+      weight: +document.getElementById("vancoWeight").value,
+      height: +document.getElementById("vancoHeight").value,
+      cr: +document.getElementById("vancoScr").value,
+
+      dose: +document.getElementById("vancoDoseMg").value,
+      tau: +document.getElementById("vancoTauH").value,
+      tinH: +document.getElementById("vancoTinH").value,
+      infStartIso: document.getElementById("vancoInfStart").value,
+
+      mic: +document.getElementById("vancoMIC").value,
+      model: document.getElementById("vancoModel").value,
+
+      priorCvCL: +document.getElementById("vancoPriorCvCL").value,
+      priorCvV: +document.getElementById("vancoPriorCvV").value,
+      obsSd: +document.getElementById("vancoObsSd").value,
+
+      levels
+    });
+
+    vancoResult.innerHTML = `
+      <strong>Modelo:</strong> ${result.model}<br>
+      <strong>IMC:</strong> ${result.BMI}<br>
+      <strong>eGFR:</strong> ${result.eGFR} mL/min<br>
+      <strong>CL (posterior):</strong> ${result.CL} L/h<br>
+      <strong>V (posterior):</strong> ${result.V} L<br>
+      <strong>AUC24:</strong> ${result.AUC24} mg·h/L<br>
+      <strong>AUC/MIC:</strong> ${result.AUC_MIC}
+    `;
+
+    // opcional: mostrar predições dos níveis
+    if (result.bayes?.preds?.length) {
+      const p = result.bayes.preds.map(x => `${x.type}: predito ${x.pred.toFixed(1)} (t=${x.t.toFixed(2)}h)`).join("<br>");
+      vancoResult.innerHTML += `<hr><strong>Ajuste Bayes:</strong><br>${p}`;
+    }
+
+    vancoStatus.textContent = "Cálculo realizado com sucesso.";
+  } catch (e) {
+    vancoStatus.textContent = e.message;
+    vancoResult.innerHTML = "";
+  }
+});
+
+

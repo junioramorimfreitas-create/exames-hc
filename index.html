@@ -615,6 +615,10 @@
           </div>
           <div class="exam-buttons">
             <label class="exam-toggle">
+              <input type="checkbox" value="Vancomicina" data-category="Fármacos" />
+              <span>Vancomicina</span>
+            </label>
+            <label class="exam-toggle">
               <input type="checkbox" value="FK" data-category="Fármacos" />
               <span>FK</span>
             </label>
@@ -635,6 +639,32 @@
 
       </div>
       <p class="hint">Desmarque o que não quiser que apareça no texto.</p>
+    </div>
+
+    <!-- Preferências de Data/Hora -->
+    <div class="row">
+      <label>Exibição de data/hora</label>
+
+      <div class="date-time-controls">
+        <div class="dt-block">
+          <div class="dt-title">Datas</div>
+          <div class="segmented" id="dateFormat">
+            <button type="button" class="seg-btn" data-format="ddmm">(dd/mm)</button>
+            <button type="button" class="seg-btn active" data-format="ddmmyy">(dd/mm/aa)</button>
+            <button type="button" class="seg-btn" data-format="ddmmyyyy">(dd/mm/aaaa)</button>
+          </div>
+        </div>
+
+        <div class="dt-block">
+          <div class="dt-title">Mostrar hora</div>
+          <div class="segmented" id="showTime">
+            <button type="button" class="seg-btn" data-showtime="yes">Sim</button>
+            <button type="button" class="seg-btn active" data-showtime="no">Não</button>
+          </div>
+        </div>
+      </div>
+
+      <p class="hint">A hora é extraída de “Coletado em: dd/mm/aaaa hh:mm” quando disponível.</p>
     </div>
 
     <!-- Botões de ação -->
@@ -658,13 +688,169 @@
       <label for="outputText">Texto gerado para o prontuário</label>
       <textarea id="outputText" readonly placeholder="O texto gerado aparecerá aqui..."></textarea>
     </div>
+    
+    <!-- Tabela (Exames x Data/Hora) -->
+<div class="row">
+  <label>Tabela</label>
+
+    <div class="actions">
+      <button class="btn-secondary" id="btnToggleTable">
+        Mostrar tabela
+      </button>
+      <button class="btn-secondary" id="btnGenerateTable">
+        Gerar tabela
+      </button>
+      <button class="btn-secondary" id="btnExportExcel" disabled>
+        Exportar Excel
+      </button>
+    </div>
+
+  <div id="tableContainer" style="overflow:auto; border:1px solid #e5e7eb; border-radius:12px; background:#fff;"></div>
+</div>
+
+<!-- =========================
+     Vancomicina AUC (novo)
+     ========================= -->
+
+<section id="vancoSection">
+
+<div class="row">
+  <label>Vancomicina — Calculadora AUC/MIC (Bayesiana)</label>
+
+  <div class="vanco-card">
+    <div class="vanco-grid">
+      <div>
+        <label class="mini-label">Steady-state (≥ 3 doses)?</label>
+        <select id="vancoSteady">
+          <option value="yes">Sim</option>
+          <option value="no">Não</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="mini-label">Diálise?</label>
+        <select id="vancoDialysis">
+          <option value="no">Não</option>
+          <option value="yes">Sim</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="mini-label">Gênero</label>
+        <select id="vancoSex">
+          <option value="male">Masculino</option>
+          <option value="female">Feminino</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="mini-label">Crítico?</label>
+        <select id="vancoCritical">
+          <option value="no">Não</option>
+          <option value="yes">Sim</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="mini-label">Idade (anos)</label>
+        <input id="vancoAge" type="number" min="0" step="1" placeholder="ex: 63" />
+      </div>
+
+      <div>
+        <label class="mini-label">Peso (kg)</label>
+        <input id="vancoWeight" type="number" min="0" step="0.1" placeholder="ex: 92" />
+      </div>
+
+      <div>
+        <label class="mini-label">Altura (cm)</label>
+        <input id="vancoHeight" type="number" min="0" step="1" placeholder="ex: 170" />
+      </div>
+
+      <div>
+        <label class="mini-label">Creatinina (mg/dL)</label>
+        <input id="vancoScr" type="number" min="0" step="0.01" placeholder="ex: 1.2" />
+      </div>
+
+      <div>
+        <label class="mini-label">Dose (mg)</label>
+        <input id="vancoDoseMg" type="number" min="0" step="1" placeholder="ex: 1000" />
+      </div>
+
+      <div>
+        <label class="mini-label">Intervalo τ (h)</label>
+        <input id="vancoTauH" type="number" min="1" step="0.5" placeholder="ex: 8" />
+      </div>
+
+      <div>
+        <label class="mini-label">Infusão (h)</label>
+        <input id="vancoTinH" type="number" min="0.1" step="0.1" value="1" />
+      </div>
+
+      <div>
+        <label class="mini-label">Início da última infusão</label>
+        <input id="vancoInfStart" type="datetime-local" />
+      </div>
+
+      <div>
+        <label class="mini-label">MIC (mcg/L)</label>
+        <input id="vancoMIC" type="number" min="0.1" step="0.1" value="1" />
+      </div>
+
+      <div>
+        <label class="mini-label">Modelo (prior)</label>
+        <select id="vancoModel">
+          <option value="auto" selected>Auto (regras)</option>
+          <option value="masich2020">Masich 2020 (obeso séptico)</option>
+          <option value="buelga2005">Buelga 2005 (hematologia)</option>
+          <option value="adane2015">Adane 2015 (obesidade extrema) [pendente]</option>
+          <option value="roberts2011">Roberts 2011 (crítico) [pendente]</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="mini-label">σ prior CL (CV)</label>
+        <input id="vancoPriorCvCL" type="number" min="0.05" step="0.05" value="0.30" />
+      </div>
+
+      <div>
+        <label class="mini-label">σ prior V (CV)</label>
+        <input id="vancoPriorCvV" type="number" min="0.05" step="0.05" value="0.30" />
+      </div>
+
+      <div>
+        <label class="mini-label">Erro amostral (SD mg/L)</label>
+        <input id="vancoObsSd" type="number" min="0.1" step="0.1" value="2.0" />
+      </div>
+    </div>
+
+    <div class="actions" style="margin-top: 10px;">
+      <button class="btn-secondary" id="vancoLoadFromLaudo">Importar níveis do laudo</button>
+      <button class="btn-primary" id="vancoCalc">Calcular AUC/MIC</button>
+      <span id="vancoStatus" class="status-text"></span>
+    </div>
+
+    <div id="vancoLevelsWrap" class="vanco-levels"></div>
+
+    <div id="vancoResult" class="vanco-result"></div>
+  </div>
+
+  <p class="hint">
+    Regra: selecione exatamente 2 níveis (pico e vale). Pico ~ 1h após fim da infusão; vale ~ 1h antes da próxima dose.
+  </p>
+</div>
+
+</section>
 
     <footer class="footer">
-      <p class="hint">Versão 1.35</p>
+      <p class="hint">Versão 1.40</p>
     </footer>
     </div>
     
-    <!-- Carrega o JavaScript -->
-  <script src="script.js"></script>
+<!-- Lib para exportar Excel (XLSX) -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="script.js"></script>
+<script src="vancoAuc.js"></script>
+<script src="tableExport.js"></script>
+
 </body>
 </html>

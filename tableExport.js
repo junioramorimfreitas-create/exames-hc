@@ -22,11 +22,13 @@
 
   function buildColumns(dateMap, gasoMap) {
     const orderedDates = app.getAllSortedDates(dateMap, gasoMap);
-    // para cada data, tenta usar a hora do bucket (__time) se tiver
-    return orderedDates.map(date => {
-      const bucket = dateMap.get(date) || {};
-      const time = bucket.__time || "";
-      return { date, time, key: getDateTimeKey(date, time) };
+    // para cada coleta (data+hora), usa os metadados do bucket quando disponíveis
+    return orderedDates.map(collectionKey => {
+      const bucket = dateMap.get(collectionKey) || {};
+      const [datePart = "-", timePart = ""] = String(collectionKey).split("@@");
+      const date = bucket.__date || datePart;
+      const time = bucket.__time || timePart;
+      return { collectionKey, date, time, key: getDateTimeKey(date, time) };
     });
   }
 
@@ -65,9 +67,9 @@
     return found ? found.replace(groupLabel + " ", "") : "";
   }
 
-  function gasoCellText(date, gasoMap, selectedAbbrs, kind) {
-    if (!gasoMap || !gasoMap.has(date)) return "";
-    const lista = gasoMap.get(date);
+  function gasoCellText(collectionKey, gasoMap, selectedAbbrs, kind) {
+    if (!gasoMap || !gasoMap.has(collectionKey)) return "";
+    const lista = gasoMap.get(collectionKey);
 
     let last = null;
     for (const g of lista) {
@@ -105,7 +107,7 @@
       const line = [r.label];
 
       for (const c of cols) {
-        const bucket = dateMap.get(c.date) || {};
+        const bucket = dateMap.get(c.collectionKey) || {};
         let cell = "";
 
         if (r.type === "abbr") {
@@ -113,7 +115,7 @@
         } else if (r.type === "soro") {
           cell = sorologiaCellText(bucket, selectedAbbrs, r.group);
         } else if (r.type === "gaso") {
-          cell = gasoCellText(c.date, gasoMap, selectedAbbrs, r.kind);
+          cell = gasoCellText(c.collectionKey, gasoMap, selectedAbbrs, r.kind);
         }
 
         line.push(cell);

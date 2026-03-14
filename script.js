@@ -297,6 +297,28 @@ function parseDateToSortable(str) {
   return new Date(+m[3], +m[2] - 1, +m[1]);
 }
 
+function makeCollectionKey(dateStr, timeStr) {
+  const safeDate = dateStr || "-";
+  const safeTime = timeStr || "";
+  return `${safeDate}@@${safeTime}`;
+}
+
+function splitCollectionKey(key) {
+  if (typeof key !== "string") return { date: "-", time: "" };
+  const idx = key.indexOf("@@");
+  if (idx === -1) return { date: key || "-", time: "" };
+  return {
+    date: key.slice(0, idx) || "-",
+    time: key.slice(idx + 2) || ""
+  };
+}
+
+function parseTimeToMinutes(timeStr) {
+  const m = (timeStr || "").match(/^(\d{2}):(\d{2})$/);
+  if (!m) return -1;
+  return (+m[1] * 60) + (+m[2]);
+}
+
 // ---------- PARSER DOS EXAMES ----------
 
 function parseExams(rawText) {
@@ -558,17 +580,17 @@ function parseGasometrias(rawText) {
 function buildGasometriaMap(gasos) {
   const map = new Map();
   for (const g of gasos) {
-    const dateKey = g.date || "-";
-    if (!map.has(dateKey)) map.set(dateKey, []);
-    map.get(dateKey).push(g);
+    const collectionKey = makeCollectionKey(g.date || "-", g.time || "");
+    if (!map.has(collectionKey)) map.set(collectionKey, []);
+    map.get(collectionKey).push(g);
   }
   return map;
 }
 
-function buildGasometriaTextForDate(date, gasoMap, selectedAbbrs) {
-  if (!gasoMap || !gasoMap.has(date)) return "";
+function buildGasometriaTextForDate(collectionKey, gasoMap, selectedAbbrs) {
+  if (!gasoMap || !gasoMap.has(collectionKey)) return "";
 
-  const lista = gasoMap.get(date);
+  const lista = gasoMap.get(collectionKey);
   const arterialSelecionada = selectedAbbrs.includes("GasArterial");
   const venosaSelecionada = selectedAbbrs.includes("GasVenosa");
   if (!arterialSelecionada && !venosaSelecionada) return "";
@@ -614,11 +636,14 @@ function buildDateMap(exams, selectedAbbrs) {
     if (!def) continue;
     if (selectedAbbrs && !selectedAbbrs.includes(def.abbr)) continue;
 
-    const dateKey = ex.date || "-";
-    if (!dateMap.has(dateKey)) dateMap.set(dateKey, {});
-    const bucket = dateMap.get(dateKey);
-
-    if (!bucket.__time && ex.time) bucket.__time = ex.time;
+    const collectionKey = makeCollectionKey(ex.date || "-", ex.time || "");
+    if (!dateMap.has(collectionKey)) {
+      dateMap.set(collectionKey, {
+        __date: ex.date || "-",
+        __time: ex.time || ""
+      });
+    }
+    const bucket = dateMap.get(collectionKey);
 
     if (!bucket[def.abbr]) {
       bucket[def.abbr] = { value: ex.value, category: def.category };
@@ -629,10 +654,15 @@ function buildDateMap(exams, selectedAbbrs) {
 
 function sortDates(arr) {
   return arr.sort((a, b) => {
-    const da = parseDateToSortable(a);
-    const db = parseDateToSortable(b);
+    const pa = splitCollectionKey(a);
+    const pb = splitCollectionKey(b);
+
+    const da = parseDateToSortable(pa.date);
+    const db = parseDateToSortable(pb.date);
     if (!da || !db) return 0;
-    return da - db;
+
+    if (+da !== +db) return da - db;
+    return parseTimeToMinutes(pa.time) - parseTimeToMinutes(pb.time);
   });
 }
 
@@ -651,8 +681,11 @@ function generateLinesPerDate(exams, selectedAbbrs, gasoMap) {
   const orderedDates = getAllSortedDates(dateMap, gasoMap);
   const lines = [];
 
-  for (const date of orderedDates) {
-    const bucket = dateMap.get(date) || {};
+  for (const collectionKey of orderedDates) {
+    const bucket = dateMap.get(collectionKey) || {};
+    const keyParts = splitCollectionKey(collectionKey);
+    const date = bucket.__date || keyParts.date;
+    const time = bucket.__time || keyParts.time;
     const parts = [];
 
     for (const abbr of examOrder) {
@@ -666,11 +699,10 @@ function generateLinesPerDate(exams, selectedAbbrs, gasoMap) {
     const sorologiaParts = buildSorologiaParts(bucket, selectedAbbrs);
     parts.push(...sorologiaParts);
 
-    const gasoText = buildGasometriaTextForDate(date, gasoMap, selectedAbbrs);
+    const gasoText = buildGasometriaTextForDate(collectionKey, gasoMap, selectedAbbrs);
     if (gasoText) parts.push(gasoText);
 
     if (parts.length) {
-      const time = (bucket && bucket.__time) ? bucket.__time : "";
       const label = formatDateTimeLabel(date, time);
       lines.push(`(${label}) ${parts.join(" | ")}`);
     }
@@ -684,8 +716,11 @@ function generateTextByCategories(exams, selectedAbbrs, gasoMap) {
   const orderedDates = getAllSortedDates(dateMap, gasoMap);
   const blocks = [];
 
-  for (const date of orderedDates) {
-    const bucket = dateMap.get(date) || {};
+  for (const collectionKey of orderedDates) {
+    const bucket = dateMap.get(collectionKey) || {};
+    const keyParts = splitCollectionKey(collectionKey);
+    const date = bucket.__date || keyParts.date;
+    const time = bucket.__time || keyParts.time;
     const categoryLines = {};
 
     for (const abbr of examOrder) {
@@ -704,13 +739,12 @@ function generateTextByCategories(exams, selectedAbbrs, gasoMap) {
       categoryLines["Sorologias"].push(...sorologiaParts);
     }
 
-    const gasoText = buildGasometriaTextForDate(date, gasoMap, selectedAbbrs);
+    const gasoText = buildGasometriaTextForDate(collectionKey, gasoMap, selectedAbbrs);
     if (gasoText) {
       if (!categoryLines["Gasometria"]) categoryLines["Gasometria"] = [];
       categoryLines["Gasometria"].push(gasoText);
     }
 
-    const time = (bucket && bucket.__time) ? bucket.__time : "";
     const label = formatDateTimeLabel(date, time);
     const linesForDate = [`(${label})`];
 
@@ -969,4 +1003,3 @@ Object.assign(window.__EXAMES_APP__, {
   formatDateTimeLabel,
   prefs
 });
-

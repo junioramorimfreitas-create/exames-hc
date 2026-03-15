@@ -497,7 +497,7 @@ function parseExams(rawText) {
         normalize(value).includes("REAGENTE")
       ) {
         pendingTiterExam = examObj;
-      } else if (normName.includes("CONTRAIMUNO")) {
+      } else if (normName.includes("CONTRAIMUNO") || normName.includes("VDRL")) {
         pendingTiterExam = null;
       }
     }

@@ -418,6 +418,12 @@ function parseExams(rawText) {
       continue;
     }
 
+    // Alguns laudos de líquor vêm com separadores inconsistentes (ex.: "- -")
+    if (/(LIQUOR|LCR)/i.test(normalize(line)) && /\s-\s/i.test(line)) {
+      currentSection = line.trim();
+      continue;
+    }
+
     // Linhas irrelevantes
     if (/Resultado dos 3 últimos exames/i.test(line)) continue;
     if (/Liberado e Validado/i.test(line)) continue;
@@ -429,6 +435,26 @@ function parseExams(rawText) {
     if (/Automatizado|Colorimétrico|Enzimático|Eletrodo íon seletivo|Cinético UV|IFCC|Citometria de fluxo|PCR em Tempo Real|HPLC/i.test(line)) continue;
     if (/Alteração nos valores de referência/i.test(line)) continue;
     if (/Titulos ate 1\/2/i.test(normalize(line))) continue;
+
+    // Culturas positivas em microbiologia podem vir só como "1 - Microrganismo"
+    if (currentSection && /CULTURA/i.test(currentSection)) {
+      const mIsolado = line.match(/^\d+\s*-\s*(.+)$/);
+      if (mIsolado) {
+        const isolado = (mIsolado[1] || "").trim();
+        if (isolado) {
+          exams.push({
+            date: currentDate || "",
+            time: currentTime || "",
+            section: currentSection || "",
+            name: currentSection,
+            value: isolado,
+            unit: "",
+            normName: normalize(currentSection)
+          });
+        }
+        continue;
+      }
+    }
 
     const parts = line.split(/\s{2,}|\t+/).filter(Boolean);
     if (parts.length < 2) continue;

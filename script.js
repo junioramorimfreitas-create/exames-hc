@@ -54,6 +54,9 @@ const examDefinitions = [
   { match: "PESQUISA DE FUNGOS", abbr: "pFUN", category: "Líquor", onlyLiquor: true },
   { match: "PESQUISA DE ANTIGENO DE CRIPTOCOCCUS", abbr: "CrAg", category: "Líquor", onlyLiquor: true },
   { match: "CULTURA PARA FUNGOS", abbr: "cFUN", category: "Líquor", onlyLiquor: true },
+  { match: "CULTURA DE FUNGOS", abbr: "cFUN", category: "Líquor", onlyLiquor: true },
+  { match: "CULTURA P/ FUNGOS", abbr: "cFUN", category: "Líquor", onlyLiquor: true },
+  { match: "CULTURA P FUNGOS", abbr: "cFUN", category: "Líquor", onlyLiquor: true },
   { match: "PESQUISA DE BACILO ALCOOL-ACIDO RESISTENTE", abbr: "pBAAR", category: "Líquor", onlyLiquor: true },
   { match: "TESTE RAPIDO MOLECULAR PARA TUBERCULOSE", abbr: "TRM-TB", category: "Líquor", onlyLiquor: true },
   { match: "CULTURA PARA MICOBACTERIAS", abbr: "cMIC", category: "Líquor", onlyLiquor: true },
@@ -436,7 +439,8 @@ function parseExams(rawText) {
     if (/Alteração nos valores de referência/i.test(line)) continue;
     if (/Titulos ate 1\/2/i.test(normalize(line))) continue;
 
-    // Culturas positivas em microbiologia podem vir só como "1 - Microrganismo"
+    // Culturas positivas em microbiologia podem vir como "1 - Microrganismo"
+    // ou em linha simples (ex.: "Cryptococcus neoformans").
     if (currentSection && /CULTURA/i.test(currentSection)) {
       const mIsolado = line.match(/^\d+\s*-\s*(.+)$/);
       if (mIsolado) {
@@ -452,6 +456,25 @@ function parseExams(rawText) {
             normName: normalize(currentSection)
           });
         }
+        continue;
+      }
+
+      const normLine = normalize(line);
+      const normSection = normalize(currentSection);
+      const isRepeatedSectionName = normLine === normSection || normSection.startsWith(normLine);
+      const isCultureNote = /MATERIAL BIOLOGICO|CONSULTE MANUAL DE EXAMES|LIBERADO E VALIDADO|RESULTADO DOS 3 ULTIMOS EXAMES/i.test(normLine);
+      const isLabelOnly = /:$/.test(line);
+
+      if (!isRepeatedSectionName && !isCultureNote && !isLabelOnly) {
+        exams.push({
+          date: currentDate || "",
+          time: currentTime || "",
+          section: currentSection || "",
+          name: currentSection,
+          value: line,
+          unit: "",
+          normName: normalize(currentSection)
+        });
         continue;
       }
     }

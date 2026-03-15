@@ -412,6 +412,12 @@ function parseExams(rawText) {
       continue;
     }
 
+    // Cabeçalho de seções de outros materiais (ex.: líquor)
+    if (/\s-\s[^-]+\s-\s*,/i.test(line)) {
+      currentSection = line.trim();
+      continue;
+    }
+
     // Linhas irrelevantes
     if (/Resultado dos 3 últimos exames/i.test(line)) continue;
     if (/Liberado e Validado/i.test(line)) continue;

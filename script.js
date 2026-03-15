@@ -374,9 +374,9 @@ function parseExams(rawText) {
     if (!line) continue;
 
     // Linha de título (ex.: "Titulo: 1/32") -> anexa ao último contraimuno reagente
-    if (/^Titulo\s*:/i.test(line)) {
+    if (/^TITULO\s*:/i.test(normalize(line))) {
       if (pendingTiterExam) {
-        const mTit = line.match(/^Titulo\s*:\s*(.+)$/i);
+        const mTit = line.match(/^[Tt][ií]tulo\s*:\s*(.+)$/i);
         if (mTit) {
           const titer = mTit[1].trim();
           if (titer) {
@@ -493,11 +493,11 @@ function parseExams(rawText) {
 
       // Contraimuno reagente → pode ganhar título depois
       if (
-        normName.includes("CONTRAIMUNO") &&
+        (normName.includes("CONTRAIMUNO") || normName.includes("VDRL")) &&
         normalize(value).includes("REAGENTE")
       ) {
         pendingTiterExam = examObj;
-      } else if (normName.includes("CONTRAIMUNO")) {
+      } else if (normName.includes("CONTRAIMUNO") || normName.includes("VDRL")) {
         pendingTiterExam = null;
       }
     }
@@ -683,7 +683,11 @@ function formatLiquorMicroValue(value) {
   if (!raw) return "";
   if (n.includes("PARCIAL NEGAT")) return "PN";
   if (n.includes("NAO DETECT") || n.includes("NAO REAGENTE") || n.includes("NEGAT")) return "neg";
-  if (n.includes("DETECT") || n.includes("REAGENTE") || n.includes("POSIT")) return "pos";
+  if (n.includes("DETECT") || n.includes("REAGENTE") || n.includes("POSIT")) {
+    const mTit = raw.match(/\(([^)]+)\)/);
+    if (mTit) return `pos (${mTit[1].trim()})`;
+    return "pos";
+  }
   if (n.includes("NAO FORAM OBSERVADOS MICRORGANISMOS") || n.includes("AUSENCIA DE MICRORGANISMOS")) return "neg";
   return raw;
 }

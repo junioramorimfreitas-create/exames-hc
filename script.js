@@ -42,6 +42,36 @@ function formatDateTimeLabel(dateStr, timeStr) {
 
 // Mapa de exames -> abreviação e categoria
 const examDefinitions = [
+  // Líquor
+  { match: "CELULAS", abbr: "Cel", category: "Líquor" },
+  { match: "HEMACIAS", abbr: "Hem", category: "Líquor" },
+  { match: "PROTEINAS TOTAIS", abbr: "Pt", category: "Líquor", onlyLiquor: true },
+  { match: "GLICOSE", abbr: "Gli", category: "Líquor", onlyLiquor: true },
+  { match: "LACTATO", abbr: "Lac", category: "Líquor", onlyLiquor: true },
+  { match: "ADENOSINA DEAMINASE", abbr: "ADA", category: "Líquor" },
+  { match: "EXAME BACTERIOSCOPICO", abbr: "Gram", category: "Líquor" },
+  { match: "CULTURA AEROBIA", abbr: "cBAC", category: "Líquor" },
+  { match: "PESQUISA DE FUNGOS", abbr: "pFUN", category: "Líquor" },
+  { match: "PESQUISA DE ANTIGENO DE CRIPTOCOCCUS", abbr: "CrAg", category: "Líquor" },
+  { match: "CULTURA PARA FUNGOS", abbr: "cFUN", category: "Líquor" },
+  { match: "PESQUISA DE BACILO ALCOOL-ACIDO RESISTENTE", abbr: "pBAAR", category: "Líquor" },
+  { match: "TESTE RAPIDO MOLECULAR PARA TUBERCULOSE", abbr: "TRM-TB", category: "Líquor" },
+  { match: "CULTURA PARA MICOBACTERIAS", abbr: "cMIC", category: "Líquor" },
+  { match: "ENTEROVIRUS (EV)", abbr: "EV", category: "Líquor" },
+  { match: "VARICELA ZOSTER (VZV)", abbr: "VZV", category: "Líquor" },
+  { match: "EPSTEIN-BARR (EBV)", abbr: "EBV", category: "Líquor" },
+  { match: "CITOMEGALOVIRUS (CMV)", abbr: "CMV", category: "Líquor" },
+  { match: "ADENOVIRUS (HADV)", abbr: "HAdV", category: "Líquor" },
+  { match: "HERPES SIMPLEX I", abbr: "HSV1", category: "Líquor" },
+  { match: "HERPES SIMPLEX II", abbr: "HSV2", category: "Líquor" },
+  { match: "HERPESVIRUS HUMANO 6", abbr: "HHV6", category: "Líquor" },
+  { match: "HERPESVIRUS HUMANO 7", abbr: "HHV7", category: "Líquor" },
+  { match: "ERITROVIRUS B19", abbr: "PVB19", category: "Líquor" },
+  { match: "VDRL", abbr: "VDRL-LCR", category: "Líquor", onlyLiquor: true },
+  { match: "LINFOCITOS", abbr: "LinfLiquor", category: "Líquor", internal: true },
+  { match: "MONOCITOS", abbr: "MonoLiquor", category: "Líquor", internal: true },
+  { match: "NEUTROFILOS", abbr: "PMN", category: "Líquor" },
+
   // Hemograma
   { match: "HEMOGLOBINA", abbr: "Hb", category: "Hemograma" },
   { match: "HEMATOCRITO", abbr: "Ht", category: "Hemograma" },
@@ -176,6 +206,8 @@ const examDefinitions = [
 ];
 
 const examOrder = [
+  "Cel", "LMN", "PMN", "Hem", "Pt", "Gli", "Lac", "ADA", "Gram", "cBAC", "pFUN", "CrAg", "cFUN", "pBAAR", "TRM-TB", "cMIC",
+  "EV", "VZV", "EBV", "CMV", "HAdV", "HSV1", "HSV2", "HHV6", "HHV7", "PVB19", "VDRL-LCR",
   "Hb", "Ht", "Leuco", "Plaq",
   "PCR", "VHS",
   "Na", "K", "Cl", "Cr", "Ur", "CaT", "CaIon", "Mg", "P", "AcUrico",
@@ -217,6 +249,7 @@ const categoryOrder = [
   "Virologia",
   "Imunológico",
   "Fármacos",
+  "Líquor",
 ];
 
 // Sorologias fúngicas com tratamento especial
@@ -267,7 +300,11 @@ function buildSorologiaParts(bucket, selectedAbbrs) {
 }
 
 function findExamDefinition(examName) {
-  const norm = normalize(examName);
+  const name = typeof examName === "string" ? examName : examName?.name;
+  const section = typeof examName === "string" ? "" : (examName?.section || "");
+  const norm = normalize(name);
+  const normSection = normalize(section);
+  const isLiquor = norm.includes("LIQUOR") || normSection.includes("LIQUOR") || normSection.includes("LCR");
   let bestDef = null;
 
   for (const def of examDefinitions) {
@@ -279,6 +316,8 @@ function findExamDefinition(examName) {
     } else {
       ok = norm.includes(matchNorm);
     }
+    if (ok && def.onlyLiquor && !isLiquor) ok = false;
+    if (ok && def.internal === true && !isLiquor) ok = false;
 
     if (!ok) continue;
 
@@ -627,14 +666,88 @@ function buildGasometriaTextForDate(collectionKey, gasoMap, selectedAbbrs) {
   return parts.join(" | ");
 }
 
+const liquorAbbrSet = new Set([
+  "Cel", "LMN", "PMN", "Hem", "Pt", "Gli", "Lac", "ADA", "Gram", "cBAC", "pFUN", "CrAg", "cFUN", "pBAAR", "TRM-TB", "cMIC",
+  "EV", "VZV", "EBV", "CMV", "HAdV", "HSV1", "HSV2", "HHV6", "HHV7", "PVB19", "VDRL-LCR"
+]);
+
+function formatLiquorMicroValue(value) {
+  const raw = (value || "").trim();
+  const n = normalize(raw);
+  if (!raw) return "";
+  if (n.includes("PARCIAL NEGAT")) return "PN";
+  if (n.includes("NAO DETECT") || n.includes("NAO REAGENTE") || n.includes("NEGAT")) return "neg";
+  if (n.includes("DETECT") || n.includes("REAGENTE") || n.includes("POSIT")) return "pos";
+  if (n.includes("NAO FORAM OBSERVADOS MICRORGANISMOS") || n.includes("AUSENCIA DE MICRORGANISMOS")) return "neg";
+  return raw;
+}
+
+function buildLiquorText(bucket, selectedAbbrs) {
+  const selectedLiquor = selectedAbbrs.filter(abbr => liquorAbbrSet.has(abbr));
+  if (!selectedLiquor.length) return "";
+
+  const parts = [];
+
+  if (selectedAbbrs.includes("Cel") && bucket.Cel) {
+    let cellText = `Cel ${bucket.Cel.value}`;
+    if (selectedAbbrs.includes("LMN") || selectedAbbrs.includes("PMN")) {
+      const linf = parseFloat(String(bucket.LinfLiquor?.value || "").replace(",", "."));
+      const mono = parseFloat(String(bucket.MonoLiquor?.value || "").replace(",", "."));
+      const pmn = bucket.PMN?.value;
+      const cellSub = [];
+      if (selectedAbbrs.includes("LMN") && Number.isFinite(linf) && Number.isFinite(mono)) {
+        cellSub.push(`${(linf + mono).toString().replace(".", ",")}% LMN`);
+      }
+      if (selectedAbbrs.includes("PMN") && pmn != null) {
+        cellSub.push(`${pmn}% PMN`);
+      }
+      if (cellSub.length) cellText += ` (${cellSub.join(" / ")})`;
+    }
+    parts.push(cellText);
+  } else {
+    if (selectedAbbrs.includes("LMN")) {
+      const linf = parseFloat(String(bucket.LinfLiquor?.value || "").replace(",", "."));
+      const mono = parseFloat(String(bucket.MonoLiquor?.value || "").replace(",", "."));
+      if (Number.isFinite(linf) && Number.isFinite(mono)) parts.push(`LMN ${(linf + mono).toString().replace(".", ",")}%`);
+    }
+    if (selectedAbbrs.includes("PMN") && bucket.PMN) parts.push(`PMN ${bucket.PMN.value}%`);
+  }
+
+  if (selectedAbbrs.includes("Hem") && bucket.Hem) parts.push(`Hem ${bucket.Hem.value}`);
+  if (selectedAbbrs.includes("Pt") && bucket.Pt) parts.push(`Pt ${bucket.Pt.value}`);
+  if (selectedAbbrs.includes("Gli") && bucket.Gli) parts.push(`Gli ${bucket.Gli.value}`);
+  if (selectedAbbrs.includes("Lac") && bucket.Lac) parts.push(`Lac ${bucket.Lac.value}`);
+  if (selectedAbbrs.includes("ADA") && bucket.ADA) parts.push(`ADA ${bucket.ADA.value}`);
+  if (selectedAbbrs.includes("Gram") && bucket.Gram) parts.push(`Gram ${formatLiquorMicroValue(bucket.Gram.value)}`);
+  if (selectedAbbrs.includes("cBAC") && bucket.cBAC) parts.push(`cBAC ${formatLiquorMicroValue(bucket.cBAC.value)}`);
+  if (selectedAbbrs.includes("pFUN") && bucket.pFUN) parts.push(`pFUN ${formatLiquorMicroValue(bucket.pFUN.value)}`);
+  if (selectedAbbrs.includes("CrAg") && bucket.CrAg) parts.push(`CrAg ${formatLiquorMicroValue(bucket.CrAg.value)}`);
+  if (selectedAbbrs.includes("cFUN") && bucket.cFUN) parts.push(`cFUN ${formatLiquorMicroValue(bucket.cFUN.value)}`);
+  if (selectedAbbrs.includes("pBAAR") && bucket.pBAAR) parts.push(`pBAAR ${formatLiquorMicroValue(bucket.pBAAR.value)}`);
+  if (selectedAbbrs.includes("TRM-TB") && bucket["TRM-TB"]) parts.push(`TRM-TB ${formatLiquorMicroValue(bucket["TRM-TB"].value)}`);
+  if (selectedAbbrs.includes("cMIC") && bucket.cMIC) parts.push(`cMIC ${formatLiquorMicroValue(bucket.cMIC.value)}`);
+
+  const viralAbbrs = ["EV", "VZV", "EBV", "CMV", "HAdV", "HSV1", "HSV2", "HHV6", "HHV7", "PVB19"];
+  const viral = viralAbbrs
+    .filter(abbr => selectedAbbrs.includes(abbr) && bucket[abbr])
+    .map(abbr => `${abbr} ${formatLiquorMicroValue(bucket[abbr].value)}`);
+  if (viral.length) parts.push(`Painel viral: ${viral.join(" | ")}`);
+
+  if (selectedAbbrs.includes("VDRL-LCR") && bucket["VDRL-LCR"]) parts.push(`VDRL ${formatLiquorMicroValue(bucket["VDRL-LCR"].value)}`);
+
+  if (!parts.length) return "";
+  return `LCR: ${parts.join(" | ")}`;
+}
+
 // ---------- Construção por data ----------
 
 function buildDateMap(exams, selectedAbbrs) {
   const dateMap = new Map();
   for (const ex of exams) {
-    const def = findExamDefinition(ex.name);
+    const def = findExamDefinition(ex);
     if (!def) continue;
-    if (selectedAbbrs && !selectedAbbrs.includes(def.abbr)) continue;
+    const isRequiredInternal = def.internal && selectedAbbrs && selectedAbbrs.includes("LMN");
+    if (selectedAbbrs && !selectedAbbrs.includes(def.abbr) && !isRequiredInternal) continue;
 
     const collectionKey = makeCollectionKey(ex.date || "-", ex.time || "");
     if (!dateMap.has(collectionKey)) {
@@ -690,6 +803,7 @@ function generateLinesPerDate(exams, selectedAbbrs, gasoMap) {
 
     for (const abbr of examOrder) {
       if (sorologiaAbbrs.has(abbr)) continue;
+      if (liquorAbbrSet.has(abbr)) continue;
       if (!selectedAbbrs.includes(abbr)) continue;
       if (bucket[abbr]) {
         parts.push(`${getDisplayName(abbr)} ${bucket[abbr].value}`);
@@ -698,6 +812,9 @@ function generateLinesPerDate(exams, selectedAbbrs, gasoMap) {
 
     const sorologiaParts = buildSorologiaParts(bucket, selectedAbbrs);
     parts.push(...sorologiaParts);
+
+    const liquorText = buildLiquorText(bucket, selectedAbbrs);
+    if (liquorText) parts.push(liquorText);
 
     const gasoText = buildGasometriaTextForDate(collectionKey, gasoMap, selectedAbbrs);
     if (gasoText) parts.push(gasoText);
@@ -725,6 +842,7 @@ function generateTextByCategories(exams, selectedAbbrs, gasoMap) {
 
     for (const abbr of examOrder) {
       if (sorologiaAbbrs.has(abbr)) continue;
+      if (liquorAbbrSet.has(abbr)) continue;
       if (!selectedAbbrs.includes(abbr)) continue;
       const entry = bucket[abbr];
       if (!entry) continue;
@@ -737,6 +855,12 @@ function generateTextByCategories(exams, selectedAbbrs, gasoMap) {
     if (sorologiaParts.length) {
       if (!categoryLines["Sorologias"]) categoryLines["Sorologias"] = [];
       categoryLines["Sorologias"].push(...sorologiaParts);
+    }
+
+    const liquorText = buildLiquorText(bucket, selectedAbbrs);
+    if (liquorText) {
+      if (!categoryLines["Líquor"]) categoryLines["Líquor"] = [];
+      categoryLines["Líquor"].push(liquorText.replace(/^LCR:\s*/, ""));
     }
 
     const gasoText = buildGasometriaTextForDate(collectionKey, gasoMap, selectedAbbrs);

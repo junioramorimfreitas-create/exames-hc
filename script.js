@@ -1256,6 +1256,11 @@ function autoGenerate() {
       window.__EXAMES_APP__.updateTable();
     }
   }
+
+  // Atualização reativa do gráfico
+  if (window.__EXAMES_APP__ && typeof window.__EXAMES_APP__.updateChart === "function") {
+    window.__EXAMES_APP__.updateChart();
+  }
 }
 
 function setupSegmented(containerId, onPick) {
@@ -1331,6 +1336,11 @@ Object.assign(window.__EXAMES_APP__, {
       
       const icon = themeToggle.querySelector(".theme-icon");
       if (icon) icon.textContent = isDark ? "☀️" : "🌙";
+
+      // Atualizar o gráfico para refletir as novas cores do tema
+      if (window.__EXAMES_APP__ && typeof window.__EXAMES_APP__.updateChart === "function") {
+        window.__EXAMES_APP__.updateChart();
+      }
     });
   }
 })();

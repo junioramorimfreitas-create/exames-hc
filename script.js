@@ -10,7 +10,8 @@ function normalize(str) {
 // ---------- Preferências de exibição (Data/Hora) ----------
 const prefs = {
   dateFormat: "ddmmyy",  // ddmm | ddmmyy | ddmmyyyy
-  showTime: false
+  showTime: false,
+  viewMode: "line"       // line | categories
 };
 
 function parseColetadoEmLine(line) {
@@ -479,7 +480,48 @@ function parseExams(rawText) {
       }
     }
 
-    const parts = line.split(/\s{2,}|\t+/).filter(Boolean);
+    if (currentSection && /GASOMETRIA/i.test(currentSection)) {
+      continue;
+    }
+
+    let parts = line.split(/\s{2,}|\t+/).filter(Boolean);
+    if (parts.length < 2) {
+      // Tenta fazer o split inteligente por espaço simples se contiver algum termo mapeado
+      let bestMatchDef = null;
+      const normLine = normalize(line);
+      const isLiquor = normLine.includes("LIQUOR") || normalize(currentSection).includes("LIQUOR") || normalize(currentSection).includes("LCR");
+
+      for (const def of examDefinitions) {
+        if (def.onlyLiquor && !isLiquor) continue;
+        if (def.internal === true && !isLiquor) continue;
+
+        if (normLine.includes(def.match)) {
+          if (!bestMatchDef || def.match.length > bestMatchDef.match.length) {
+            bestMatchDef = def;
+          }
+        }
+      }
+
+      if (bestMatchDef) {
+        const matchPos = normLine.indexOf(bestMatchDef.match);
+        if (matchPos !== -1) {
+          const splitIndex = matchPos + bestMatchDef.match.length;
+          const namePart = line.slice(0, splitIndex).trim();
+          const remainder = line.slice(splitIndex).trim();
+          
+          if (remainder) {
+            const normRemainder = normalize(remainder);
+            const startsWithVal = /^[<>*]?\s*\d/.test(remainder);
+            const isQualitative = /^(REAGENTE|NAO\s+REAGENTE|NEGATIVO|POSITIVO|INDETERMINADO|NORMAL|DETECTADO|NAO\s+DETECTADO|NEG|POS|NR|AUSENCIA|NAO\s+FORAM|PARCIAL)\b/.test(normRemainder);
+            
+            if (startsWithVal || isQualitative) {
+              parts = [namePart, remainder];
+            }
+          }
+        }
+      }
+    }
+
     if (parts.length < 2) continue;
 
     let name = parts[0];
@@ -948,8 +990,8 @@ function generateTextByCategories(exams, selectedAbbrs, gasoMap) {
 // ---------- Integração com a interface ----------
 
 const rawInput = document.getElementById("rawInput");
-const btnGenerateLine = document.getElementById("btnGenerateLine");
-const btnGenerateCategories = document.getElementById("btnGenerateCategories");
+const btnModeLine = document.getElementById("btnModeLine");
+const btnModeCategories = document.getElementById("btnModeCategories");
 const btnCopyText = document.getElementById("btnCopyText");
 const outputText = document.getElementById("outputText");
 const statusEl = document.getElementById("status");
@@ -959,86 +1001,136 @@ const btnSelectAllExams = document.getElementById("btnSelectAllExams");
 const btnClearAllExams = document.getElementById("btnClearAllExams");
 const btnSelectRoutine = document.getElementById("btnSelectRoutine");
 
+const btnClearInput = document.getElementById("btnClearInput");
+const btnToggleFilters = document.getElementById("btnToggleFilters");
+const examFilterDrawer = document.getElementById("examFilterDrawer");
+const filterStatusLabel = document.getElementById("filterStatusLabel");
+const toastContainer = document.getElementById("toastContainer");
+const btnCloseDrawer = document.getElementById("btnCloseDrawer");
+const drawerBackdrop = document.getElementById("drawerBackdrop");
+
+// Mover o drawer de filtros para o body para mantê-lo fora do layout grid principal
+if (examFilterDrawer && document.body) {
+  document.body.appendChild(examFilterDrawer);
+}
+
 function getSelectedAbbrs() {
   return Array.from(examCheckboxes)
     .filter((cb) => cb.checked)
     .map((cb) => cb.value);
 }
 
-function generate(mode) {
-  if (!rawInput || !outputText || !statusEl) return;
+// ---------- Toasts e Contadores de Filtros ----------
 
-  const raw = rawInput.value.trim();
-  statusEl.textContent = "";
+function showToast(message) {
+  if (!toastContainer) return;
+  
+  // Remove existing toasts first to prevent stacking clutter
+  const existingToasts = toastContainer.querySelectorAll(".toast");
+  existingToasts.forEach((t) => t.remove());
 
-  if (!raw) {
-    outputText.value = "Cole o laudo bruto no campo acima antes de gerar o texto.";
-    return;
-  }
+  const toast = document.createElement("div");
+  toast.className = "toast";
+  toast.innerHTML = `<span>📋</span> <span>${message}</span>`;
+  toastContainer.appendChild(toast);
+  
+  // Trigger transition
+  setTimeout(() => {
+    toast.classList.add("show");
+  }, 10);
+  
+  // Clean up
+  setTimeout(() => {
+    toast.classList.remove("show");
+    setTimeout(() => {
+      toast.remove();
+    }, 300);
+  }, 2500);
+}
 
-  const selectedAbbrs = getSelectedAbbrs();
-  const exams = parseExams(raw);
-  const gasos = parseGasometrias(raw);
-  const gasoMap = buildGasometriaMap(gasos);
-
-  if (!exams.length && !gasos.length) {
-    outputText.value = "Nenhum exame reconhecido. Confira se o texto foi copiado completo do sistema.";
-    statusEl.textContent = "";
-    return;
-  }
-
-  let text = "";
-  if (mode === "line") {
-    const lines = generateLinesPerDate(exams, selectedAbbrs, gasoMap);
-    text = lines.join("\n") || "Nenhum exame correspondente aos filtros selecionados.";
-  } else {
-    text = generateTextByCategories(exams, selectedAbbrs, gasoMap) ||
-      "Nenhum exame correspondente aos filtros selecionados.";
-  }
-
-  outputText.value = text;
-  statusEl.textContent =
-    `Exames reconhecidos: ${exams.length}. Gasometrias reconhecidas: ${gasos.length}. Filtros ativos: ${selectedAbbrs.length}.`;
-
-window.__EXAMES_APP__.last = {
-  raw,
-  selectedAbbrs,
-  exams,
-  gasos,
-  gasoMap,
-  dateMap: buildDateMap(exams, selectedAbbrs),
-  lines: mode === "line"
-    ? generateLinesPerDate(exams, selectedAbbrs, gasoMap)
-    : []
-};
-
-
+function updateFilterCount() {
+  if (!filterStatusLabel || !examCheckboxes) return;
+  const total = examCheckboxes.length;
+  const active = Array.from(examCheckboxes).filter((cb) => cb.checked).length;
+  filterStatusLabel.textContent = `Filtros de Exames (${active} de ${total} ativos)`;
 }
 
 // ---------- Eventos ----------
 
-if (btnGenerateLine) {
-  btnGenerateLine.addEventListener("click", () => generate("line"));
+if (btnModeLine) {
+  btnModeLine.addEventListener("click", () => {
+    prefs.viewMode = "line";
+    if (btnModeCategories) btnModeCategories.classList.remove("active");
+    btnModeLine.classList.add("active");
+    autoGenerate();
+  });
 }
 
-if (btnGenerateCategories) {
-  btnGenerateCategories.addEventListener("click", () => generate("categories"));
+if (btnModeCategories) {
+  btnModeCategories.addEventListener("click", () => {
+    prefs.viewMode = "categories";
+    if (btnModeLine) btnModeLine.classList.remove("active");
+    btnModeCategories.classList.add("active");
+    autoGenerate();
+  });
 }
 
-if (btnCopyText && outputText && statusEl) {
+if (btnClearInput) {
+  btnClearInput.addEventListener("click", () => {
+    if (rawInput) rawInput.value = "";
+    if (outputText) outputText.value = "";
+    if (statusEl) statusEl.textContent = "";
+    showToast("Laudo bruto limpo");
+    autoGenerate();
+  });
+}
+
+if (btnToggleFilters && examFilterDrawer) {
+  examFilterDrawer.style.display = "";
+  
+  const openDrawer = () => {
+    examFilterDrawer.classList.add("open");
+    if (drawerBackdrop) drawerBackdrop.classList.add("open");
+    btnToggleFilters.classList.add("active");
+  };
+
+  const closeDrawer = () => {
+    examFilterDrawer.classList.remove("open");
+    if (drawerBackdrop) drawerBackdrop.classList.remove("open");
+    btnToggleFilters.classList.remove("active");
+  };
+
+  btnToggleFilters.addEventListener("click", () => {
+    if (examFilterDrawer.classList.contains("open")) {
+      closeDrawer();
+    } else {
+      openDrawer();
+    }
+  });
+
+  if (btnCloseDrawer) {
+    btnCloseDrawer.addEventListener("click", closeDrawer);
+  }
+
+  if (drawerBackdrop) {
+    drawerBackdrop.addEventListener("click", closeDrawer);
+  }
+}
+
+if (btnCopyText && outputText) {
   btnCopyText.addEventListener("click", () => {
     const text = outputText.value.trim();
     if (!text) {
-      statusEl.textContent = "Nada para copiar ainda. Gere o texto primeiro.";
+      showToast("Nada para copiar ainda. Gere o texto primeiro.");
       return;
     }
     navigator.clipboard
       .writeText(text)
       .then(() => {
-        statusEl.textContent = "Texto copiado para a área de transferência.";
+        showToast("Texto copiado!");
       })
       .catch(() => {
-        statusEl.textContent = "Não foi possível copiar automaticamente.";
+        showToast("Erro ao copiar automaticamente.");
       });
   });
 }
@@ -1111,6 +1203,7 @@ if (rawInput) {
 }
 
 function autoGenerate() {
+  updateFilterCount();
   if (!rawInput || !outputText || !statusEl) return;
 
   const raw = rawInput.value.trim();
@@ -1125,9 +1218,22 @@ function autoGenerate() {
   const gasos = parseGasometrias(raw);
   const gasoMap = buildGasometriaMap(gasos);
 
-  const lines = generateLinesPerDate(exams, selectedAbbrs, gasoMap);
+  if (!exams.length && !gasos.length) {
+    outputText.value = "Nenhum exame reconhecido. Confira se o texto foi copiado completo do sistema.";
+    statusEl.textContent = "";
+    return;
+  }
 
-  outputText.value = lines.join("\n");
+  let text = "";
+  if (prefs.viewMode === "categories") {
+    text = generateTextByCategories(exams, selectedAbbrs, gasoMap) ||
+      "Nenhum exame correspondente aos filtros selecionados.";
+  } else {
+    const lines = generateLinesPerDate(exams, selectedAbbrs, gasoMap);
+    text = lines.join("\n") || "Nenhum exame correspondente aos filtros selecionados.";
+  }
+
+  outputText.value = text;
   statusEl.textContent =
     `Exames reconhecidos: ${exams.length}. Gasometrias reconhecidas: ${gasos.length}.`;
 
@@ -1138,10 +1244,18 @@ function autoGenerate() {
     gasos,
     gasoMap,
     dateMap: buildDateMap(exams, selectedAbbrs),
-    lines: generateLinesPerDate(exams, selectedAbbrs, gasoMap)
+    lines: prefs.viewMode === "line"
+      ? generateLinesPerDate(exams, selectedAbbrs, gasoMap)
+      : []
   };
 
-  
+  // Atualização reativa da tabela
+  if (window.__EXAMES_APP__ && typeof window.__EXAMES_APP__.updateTable === "function") {
+    const tableContainer = document.getElementById("tableContainer");
+    if (tableContainer && tableContainer.style.display === "block") {
+      window.__EXAMES_APP__.updateTable();
+    }
+  }
 }
 
 function setupSegmented(containerId, onPick) {
@@ -1184,5 +1298,43 @@ Object.assign(window.__EXAMES_APP__, {
   sorologiaGroups, // opcional
   getSelectedAbbrs,
   formatDateTimeLabel,
-  prefs
+  prefs,
+  liquorAbbrSet,
+  formatLiquorMicroValue
 });
+
+// ---------- Alternância de Tema (Light/Dark Mode) ----------
+(function setupTheme() {
+  const themeToggle = document.getElementById("themeToggle");
+  let currentTheme = "light";
+  
+  try {
+    currentTheme = localStorage.getItem("theme") || "light";
+  } catch(e) {}
+
+  if (currentTheme === "dark") {
+    document.body.classList.add("dark-theme");
+    if (themeToggle) {
+      const icon = themeToggle.querySelector(".theme-icon");
+      if (icon) icon.textContent = "☀️";
+    }
+  }
+
+  if (themeToggle) {
+    themeToggle.addEventListener("click", () => {
+      document.body.classList.toggle("dark-theme");
+      const isDark = document.body.classList.contains("dark-theme");
+      
+      try {
+        localStorage.setItem("theme", isDark ? "dark" : "light");
+      } catch(e) {}
+      
+      const icon = themeToggle.querySelector(".theme-icon");
+      if (icon) icon.textContent = isDark ? "☀️" : "🌙";
+    });
+  }
+})();
+
+// Inicializar contagem de filtros
+updateFilterCount();
+

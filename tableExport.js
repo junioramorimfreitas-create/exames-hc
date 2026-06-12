@@ -43,12 +43,14 @@
       rows.push({ label: abbr, type: "abbr", abbr });
     }
 
-    // Sorologias fúngicas (agrupadas do seu jeito)
-    // (coloca uma linha por grupo: Histoplasma / Aspergillus / Paracoco)
-    const anySorologiaSelected = selectedAbbrs.some(a => app.sorologiaAbbrs.has(a));
-    if (anySorologiaSelected) {
+    // Sorologias fúngicas (agrupadas do seu jeito, apenas se selecionadas)
+    if (selectedAbbrs.includes("ID Histoplasma") || selectedAbbrs.includes("CI Histoplasma")) {
       rows.push({ label: "Histoplasma (ID/CI)", type: "soro", group: "Histoplasma" });
+    }
+    if (selectedAbbrs.includes("ID Aspergillus") || selectedAbbrs.includes("CI Aspergillus")) {
       rows.push({ label: "Aspergillus (ID/CI)", type: "soro", group: "Aspergillus" });
+    }
+    if (selectedAbbrs.includes("ID P. brasiliensis") || selectedAbbrs.includes("CI P. brasiliensis")) {
       rows.push({ label: "Paracoco (ID/CI)", type: "soro", group: "Paracoco" });
     }
 
@@ -111,7 +113,22 @@
         let cell = "";
 
         if (r.type === "abbr") {
-          cell = bucket[r.abbr]?.value ?? "";
+          if (r.abbr === "LMN") {
+            const linf = parseFloat(String(bucket.LinfLiquor?.value || "").replace(",", "."));
+            const mono = parseFloat(String(bucket.MonoLiquor?.value || "").replace(",", "."));
+            if (Number.isFinite(linf) && Number.isFinite(mono)) {
+              cell = `${(linf + mono).toString().replace(".", ",")}%`;
+            } else {
+              cell = "";
+            }
+          } else {
+            let val = bucket[r.abbr]?.value ?? "";
+            const isLiquorQualitative = app.liquorAbbrSet?.has(r.abbr) && !["Cel", "Hem", "Pt", "Gli", "Lac", "ADA"].includes(r.abbr);
+            if (isLiquorQualitative && typeof app.formatLiquorMicroValue === "function") {
+              val = app.formatLiquorMicroValue(val);
+            }
+            cell = val;
+          }
         } else if (r.type === "soro") {
           cell = sorologiaCellText(bucket, selectedAbbrs, r.group);
         } else if (r.type === "gaso") {
@@ -167,11 +184,11 @@
       .replaceAll("'", "&#039;");
   }
 
-  btnGenerateTable?.addEventListener("click", () => {
+  function updateTable() {
     const raw = (rawInput?.value || "").trim();
     if (!raw) {
-      tableContainer.innerHTML = "";
-      btnExportExcel.disabled = true;
+      if (tableContainer) tableContainer.innerHTML = "";
+      if (btnExportExcel) btnExportExcel.disabled = true;
       lastAOA = null;
       return;
     }
@@ -179,10 +196,17 @@
     const { aoa } = buildAOA(raw);
     lastAOA = aoa;
     renderTable(aoa);
+    if (btnExportExcel) btnExportExcel.disabled = false;
+  }
+
+  // Expor updateTable para permitir sincronização reativa pelo script.js
+  app.updateTable = updateTable;
+
+  btnGenerateTable?.addEventListener("click", () => {
+    updateTable();
     tableVisible = true;
-    tableContainer.style.display = "block";
-    btnToggleTable.textContent = "Ocultar tabela";
-    btnExportExcel.disabled = false;
+    if (tableContainer) tableContainer.style.display = "block";
+    if (btnToggleTable) btnToggleTable.textContent = "Ocultar tabela";
   });
 
   btnExportExcel?.addEventListener("click", () => {
@@ -190,17 +214,21 @@
     exportExcel(lastAOA);
   });
 
-btnToggleTable?.addEventListener("click", () => {
-  tableVisible = !tableVisible;
+  btnToggleTable?.addEventListener("click", () => {
+    tableVisible = !tableVisible;
 
-  if (tableVisible) {
-    tableContainer.style.display = "block";
-    btnToggleTable.textContent = "Ocultar tabela";
-  } else {
-    tableContainer.style.display = "none";
-    btnToggleTable.textContent = "Mostrar tabela";
-  }
-});
+    if (tableVisible) {
+      if (tableContainer) tableContainer.style.display = "block";
+      if (btnToggleTable) btnToggleTable.textContent = "Ocultar tabela";
+      // Se tornou visível e a tabela não foi gerada ainda, gera
+      if (!lastAOA) {
+        updateTable();
+      }
+    } else {
+      if (tableContainer) tableContainer.style.display = "none";
+      if (btnToggleTable) btnToggleTable.textContent = "Mostrar tabela";
+    }
+  });
 
 
 })();

@@ -770,9 +770,28 @@
           </div>
           <div id="tableContainer"></div>
         </div>
+
+
       </div>
 
     </div> <!-- Fim dashboard-grid -->
+
+    <!-- Gráfico de Evolução (Largura Total) -->
+    <div class="row" style="margin-top: 32px;">
+      <label>Gráfico de Evolução Temporal</label>
+      <div class="actions" style="margin-bottom:12px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+        <button class="btn-secondary" id="btnToggleChart">
+          Mostrar gráfico
+        </button>
+        <div id="chartSelectorContainer" style="display: none; align-items: center; gap: 8px;">
+          <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-secondary);">Exame:</span>
+          <select id="chartExamSelector" class="chart-selector"></select>
+        </div>
+      </div>
+      <div id="chartContainer" style="display: none;">
+        <canvas id="evolutionChart" style="max-height: 350px; width: 100%;"></canvas>
+      </div>
+    </div>
 
     <footer class="footer">
       <p class="hint">Versão 2.0</p>
@@ -787,7 +806,10 @@
 
   <!-- Lib para exportar Excel (XLSX) -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <!-- Chart.js para gráficos -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="script.js"></script>
   <script src="tableExport.js"></script>
+  <script src="chartManager.js"></script>
 </body>
 </html>

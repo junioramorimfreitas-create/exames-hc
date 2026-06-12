@@ -791,3 +791,38 @@ body.dark-theme .btn-primary:hover {
   transform: translateY(0);
 }
 
+/* ==========================================================================
+   Gráficos (Chart Container & Controls)
+   ========================================================================== */
+
+#chartContainer {
+  margin-top: 14px;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.4s ease;
+}
+
+.chart-selector {
+  font-family: var(--font-main);
+  padding: 6px 16px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border-color);
+  background-color: var(--btn-sec-bg);
+  color: var(--btn-sec-text);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  outline: none;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s ease;
+}
+
+.chart-selector:hover, .chart-selector:focus {
+  border-color: var(--primary);
+  background-color: var(--btn-sec-hover);
+  color: var(--text-primary);
+}
+

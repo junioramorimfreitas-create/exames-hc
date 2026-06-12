@@ -3,761 +3,791 @@
 <head>
   <meta charset="UTF-8" />
   <title>Organizador de Exames - HCFMUSP</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div class="page">
-    <h1>Organizador de Exames do HC</h1>
+    <div class="header-wrapper">
+      <h1>Organizador de Exames do HC</h1>
+      <div class="header-actions" style="display: flex; align-items: center; gap: 12px;">
+        <button type="button" class="btn-secondary" id="btnToggleFilters" style="border-radius: 12px; padding: 10px 16px; display: flex; align-items: center; gap: 8px; font-weight: 600;">
+          <span id="filterStatusLabel">Filtros de Exames (Carregando...)</span>
+          <span class="arrow-icon" style="transition: transform 0.3s ease; font-size: 0.8rem;">▼</span>
+        </button>
+        <button type="button" id="themeToggle" class="btn-theme" aria-label="Alternar tema">
+          <span class="theme-icon">🌙</span>
+        </button>
+      </div>
+    </div>
     <p class="subtitle">
       Cole abaixo o laudo bruto dos exames laboratoriais do HCFMUSP (copia/cola da tela) e use os botões para gerar o texto no formato de prontuário.
     </p>
 
-    <!-- Entrada do laudo bruto -->
-    <div class="row">
-      <label for="rawInput">Laudo bruto</label>
-      <textarea id="rawInput" placeholder="Cole aqui o laudo inteiro com os exames..."></textarea>
-    </div>
+    <!-- Layout Split Dashboard -->
+    <div class="dashboard-grid">
+      
+      <!-- Painel da Esquerda: Entrada de Dados e Filtros -->
+      <div class="left-panel">
+        
+        <!-- Entrada do laudo bruto -->
+        <div class="row">
+          <div class="input-header" style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+            <label for="rawInput" style="margin-bottom:0;">Laudo bruto</label>
+            <button type="button" class="btn-secondary btn-small" id="btnClearInput">Limpar Laudo</button>
+          </div>
+          <textarea id="rawInput" placeholder="Cole aqui o laudo inteiro com os exames..."></textarea>
+        </div>
 
-    <!-- Seleção de exames -->
-    <div class="row">
-      <label>Exames a incluir no texto</label>
 
-      <!-- Botões de seleção em massa -->
-      <div class="exam-mass-actions">
-        <button type="button" class="btn-secondary btn-small" id="btnSelectAllExams">
-          Selecionar todos
-        </button>
-        <button type="button" class="btn-secondary btn-small" id="btnClearAllExams">
-          Desselecionar todos
-        </button>
-        <button type="button" class="btn-secondary btn-small" id="btnSelectRoutine">
-          Selecionar rotina
-        </button>
+
+        <!-- Seleção de exames (Drawer Lateral) -->
+        <div class="row" id="examFilterDrawer" style="display: none;">
+          <div class="drawer-header">
+            <h2>Filtros de Exames</h2>
+            <button type="button" id="btnCloseDrawer" class="btn-close-drawer" aria-label="Fechar filtros">&times;</button>
+          </div>
+          <div class="drawer-body">
+          <!-- Botões de seleção em massa -->
+          <div class="exam-mass-actions" style="margin-bottom: 12px;">
+            <button type="button" class="btn-secondary btn-small" id="btnSelectAllExams">
+              Selecionar todos
+            </button>
+            <button type="button" class="btn-secondary btn-small" id="btnClearAllExams">
+              Desselecionar todos
+            </button>
+            <button type="button" class="btn-secondary btn-small" id="btnSelectRoutine">
+              Selecionar rotina
+            </button>
+          </div>
+
+          <div class="exam-filters">
+
+            <!-- Hemograma -->
+            <div class="exam-group">
+              <div class="exam-group-title">
+                Hemograma
+                <div class="category-actions">
+                  <button type="button" class="category-btn category-select" data-category="Hemograma">Tudo</button>
+                  <button type="button" class="category-btn category-clear" data-category="Hemograma">Limpar</button>
+                </div>
+              </div>
+              <div class="exam-buttons">
+                <label class="exam-toggle">
+                  <input type="checkbox" value="Hb" data-category="Hemograma" checked />
+                  <span>Hb</span>
+                </label>
+                <label class="exam-toggle">
+                  <input type="checkbox" value="Ht" data-category="Hemograma" checked />
+                  <span>Ht</span>
+                </label>
+                <label class="exam-toggle">
+                  <input type="checkbox" value="Leuco" data-category="Hemograma" checked />
+                  <span>Leuco</span>
+                </label>
+                <label class="exam-toggle">
+                  <input type="checkbox" value="Plaq" data-category="Hemograma" checked />
+                  <span>Plaq</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Marcadores inflamatórios -->
+            <div class="exam-group">
+              <div class="exam-group-title">
+                Marcadores inflamatórios
+                <div class="category-actions">
+                  <button type="button" class="category-btn category-select" data-category="Marcadores inflamatórios">Tudo</button>
+                  <button type="button" class="category-btn category-clear" data-category="Marcadores inflamatórios">Limpar</button>
+                </div>
+              </div>
+              <div class="exam-buttons">
+                <label class="exam-toggle">
+                  <input type="checkbox" value="PCR" data-category="Marcadores inflamatórios" />
+                  <span>PCR</span>
+                </label>
+                <label class="exam-toggle">
+                  <input type="checkbox" value="VHS" data-category="Marcadores inflamatórios" />
+                  <span>VHS</span>
+                </label>
+              </div>
+            </div>
+            
+            <!-- Eletrólitos / Renal -->
+            <div class="exam-group">
+              <div class="exam-group-title">
+                Eletrólitos / Renal
+                <div class="category-actions">
+                  <button type="button" class="category-btn category-select" data-category="Eletrólitos/Renal">Tudo</button>
+                  <button type="button" class="category-btn category-clear" data-category="Eletrólitos/Renal">Limpar</button>
+                </div>
+              </div>
+              <div class="exam-buttons">
+                <label class="exam-toggle">
+                  <input type="checkbox" value="Na" data-category="Eletrólitos/Renal" checked />
+                  <span>Na</span>
+                </label>
+                <label class="exam-toggle">
+                  <input type="checkbox" value="K" data-category="Eletrólitos/Renal" checked />
+                  <span>K</span>
+                </label>
+                <label class="exam-toggle">
+                  <input type="checkbox" value="Cl" data-category="Eletrólitos/Renal" />
+                  <span>Cl</span>
+                </label>
+                <label class="exam-toggle">
+                  <input type="checkbox" value="Cr" data-category="Eletrólitos/Renal" checked />
+                  <span>Cr</span>
+                </label>
+                <label class="exam-toggle">
+                  <input type="checkbox" value="Ur" data-category="Eletrólitos/Renal" checked />
+                  <span>Ur</span>
+                </label>
+                <label class="exam-toggle">
+                  <input type="checkbox" value="CaT" data-category="Eletrólitos/Renal" />
+                  <span>Ca total</span>
+                </label>
+                <label class="exam-toggle">
+                  <input type="checkbox" value="CaIon" data-category="Eletrólitos/Renal" />
+                  <span>Ca ion</span>
+                </label>
+                <label class="exam-toggle">
+                  <input type="checkbox" value="Mg" data-category="Eletrólitos/Renal" />
+                  <span>Mg</span>
+                </label>
+                <label class="exam-toggle">
+                  <input type="checkbox" value="P" data-category="Eletrólitos/Renal" />
+                  <span>P</span>
+                </label>
+                <label class="exam-toggle">
+                  <input type="checkbox" value="AcUrico" data-category="Eletrólitos/Renal" />
+                  <span>Ácido úrico</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Gasometria -->
+            <div class="exam-group">
+              <div class="exam-group-title">
+                Gasometria
+                <div class="category-actions">
+                  <button type="button" class="category-btn category-select" data-category="Gasometria">Tudo</button>
+                  <button type="button" class="category-btn category-clear" data-category="Gasometria">Limpar</button>
+                </div>
+              </div>
+              <div class="exam-buttons">
+                <label class="exam-toggle">
+                  <input type="checkbox" value="GasArterial" data-category="Gasometria" />
+                  <span>Gasometria arterial</span>
+                </label>
+                <label class="exam-toggle">
+                  <input type="checkbox" value="GasVenosa" data-category="Gasometria" />
+                  <span>Gasometria venosa</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Hepático -->
+            <div class="exam-group">
+              <div class="exam-group-title">
+                Hepático
+                <div class="category-actions">
+                  <button type="button" class="category-btn category-select" data-category="Hepático">Tudo</button>
+                  <button type="button" class="category-btn category-clear" data-category="Hepático">Limpar</button>
+                </div>
+              </div>
+              <div class="exam-buttons">
+                <label class="exam-toggle">
+                  <input type="checkbox" value="ALT" data-category="Hepático" />
+                  <span>ALT</span>
+                </label>
+                <label class="exam-toggle">
+                  <input type="checkbox" value="AST" data-category="Hepático" />
+                  <span>AST</span>
+                </label>
+                <label class="exam-toggle">
+                  <input type="checkbox" value="FA" data-category="Hepático" />
+                  <span>FA</span>
+                </label>
+                <label class="exam-toggle">
+                  <input type="checkbox" value="GGT" data-category="Hepático" />
+                  <span>GGT</span>
+                </label>
+                <label class="exam-toggle">
+                  <input type="checkbox" value="BT" data-category="Hepático" />
+                  <span>BT</span>
+                </label>
+                <label class="exam-toggle">
+                  <input type="checkbox" value="BD" data-category="Hepático" />
+                  <span>BD</span>
+                </label>
+                <label class="exam-toggle">
+                  <input type="checkbox" value="BI" data-category="Hepático" />
+                  <span>BI</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Proteínas -->
+            <div class="exam-group">
+              <div class="exam-group-title">
+                Proteínas
+                <div class="category-actions">
+                  <button type="button" class="category-btn category-select" data-category="Proteínas">Tudo</button>
+                  <button type="button" class="category-btn category-clear" data-category="Proteínas">Limpar</button>
+                </div>
+              </div>
+              <div class="exam-buttons">
+                <label class="exam-toggle">
+                  <input type="checkbox" value="ProtTot" data-category="Proteínas" />
+                  <span>Proteínas totais</span>
+                </label>
+                <label class="exam-toggle">
+                  <input type="checkbox" value="Alb" data-category="Proteínas" />
+                  <span>Albumina</span>
+                </label>
+                <label class="exam-toggle">
+                  <input type="checkbox" value="Glob" data-category="Proteínas" />
+                  <span>Globulinas</span>
+                </label>
+                <label class="exam-toggle">
+                  <input type="checkbox" value="CPK" data-category="Proteínas" />
+                  <span>CPK</span>
+                </label>
+                <label class="exam-toggle">
+                  <input type="checkbox" value="LDH" data-category="Proteínas" />
+                  <span>LDH</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Anemia -->
+            <div class="exam-group">
+              <div class="exam-group-title">
+                Anemia
+                <div class="category-actions">
+                  <button type="button" class="category-btn category-select" data-category="Anemia">Tudo</button>
+                  <button type="button" class="category-btn category-clear" data-category="Anemia">Limpar</button>
+                </div>
+              </div>
+              <div class="exam-buttons">
+                <label class="exam-toggle">
+                  <input type="checkbox" value="Ret" data-category="Anemia" />
+                  <span>Reticulócitos</span>
+                </label>
+                <label class="exam-toggle">
+                  <input type="checkbox" value="Hapto" data-category="Anemia" />
+                  <span>Haptoglobina</span>
+                </label>
+                <label class="exam-toggle">
+                  <input type="checkbox" value="VitB12" data-category="Anemia" />
+                  <span>VitB12</span>
+                </label>
+                <label class="exam-toggle">
+                  <input type="checkbox" value="AF" data-category="Anemia" />
+                  <span>AF</span>
+                </label>
+                <label class="exam-toggle">
+                  <input type="checkbox" value="Ferro" data-category="Anemia" />
+                  <span>Ferro</span>
+                </label>
+                <label class="exam-toggle">
+                  <input type="checkbox" value="Ferritina" data-category="Anemia" />
+                  <span>Ferritina</span>
+                </label>
+                <label class="exam-toggle">
+                  <input type="checkbox" value="CTLF" data-category="Anemia" />
+                  <span>CTLF</span>
+                </label>
+                <label class="exam-toggle">
+                  <input type="checkbox" value="SatTransf" data-category="Anemia" />
+                  <span>SatTransf</span>
+                </label>
+                <label class="exam-toggle">
+                  <input type="checkbox" value="Transf" data-category="Anemia" />
+                  <span>Transf</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Perfil lipídico -->
+            <div class="exam-group">
+              <div class="exam-group-title">
+                Perfil lipídico
+                <div class="category-actions">
+                  <button type="button" class="category-btn category-select" data-category="Perfil lipídico">Tudo</button>
+                  <button type="button" class="category-btn category-clear" data-category="Perfil lipídico">Limpar</button>
+                </div>
+              </div>
+              <div class="exam-buttons">
+                <label class="exam-toggle">
+                  <input type="checkbox" value="TGL" data-category="Perfil lipídico" />
+                  <span>TGL</span>
+                </label>
+                <label class="exam-toggle">
+                  <input type="checkbox" value="CT" data-category="Perfil lipídico" />
+                  <span>CT</span>
+                </label>
+                <label class="exam-toggle">
+                  <input type="checkbox" value="HDL" data-category="Perfil lipídico" />
+                  <span>HDL</span>
+                </label>
+                <label class="exam-toggle">
+                  <input type="checkbox" value="LDL" data-category="Perfil lipídico" />
+                  <span>LDL</span>
+                </label>
+                <label class="exam-toggle">
+                  <input type="checkbox" value="VLDL" data-category="Perfil lipídico" />
+                  <span>VLDL</span>
+                </label>
+                <label class="exam-toggle">
+                  <input type="checkbox" value="nHDL" data-category="Perfil lipídico" />
+                  <span>não-HDL</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Hormônios / Marcadores -->
+            <div class="exam-group">
+              <div class="exam-group-title">
+                Hormônios / Marcadores
+                <div class="category-actions">
+                  <button type="button" class="category-btn category-select" data-category="Hormônios/Marcadores">Tudo</button>
+                  <button type="button" class="category-btn category-clear" data-category="Hormônios/Marcadores">Limpar</button>
+                </div>
+              </div>
+              <div class="exam-buttons">
+                <label class="exam-toggle">
+                  <input type="checkbox" value="VitD25" data-category="Hormônios/Marcadores" />
+                  <span>VitD25</span>
+                </label>
+                <label class="exam-toggle">
+                  <input type="checkbox" value="PTH" data-category="Hormônios/Marcadores" />
+                  <span>PTH</span>
+                </label>
+                <label class="exam-toggle">
+                  <input type="checkbox" value="Tropo" data-category="Hormônios/Marcadores" />
+                  <span>Tropo</span>
+                </label>
+                <label class="exam-toggle">
+                  <input type="checkbox" value="NTProBNP" data-category="Hormônios/Marcadores" />
+                  <span>NTProBNP</span>
+                </label>
+                <label class="exam-toggle">
+                  <input type="checkbox" value="Glic" data-category="Hormônios/Marcadores" />
+                  <span>Glic</span>
+                </label>
+                <label class="exam-toggle">
+                  <input type="checkbox" value="Insulina" data-category="Hormônios/Marcadores" />
+                  <span>Insulina</span>
+                </label>
+                <label class="exam-toggle">
+                  <input type="checkbox" value="HbA1c" data-category="Hormônios/Marcadores" />
+                  <span>HbA1c</span>
+                </label>
+                <label class="exam-toggle">
+                  <input type="checkbox" value="T3" data-category="Hormônios/Marcadores" />
+                  <span>T3</span>
+                </label>
+                <label class="exam-toggle">
+                  <input type="checkbox" value="T4" data-category="Hormônios/Marcadores" />
+                  <span>T4</span>
+                </label>
+                <label class="exam-toggle">
+                  <input type="checkbox" value="T4L" data-category="Hormônios/Marcadores" />
+                  <span>T4 livre</span>
+                </label>
+                <label class="exam-toggle">
+                  <input type="checkbox" value="AFP" data-category="Hormônios/Marcadores" />
+                  <span>Alfafetoproteína</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Pancreático -->
+            <div class="exam-group">
+              <div class="exam-group-title">
+                Pancreático
+                <div class="category-actions">
+                  <button type="button" class="category-btn category-select" data-category="Pancreático">Tudo</button>
+                  <button type="button" class="category-btn category-clear" data-category="Pancreático">Limpar</button>
+                </div>
+              </div>
+              <div class="exam-buttons">
+                <label class="exam-toggle">
+                  <input type="checkbox" value="Amilase" data-category="Pancreático" />
+                  <span>Amilase</span>
+                </label>
+                <label class="exam-toggle">
+                  <input type="checkbox" value="Lipase" data-category="Pancreático" />
+                  <span>Lipase</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Coagulação -->
+            <div class="exam-group">
+              <div class="exam-group-title">
+                Coagulação
+                <div class="category-actions">
+                  <button type="button" class="category-btn category-select" data-category="Coagulação">Tudo</button>
+                  <button type="button" class="category-btn category-clear" data-category="Coagulação">Limpar</button>
+                </div>
+              </div>
+              <div class="exam-buttons">
+                <label class="exam-toggle">
+                  <input type="checkbox" value="TP" data-category="Coagulação" />
+                  <span>TP</span>
+                </label>
+                <label class="exam-toggle">
+                  <input type="checkbox" value="INR" data-category="Coagulação" />
+                  <span>INR</span>
+                </label>
+                <label class="exam-toggle">
+                  <input type="checkbox" value="TTPA" data-category="Coagulação" />
+                  <span>TTPA</span>
+                </label>
+                <label class="exam-toggle">
+                  <input type="checkbox" value="R" data-category="Coagulação" />
+                  <span>R</span>
+                </label>
+                <label class="exam-toggle">
+                  <input type="checkbox" value="DD" data-category="Coagulação" />
+                  <span>DD</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Imunológico -->
+            <div class="exam-group">
+              <div class="exam-group-title">
+                Imunológico
+                <div class="category-actions">
+                  <button type="button" class="category-btn category-select" data-category="Imunológico">Tudo</button>
+                  <button type="button" class="category-btn category-clear" data-category="Imunológico">Limpar</button>
+                </div>
+              </div>
+              <div class="exam-buttons">
+                <label class="exam-toggle">
+                  <input type="checkbox" value="CD4" data-category="Imunológico" />
+                  <span>CD4</span>
+                </label>
+                <label class="exam-toggle">
+                  <input type="checkbox" value="CD8" data-category="Imunológico" />
+                  <span>CD8</span>
+                </label>
+                <label class="exam-toggle">
+                  <input type="checkbox" value="CD4/CD8" data-category="Imunológico" />
+                  <span>CD4/CD8</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Sorologias -->
+            <div class="exam-group">
+              <div class="exam-group-title">
+                Sorologias
+                <div class="category-actions">
+                  <button type="button" class="category-btn category-select" data-category="Sorologias">Tudo</button>
+                  <button type="button" class="category-btn category-clear" data-category="Sorologias">Limpar</button>
+                </div>
+              </div>
+              <div class="exam-buttons">
+                <label class="exam-toggle">
+                  <input type="checkbox" value="HIV" data-category="Sorologias" />
+                  <span>HIV</span>
+                </label>
+                <label class="exam-toggle">
+                  <input type="checkbox" value="Anti-HBc Total" data-category="Sorologias" />
+                  <span>Anti-HBc Total</span>
+                </label>
+                <label class="exam-toggle">
+                  <input type="checkbox" value="Anti-HBc IgM" data-category="Sorologias" />
+                  <span>Anti-HBc IgM</span>
+                </label>
+                <label class="exam-toggle">
+                  <input type="checkbox" value="Anti-HBs" data-category="Sorologias" />
+                  <span>Anti-HBs</span>
+                </label>
+                <label class="exam-toggle">
+                  <input type="checkbox" value="Anti-HBe" data-category="Sorologias" />
+                  <span>Anti-HBe</span>
+                </label>
+                <label class="exam-toggle">
+                  <input type="checkbox" value="HBsAg" data-category="Sorologias" />
+                  <span>HBsAg</span>
+                </label>
+                <label class="exam-toggle">
+                  <input type="checkbox" value="HBeAg" data-category="Sorologias" />
+                  <span>HBeAg</span>
+                </label>
+                <label class="exam-toggle">
+                  <input type="checkbox" value="Anti-HCV" data-category="Sorologias" />
+                  <span>Anti-HCV</span>
+                </label>
+                <label class="exam-toggle">
+                  <input type="checkbox" value="HAV IgM" data-category="Sorologias" />
+                  <span>HAV IgM</span>
+                </label>
+                <label class="exam-toggle">
+                  <input type="checkbox" value="HAV IgG" data-category="Sorologias" />
+                  <span>HAV IgG</span>
+                </label>
+                <label class="exam-toggle">
+                  <input type="checkbox" value="Sífilis" data-category="Sorologias" />
+                  <span>Sífilis</span>
+                </label>
+                <label class="exam-toggle">
+                  <input type="checkbox" value="VDRL" data-category="Sorologias" />
+                  <span>VDRL</span>
+                </label>
+                <label class="exam-toggle">
+                  <input type="checkbox" value="Chagas" data-category="Sorologias" />
+                  <span>Chagas</span>
+                </label>
+                <label class="exam-toggle">
+                  <input type="checkbox" value="HTLV" data-category="Sorologias" />
+                  <span>HTLV</span>
+                </label>
+                <label class="exam-toggle">
+                  <input type="checkbox" value="EBV IgM" data-category="Sorologias" />
+                  <span>EBV IgM</span>
+                </label>
+                <label class="exam-toggle">
+                  <input type="checkbox" value="EBV IgG" data-category="Sorologias" />
+                  <span>EBV IgG</span>
+                </label>
+                <label class="exam-toggle">
+                  <input type="checkbox" value="CMV IgM" data-category="Sorologias" />
+                  <span>CMV IgM</span>
+                </label>
+                <label class="exam-toggle">
+                  <input type="checkbox" value="CMV IgG" data-category="Sorologias" />
+                  <span>CMV IgG</span>
+                </label>
+                <label class="exam-toggle">
+                  <input type="checkbox" value="Toxo IgM" data-category="Sorologias" />
+                  <span>Toxo IgM</span>
+                </label>
+                <label class="exam-toggle">
+                  <input type="checkbox" value="Toxo IgG" data-category="Sorologias" />
+                  <span>Toxo IgG</span>
+                </label>
+                <label class="exam-toggle">
+                  <input type="checkbox" value="ID Histoplasma" data-category="Sorologias" />
+                  <span>ID Histoplasma</span>
+                </label>
+                <label class="exam-toggle">
+                  <input type="checkbox" value="ID Aspergillus" data-category="Sorologias" />
+                  <span>ID Aspergillus</span>
+                </label>
+                <label class="exam-toggle">
+                  <input type="checkbox" value="ID P. brasiliensis" data-category="Sorologias" />
+                  <span>ID P. brasiliensis</span>
+                </label>
+                <label class="exam-toggle">
+                  <input type="checkbox" value="CI Histoplasma" data-category="Sorologias" />
+                  <span>CI Histoplasma</span>
+                </label>
+                <label class="exam-toggle">
+                  <input type="checkbox" value="CI Aspergillus" data-category="Sorologias" />
+                  <span>CI Aspergillus</span>
+                </label>
+                <label class="exam-toggle">
+                  <input type="checkbox" value="CI P. brasiliensis" data-category="Sorologias" />
+                  <span>CI P. brasiliensis</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Virologia -->
+            <div class="exam-group">
+              <div class="exam-group-title">
+                Virologia
+                <div class="category-actions">
+                  <button type="button" class="category-btn category-select" data-category="Virologia">Tudo</button>
+                  <button type="button" class="category-btn category-clear" data-category="Virologia">Limpar</button>
+                </div>
+              </div>
+              <div class="exam-buttons">
+                <label class="exam-toggle">
+                  <input type="checkbox" value="CV-HIV" data-category="Virologia" />
+                  <span>CV-HIV</span>
+                </label>
+                <label class="exam-toggle">
+                  <input type="checkbox" value="HBV-DNA" data-category="Virologia" />
+                  <span>HBV-DNA</span>
+                </label>
+                <label class="exam-toggle">
+                  <input type="checkbox" value="PCR-CMV" data-category="Virologia" />
+                  <span>PCR-CMV</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Fármacos -->
+            <div class="exam-group">
+              <div class="exam-group-title">
+                Fármacos
+                <div class="category-actions">
+                  <button type="button" class="category-btn category-select" data-category="Fármacos">Tudo</button>
+                  <button type="button" class="category-btn category-clear" data-category="Fármacos">Limpar</button>
+                </div>
+              </div>
+              <div class="exam-buttons">
+                <label class="exam-toggle">
+                  <input type="checkbox" value="Vancomicina" data-category="Fármacos" />
+                  <span>Vancomicina</span>
+                </label>
+                <label class="exam-toggle">
+                  <input type="checkbox" value="FK" data-category="Fármacos" />
+                  <span>FK</span>
+                </label>
+                <label class="exam-toggle">
+                  <input type="checkbox" value="Fluconazol" data-category="Fármacos" />
+                  <span>Fluconazol</span>
+                </label>
+                <label class="exam-toggle">
+                  <input type="checkbox" value="Itraconazol" data-category="Fármacos" />
+                  <span>Itraconazol</span>
+                </label>
+                <label class="exam-toggle">
+                  <input type="checkbox" value="Voriconazol" data-category="Fármacos" />
+                  <span>Voriconazol</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Líquor -->
+            <div class="exam-group">
+              <div class="exam-group-title">
+                Líquor
+                <div class="category-actions">
+                  <button type="button" class="category-btn category-select" data-category="Líquor">Tudo</button>
+                  <button type="button" class="category-btn category-clear" data-category="Líquor">Limpar</button>
+                </div>
+              </div>
+              <div class="exam-buttons">
+                <label class="exam-toggle"><input type="checkbox" value="Cel" data-category="Líquor" /><span>Cel</span></label>
+                <label class="exam-toggle"><input type="checkbox" value="LMN" data-category="Líquor" /><span>LMN</span></label>
+                <label class="exam-toggle"><input type="checkbox" value="PMN" data-category="Líquor" /><span>PMN</span></label>
+                <label class="exam-toggle"><input type="checkbox" value="Hem" data-category="Líquor" /><span>Hemácias</span></label>
+                <label class="exam-toggle"><input type="checkbox" value="Pt" data-category="Líquor" /><span>Pt</span></label>
+                <label class="exam-toggle"><input type="checkbox" value="Gli" data-category="Líquor" /><span>Gli</span></label>
+                <label class="exam-toggle"><input type="checkbox" value="Lac" data-category="Líquor" /><span>Lac</span></label>
+                <label class="exam-toggle"><input type="checkbox" value="ADA" data-category="Líquor" /><span>ADA</span></label>
+                <label class="exam-toggle"><input type="checkbox" value="Gram" data-category="Líquor" /><span>Gram</span></label>
+                <label class="exam-toggle"><input type="checkbox" value="cBAC" data-category="Líquor" /><span>cBAC</span></label>
+                <label class="exam-toggle"><input type="checkbox" value="pFUN" data-category="Líquor" /><span>pFUN</span></label>
+                <label class="exam-toggle"><input type="checkbox" value="CrAg" data-category="Líquor" /><span>CrAg</span></label>
+                <label class="exam-toggle"><input type="checkbox" value="cFUN" data-category="Líquor" /><span>cFUN</span></label>
+                <label class="exam-toggle"><input type="checkbox" value="pBAAR" data-category="Líquor" /><span>pBAAR</span></label>
+                <label class="exam-toggle"><input type="checkbox" value="TRM-TB" data-category="Líquor" /><span>TRM-TB</span></label>
+                <label class="exam-toggle"><input type="checkbox" value="cMIC" data-category="Líquor" /><span>cMIC</span></label>
+                <label class="exam-toggle"><input type="checkbox" value="EV" data-category="Líquor" /><span>EV</span></label>
+                <label class="exam-toggle"><input type="checkbox" value="VZV" data-category="Líquor" /><span>VZV</span></label>
+                <label class="exam-toggle"><input type="checkbox" value="EBV" data-category="Líquor" /><span>EBV</span></label>
+                <label class="exam-toggle"><input type="checkbox" value="CMV" data-category="Líquor" /><span>CMV</span></label>
+                <label class="exam-toggle"><input type="checkbox" value="HAdV" data-category="Líquor" /><span>HAdV</span></label>
+                <label class="exam-toggle"><input type="checkbox" value="HSV1" data-category="Líquor" /><span>HSV1</span></label>
+                <label class="exam-toggle"><input type="checkbox" value="HSV2" data-category="Líquor" /><span>HSV2</span></label>
+                <label class="exam-toggle"><input type="checkbox" value="HHV6" data-category="Líquor" /><span>HHV6</span></label>
+                <label class="exam-toggle"><input type="checkbox" value="HHV7" data-category="Líquor" /><span>HHV7</span></label>
+                <label class="exam-toggle"><input type="checkbox" value="PVB19" data-category="Líquor" /><span>PVB19</span></label>
+                <label class="exam-toggle"><input type="checkbox" value="VDRL-LCR" data-category="Líquor" /><span>VDRL</span></label>
+              </div>
+            </div>
+
+          </div>
+          <p class="hint">Desmarque o que não quiser que apareça no texto.</p>
+        </div>
       </div>
 
-      <div class="exam-filters">
+        <!-- Preferências de Data/Hora -->
+        <div class="row">
+          <label>Exibição de data/hora</label>
+          <div class="date-time-controls">
+            <div class="dt-block">
+              <div class="dt-title">Datas</div>
+              <div class="segmented" id="dateFormat">
+                <button type="button" class="seg-btn" data-format="ddmm">(dd/mm)</button>
+                <button type="button" class="seg-btn active" data-format="ddmmyy">(dd/mm/aa)</button>
+                <button type="button" class="seg-btn" data-format="ddmmyyyy">(dd/mm/aaaa)</button>
+              </div>
+            </div>
 
-
-        <!-- Hemograma -->
-        <div class="exam-group">
-          <div class="exam-group-title">
-          Hemograma
-            <div class="category-actions">
-            <button type="button" class="category-btn category-select" data-category="Hemograma">✅</button>
-            <button type="button" class="category-btn category-clear" data-category="Hemograma">❌</button>
+            <div class="dt-block">
+              <div class="dt-title">Mostrar hora</div>
+              <div class="segmented" id="showTime">
+                <button type="button" class="seg-btn" data-showtime="yes">Sim</button>
+                <button type="button" class="seg-btn active" data-showtime="no">Não</button>
+              </div>
             </div>
           </div>
-          <div class="exam-buttons">
-            <label class="exam-toggle">
-              <input type="checkbox" value="Hb" data-category="Hemograma" checked />
-              <span>Hb</span>
-            </label>
-            <label class="exam-toggle">
-              <input type="checkbox" value="Ht" data-category="Hemograma" checked />
-              <span>Ht</span>
-            </label>
-            <label class="exam-toggle">
-              <input type="checkbox" value="Leuco" data-category="Hemograma" checked />
-              <span>Leuco</span>
-            </label>
-            <label class="exam-toggle">
-              <input type="checkbox" value="Plaq" data-category="Hemograma" checked />
-              <span>Plaq</span>
-            </label>
+          <p class="hint" style="margin-top: 8px;">A hora é extraída de “Coletado em: dd/mm/aaaa hh:mm” quando disponível.</p>
+        </div>
+      </div>
+
+      <!-- Painel da Direita: Saída de Resultados e Ações -->
+      <div class="right-panel">
+        
+        <!-- Botões de Ação do Output -->
+        <div class="row">
+          <label>Saída e Ações Rápidas</label>
+          <div class="actions">
+            <div class="segmented" id="viewMode" style="margin-right:8px;">
+              <button type="button" class="seg-btn active" id="btnModeLine">Linha Única</button>
+              <button type="button" class="seg-btn" id="btnModeCategories">Categorias</button>
+            </div>
+            <button class="btn-primary" id="btnCopyText">
+              Copiar texto
+            </button>
+            <span id="status" class="status-text"></span>
           </div>
         </div>
 
-        <!-- Marcadores inflamatórios -->
-        <div class="exam-group">
-          <div class="exam-group-title">
-            Marcadores inflamatórios
-            <div class="category-actions">
-            <button type="button" class="category-btn category-select" data-category="Marcadores inflamatórios">✅</button>
-            <button type="button" class="category-btn category-clear" data-category="Marcadores inflamatórios">❌</button>
-            </div>
-          </div>
-          <div class="exam-buttons">
-            <label class="exam-toggle">
-              <input type="checkbox" value="PCR" data-category="Marcadores inflamatórios" />
-              <span>PCR</span>
-            </label>
-            <label class="exam-toggle">
-              <input type="checkbox" value="VHS" data-category="Marcadores inflamatórios" />
-              <span>VHS</span>
-            </label>
-          </div>
+        <!-- Saída do texto formatado -->
+        <div class="row">
+          <label for="outputText">Texto gerado para o prontuário</label>
+          <textarea id="outputText" readonly placeholder="O texto gerado aparecerá aqui..."></textarea>
         </div>
         
-        <!-- Eletrólitos / Renal -->
-        <div class="exam-group">
-          <div class="exam-group-title">
-          Eletrólitos / Renal
-            <div class="category-actions">
-            <button type="button" class="category-btn category-select" data-category="Eletrólitos/Renal">✅</button>
-            <button type="button" class="category-btn category-clear" data-category="Eletrólitos/Renal">❌</button>
-            </div>
+        <!-- Tabela (Exames x Data/Hora) -->
+        <div class="row">
+          <label>Planilha e Tabela de Histórico</label>
+          <div class="actions" style="margin-bottom:12px;">
+            <button class="btn-secondary" id="btnToggleTable">
+              Mostrar tabela
+            </button>
+            <button class="btn-secondary" id="btnGenerateTable">
+              Gerar tabela
+            </button>
+            <button class="btn-secondary" id="btnExportExcel" disabled>
+              Exportar Excel
+            </button>
           </div>
-          <div class="exam-buttons">
-            <label class="exam-toggle">
-              <input type="checkbox" value="Na" data-category="Eletrólitos/Renal" checked />
-              <span>Na</span>
-            </label>
-            <label class="exam-toggle">
-              <input type="checkbox" value="K" data-category="Eletrólitos/Renal" checked />
-              <span>K</span>
-            </label>
-            <label class="exam-toggle">
-              <input type="checkbox" value="Cl" data-category="Eletrólitos/Renal" />
-              <span>Cl</span>
-            </label>
-            <label class="exam-toggle">
-              <input type="checkbox" value="Cr" data-category="Eletrólitos/Renal" checked />
-              <span>Cr</span>
-            </label>
-            <label class="exam-toggle">
-              <input type="checkbox" value="Ur" data-category="Eletrólitos/Renal" checked />
-              <span>Ur</span>
-            </label>
-            <label class="exam-toggle">
-              <input type="checkbox" value="CaT" data-category="Eletrólitos/Renal" />
-              <span>Ca total</span>
-            </label>
-            <label class="exam-toggle">
-              <input type="checkbox" value="CaIon" data-category="Eletrólitos/Renal" />
-              <span>Ca ion</span>
-            </label>
-            <label class="exam-toggle">
-              <input type="checkbox" value="Mg" data-category="Eletrólitos/Renal" />
-              <span>Mg</span>
-            </label>
-            <label class="exam-toggle">
-              <input type="checkbox" value="P" data-category="Eletrólitos/Renal" />
-              <span>P</span>
-            </label>
-            <label class="exam-toggle">
-              <input type="checkbox" value="AcUrico" data-category="Eletrólitos/Renal" />
-              <span>Ácido úrico</span>
-            </label>
-          </div>
-        </div>
-
-        <!-- Gasometria -->
-        <div class="exam-group">
-          <div class="exam-group-title">
-          Gasometria
-            <div class="category-actions">
-            <button type="button" class="category-btn category-select" data-category="Gasometria">✅</button>
-            <button type="button" class="category-btn category-clear" data-category="Gasometria">❌</button>
-            </div>
-          </div>
-          <div class="exam-buttons">
-            <label class="exam-toggle">
-              <input type="checkbox" value="GasArterial" data-category="Gasometria" />
-              <span>Gasometria arterial</span>
-            </label>
-            <label class="exam-toggle">
-              <input type="checkbox" value="GasVenosa" data-category="Gasometria" />
-              <span>Gasometria venosa</span>
-            </label>
-          </div>
-        </div>
-
-        <!-- Hepático -->
-        <div class="exam-group">
-          <div class="exam-group-title">
-          Hepático
-            <div class="category-actions">
-            <button type="button" class="category-btn category-select" data-category="Hepático">✅</button>
-            <button type="button" class="category-btn category-clear" data-category="Hepático">❌</button>
-            </div>
-          </div>
-          <div class="exam-buttons">
-            <label class="exam-toggle">
-              <input type="checkbox" value="ALT" data-category="Hepático" />
-              <span>ALT</span>
-            </label>
-            <label class="exam-toggle">
-              <input type="checkbox" value="AST" data-category="Hepático" />
-              <span>AST</span>
-            </label>
-            <label class="exam-toggle">
-              <input type="checkbox" value="FA" data-category="Hepático" />
-              <span>FA</span>
-            </label>
-            <label class="exam-toggle">
-              <input type="checkbox" value="GGT" data-category="Hepático" />
-              <span>GGT</span>
-            </label>
-            <label class="exam-toggle">
-              <input type="checkbox" value="BT" data-category="Hepático" />
-              <span>BT</span>
-            </label>
-            <label class="exam-toggle">
-              <input type="checkbox" value="BD" data-category="Hepático" />
-              <span>BD</span>
-            </label>
-            <label class="exam-toggle">
-              <input type="checkbox" value="BI" data-category="Hepático" />
-              <span>BI</span>
-            </label>
-          </div>
-        </div>
-
-        <!-- Proteínas -->
-        <div class="exam-group">
-          <div class="exam-group-title">
-          Proteínas
-            <div class="category-actions">
-            <button type="button" class="category-btn category-select" data-category="Proteínas">✅</button>
-            <button type="button" class="category-btn category-clear" data-category="Proteínas">❌</button>
-            </div>
-          </div>
-          <div class="exam-buttons">
-            <label class="exam-toggle">
-              <input type="checkbox" value="ProtTot" data-category="Proteínas" />
-              <span>Proteínas totais</span>
-            </label>
-            <label class="exam-toggle">
-              <input type="checkbox" value="Alb" data-category="Proteínas" />
-              <span>Albumina</span>
-            </label>
-            <label class="exam-toggle">
-              <input type="checkbox" value="Glob" data-category="Proteínas" />
-              <span>Globulinas</span>
-            </label>
-            <label class="exam-toggle">
-              <input type="checkbox" value="CPK" data-category="Proteínas" />
-              <span>CPK</span>
-            </label>
-            <label class="exam-toggle">
-              <input type="checkbox" value="LDH" data-category="Proteínas" />
-              <span>LDH</span>
-            </label>
-          </div>
-        </div>
-
-        <!-- Anemia -->
-        <div class="exam-group">
-          <div class="exam-group-title">
-          Anemia
-            <div class="category-actions">
-            <button type="button" class="category-btn category-select" data-category="Anemia">✅</button>
-            <button type="button" class="category-btn category-clear" data-category="Anemia">❌</button>
-            </div>
-          </div>
-          <div class="exam-buttons">
-            <label class="exam-toggle">
-              <input type="checkbox" value="Ret" data-category="Anemia" />
-              <span>Reticulócitos</span>
-            </label>
-            <label class="exam-toggle">
-              <input type="checkbox" value="Hapto" data-category="Anemia" />
-              <span>Haptoglobina</span>
-            </label>
-            <label class="exam-toggle">
-              <input type="checkbox" value="VitB12" data-category="Anemia" />
-              <span>VitB12</span>
-            </label>
-            <label class="exam-toggle">
-              <input type="checkbox" value="AF" data-category="Anemia" />
-              <span>AF</span>
-            </label>
-            <label class="exam-toggle">
-              <input type="checkbox" value="Ferro" data-category="Anemia" />
-              <span>Ferro</span>
-            </label>
-            <label class="exam-toggle">
-              <input type="checkbox" value="Ferritina" data-category="Anemia" />
-              <span>Ferritina</span>
-            </label>
-            <label class="exam-toggle">
-              <input type="checkbox" value="CTLF" data-category="Anemia" />
-              <span>CTLF</span>
-            </label>
-            <label class="exam-toggle">
-              <input type="checkbox" value="SatTransf" data-category="Anemia" />
-              <span>SatTransf</span>
-            </label>
-            <label class="exam-toggle">
-              <input type="checkbox" value="Transf" data-category="Anemia" />
-              <span>Transf</span>
-            </label>
-          </div>
-        </div>
-
-        <!-- Perfil lipídico -->
-        <div class="exam-group">
-          <div class="exam-group-title">
-          Perfil lipídico
-            <div class="category-actions">
-            <button type="button" class="category-btn category-select" data-category="Perfil lipídico">✅</button>
-            <button type="button" class="category-btn category-clear" data-category="Perfil lipídico">❌</button>
-            </div>
-          </div>
-          <div class="exam-buttons">
-            <label class="exam-toggle">
-              <input type="checkbox" value="TGL" data-category="Perfil lipídico" />
-              <span>TGL</span>
-            </label>
-            <label class="exam-toggle">
-              <input type="checkbox" value="CT" data-category="Perfil lipídico" />
-              <span>CT</span>
-            </label>
-            <label class="exam-toggle">
-              <input type="checkbox" value="HDL" data-category="Perfil lipídico" />
-              <span>HDL</span>
-            </label>
-            <label class="exam-toggle">
-              <input type="checkbox" value="LDL" data-category="Perfil lipídico" />
-              <span>LDL</span>
-            </label>
-            <label class="exam-toggle">
-              <input type="checkbox" value="VLDL" data-category="Perfil lipídico" />
-              <span>VLDL</span>
-            </label>
-            <label class="exam-toggle">
-              <input type="checkbox" value="nHDL" data-category="Perfil lipídico" />
-              <span>não-HDL</span>
-            </label>
-          </div>
-        </div>
-
-        <!-- Hormônios / Marcadores -->
-        <div class="exam-group">
-          <div class="exam-group-title">
-          Hormônios / Marcadores
-            <div class="category-actions">
-            <button type="button" class="category-btn category-select" data-category="Hormônios/Marcadores">✅</button>
-            <button type="button" class="category-btn category-clear" data-category="Hormônios/Marcadores">❌</button>
-            </div>
-          </div>
-          <div class="exam-buttons">
-            <label class="exam-toggle">
-              <input type="checkbox" value="VitD25" data-category="Hormônios/Marcadores" />
-              <span>VitD25</span>
-            </label>
-            <label class="exam-toggle">
-              <input type="checkbox" value="PTH" data-category="Hormônios/Marcadores" />
-              <span>PTH</span>
-            </label>
-            <label class="exam-toggle">
-              <input type="checkbox" value="Tropo" data-category="Hormônios/Marcadores" />
-              <span>Tropo</span>
-            </label>
-            <label class="exam-toggle">
-              <input type="checkbox" value="NTProBNP" data-category="Hormônios/Marcadores" />
-              <span>NTProBNP</span>
-            </label>
-            <label class="exam-toggle">
-              <input type="checkbox" value="Glic" data-category="Hormônios/Marcadores" />
-              <span>Glic</span>
-            </label>
-            <label class="exam-toggle">
-              <input type="checkbox" value="Insulina" data-category="Hormônios/Marcadores" />
-              <span>Insulina</span>
-            </label>
-            <label class="exam-toggle">
-              <input type="checkbox" value="HbA1c" data-category="Hormônios/Marcadores" />
-              <span>HbA1c</span>
-            </label>
-            <label class="exam-toggle">
-              <input type="checkbox" value="T3" data-category="Hormônios/Marcadores" />
-              <span>T3</span>
-            </label>
-            <label class="exam-toggle">
-              <input type="checkbox" value="T4" data-category="Hormônios/Marcadores" />
-              <span>T4</span>
-            </label>
-            <label class="exam-toggle">
-              <input type="checkbox" value="T4L" data-category="Hormônios/Marcadores" />
-              <span>T4 livre</span>
-            </label>
-            <label class="exam-toggle">
-              <input type="checkbox" value="AFP" data-category="Hormônios/Marcadores" />
-              <span>Alfafetoproteína</span>
-            </label>
-          </div>
-        </div>
-
-        <!-- Pancreático -->
-        <div class="exam-group">
-          <div class="exam-group-title">
-          Pancreático
-            <div class="category-actions">
-            <button type="button" class="category-btn category-select" data-category="Pancreático">✅</button>
-            <button type="button" class="category-btn category-clear" data-category="Pancreático">❌</button>
-            </div>
-          </div>
-          <div class="exam-buttons">
-            <label class="exam-toggle">
-              <input type="checkbox" value="Amilase" data-category="Pancreático" />
-              <span>Amilase</span>
-            </label>
-            <label class="exam-toggle">
-              <input type="checkbox" value="Lipase" data-category="Pancreático" />
-              <span>Lipase</span>
-            </label>
-          </div>
-        </div>
-
-        <!-- Coagulação -->
-        <div class="exam-group">
-          <div class="exam-group-title">
-          Coagulação
-            <div class="category-actions">
-            <button type="button" class="category-btn category-select" data-category="Coagulação">✅</button>
-            <button type="button" class="category-btn category-clear" data-category="Coagulação">❌</button>
-            </div>
-          </div>
-          <div class="exam-buttons">
-            <label class="exam-toggle">
-              <input type="checkbox" value="TP" data-category="Coagulação" />
-              <span>TP</span>
-            </label>
-            <label class="exam-toggle">
-              <input type="checkbox" value="INR" data-category="Coagulação" />
-              <span>INR</span>
-            </label>
-            <label class="exam-toggle">
-              <input type="checkbox" value="TTPA" data-category="Coagulação" />
-              <span>TTPA</span>
-            </label>
-            <label class="exam-toggle">
-              <input type="checkbox" value="R" data-category="Coagulação" />
-              <span>R</span>
-            </label>
-            <label class="exam-toggle">
-              <input type="checkbox" value="DD" data-category="Coagulação" />
-              <span>DD</span>
-            </label>
-          </div>
-        </div>
-
-        <!-- Imunológico -->
-        <div class="exam-group">
-          <div class="exam-group-title">
-          Imunológico
-            <div class="category-actions">
-            <button type="button" class="category-btn category-select" data-category="Imunológico">✅</button>
-            <button type="button" class="category-btn category-clear" data-category="Imunológico">❌</button>
-            </div>
-          </div>
-          <div class="exam-buttons">
-            <label class="exam-toggle">
-              <input type="checkbox" value="CD4" data-category="Imunológico" />
-              <span>CD4</span>
-            </label>
-            <label class="exam-toggle">
-              <input type="checkbox" value="CD8" data-category="Imunológico" />
-              <span>CD8</span>
-            </label>
-            <label class="exam-toggle">
-              <input type="checkbox" value="CD4/CD8" data-category="Imunológico" />
-              <span>CD4/CD8</span>
-            </label>
-          </div>
-        </div>
-
-        <!-- Sorologias (micologia + hepatites / IST / HIV) -->
-        <div class="exam-group">
-          <div class="exam-group-title">
-          Sorologias
-            <div class="category-actions">
-            <button type="button" class="category-btn category-select" data-category="Sorologias">✅</button>
-            <button type="button" class="category-btn category-clear" data-category="Sorologias">❌</button>
-            </div>
-          </div>
-          <div class="exam-buttons">
-            <label class="exam-toggle">
-              <input type="checkbox" value="HIV" data-category="Sorologias" />
-              <span>HIV</span>
-            </label>
-            <label class="exam-toggle">
-              <input type="checkbox" value="Anti-HBc Total" data-category="Sorologias" />
-              <span>Anti-HBc Total</span>
-            </label>
-            <label class="exam-toggle">
-              <input type="checkbox" value="Anti-HBc IgM" data-category="Sorologias" />
-              <span>Anti-HBc IgM</span>
-            </label>
-            <label class="exam-toggle">
-              <input type="checkbox" value="Anti-HBs" data-category="Sorologias" />
-              <span>Anti-HBs</span>
-            </label>
-            <label class="exam-toggle">
-              <input type="checkbox" value="Anti-HBe" data-category="Sorologias" />
-              <span>Anti-HBe</span>
-            </label>
-            <label class="exam-toggle">
-              <input type="checkbox" value="HBsAg" data-category="Sorologias" />
-              <span>HBsAg</span>
-            </label>
-            <label class="exam-toggle">
-              <input type="checkbox" value="HBeAg" data-category="Sorologias" />
-              <span>HBeAg</span>
-            </label>
-            <label class="exam-toggle">
-              <input type="checkbox" value="Anti-HCV" data-category="Sorologias" />
-              <span>Anti-HCV</span>
-            </label>
-            <label class="exam-toggle">
-              <input type="checkbox" value="HAV IgM" data-category="Sorologias" />
-              <span>HAV IgM</span>
-            </label>
-            <label class="exam-toggle">
-              <input type="checkbox" value="HAV IgG" data-category="Sorologias" />
-              <span>HAV IgG</span>
-            </label>
-            <label class="exam-toggle">
-              <input type="checkbox" value="Sífilis" data-category="Sorologias" />
-              <span>Sífilis</span>
-            </label>
-            <label class="exam-toggle">
-              <input type="checkbox" value="VDRL" data-category="Sorologias" />
-              <span>VDRL</span>
-            </label>
-            <label class="exam-toggle">
-              <input type="checkbox" value="Chagas" data-category="Sorologias" />
-              <span>Chagas</span>
-            </label>
-            <label class="exam-toggle">
-              <input type="checkbox" value="HTLV" data-category="Sorologias" />
-              <span>HTLV</span>
-            </label>
-            <label class="exam-toggle">
-              <input type="checkbox" value="EBV IgM" data-category="Sorologias" />
-              <span>EBV IgM</span>
-            </label>
-            <label class="exam-toggle">
-              <input type="checkbox" value="EBV IgG" data-category="Sorologias" />
-              <span>EBV IgG</span>
-            </label>
-            <label class="exam-toggle">
-              <input type="checkbox" value="CMV IgM" data-category="Sorologias" />
-              <span>CMV IgM</span>
-            </label>
-            <label class="exam-toggle">
-              <input type="checkbox" value="CMV IgG" data-category="Sorologias" />
-              <span>CMV IgG</span>
-            </label>
-            <label class="exam-toggle">
-              <input type="checkbox" value="Toxo IgM" data-category="Sorologias" />
-              <span>Toxo IgM</span>
-            </label>
-            <label class="exam-toggle">
-              <input type="checkbox" value="Toxo IgG" data-category="Sorologias" />
-              <span>Toxo IgG</span>
-            </label>
-    
-            
-            <!-- Micologia -->
-            <label class="exam-toggle">
-              <input type="checkbox" value="ID Histoplasma" data-category="Sorologias" />
-              <span>ID Histoplasma</span>
-            </label>
-            <label class="exam-toggle">
-              <input type="checkbox" value="ID Aspergillus" data-category="Sorologias" />
-              <span>ID Aspergillus</span>
-            </label>
-            <label class="exam-toggle">
-              <input type="checkbox" value="ID P. brasiliensis" data-category="Sorologias" />
-              <span>ID P. brasiliensis</span>
-            </label>
-            <label class="exam-toggle">
-              <input type="checkbox" value="CI Histoplasma" data-category="Sorologias" />
-              <span>CI Histoplasma</span>
-            </label>
-            <label class="exam-toggle">
-              <input type="checkbox" value="CI Aspergillus" data-category="Sorologias" />
-              <span>CI Aspergillus</span>
-            </label>
-            <label class="exam-toggle">
-              <input type="checkbox" value="CI P. brasiliensis" data-category="Sorologias" />
-              <span>CI P. brasiliensis</span>
-            </label>
-
-          </div>
-        </div>
-
-        <!-- Virologia (cargas virais) -->
-        <div class="exam-group">
-          <div class="exam-group-title">
-          Virologia
-            <div class="category-actions">
-            <button type="button" class="category-btn category-select" data-category="Virologia">✅</button>
-            <button type="button" class="category-btn category-clear" data-category="Virologia">❌</button>
-            </div>
-          </div>
-          <div class="exam-buttons">
-            <label class="exam-toggle">
-              <input type="checkbox" value="CV-HIV" data-category="Virologia" />
-              <span>CV-HIV</span>
-            </label>
-            <label class="exam-toggle">
-              <input type="checkbox" value="HBV-DNA" data-category="Virologia" />
-              <span>HBV-DNA</span>
-            </label>
-            <label class="exam-toggle">
-              <input type="checkbox" value="PCR-CMV" data-category="Virologia" />
-              <span>PCR-CMV</span>
-            </label>
-          </div>
-        </div>
-
-
-                <!-- Fármacos -->
-        <div class="exam-group">
-          <div class="exam-group-title">
-          Fármacos
-            <div class="category-actions">
-            <button type="button" class="category-btn category-select" data-category="Fármacos">✅</button>
-            <button type="button" class="category-btn category-clear" data-category="Fármacos">❌</button>
-            </div>
-          </div>
-          <div class="exam-buttons">
-            <label class="exam-toggle">
-              <input type="checkbox" value="Vancomicina" data-category="Fármacos" />
-              <span>Vancomicina</span>
-            </label>
-            <label class="exam-toggle">
-              <input type="checkbox" value="FK" data-category="Fármacos" />
-              <span>FK</span>
-            </label>
-            <label class="exam-toggle">
-              <input type="checkbox" value="Fluconazol" data-category="Fármacos" />
-              <span>Fluconazol</span>
-            </label>
-            <label class="exam-toggle">
-              <input type="checkbox" value="Itraconazol" data-category="Fármacos" />
-              <span>Itraconazol</span>
-            </label>
-            <label class="exam-toggle">
-              <input type="checkbox" value="Voriconazol" data-category="Fármacos" />
-              <span>Voriconazol</span>
-            </label>
-          </div>
-        </div>
-
-        <!-- Líquor -->
-        <div class="exam-group">
-          <div class="exam-group-title">
-          Líquor
-            <div class="category-actions">
-            <button type="button" class="category-btn category-select" data-category="Líquor">✅</button>
-            <button type="button" class="category-btn category-clear" data-category="Líquor">❌</button>
-            </div>
-          </div>
-          <div class="exam-buttons">
-            <label class="exam-toggle"><input type="checkbox" value="Cel" data-category="Líquor" /><span>Cel</span></label>
-            <label class="exam-toggle"><input type="checkbox" value="LMN" data-category="Líquor" /><span>LMN</span></label>
-            <label class="exam-toggle"><input type="checkbox" value="PMN" data-category="Líquor" /><span>PMN</span></label>
-            <label class="exam-toggle"><input type="checkbox" value="Hem" data-category="Líquor" /><span>Hemácias</span></label>
-            <label class="exam-toggle"><input type="checkbox" value="Pt" data-category="Líquor" /><span>Pt</span></label>
-            <label class="exam-toggle"><input type="checkbox" value="Gli" data-category="Líquor" /><span>Gli</span></label>
-            <label class="exam-toggle"><input type="checkbox" value="Lac" data-category="Líquor" /><span>Lac</span></label>
-            <label class="exam-toggle"><input type="checkbox" value="ADA" data-category="Líquor" /><span>ADA</span></label>
-            <label class="exam-toggle"><input type="checkbox" value="Gram" data-category="Líquor" /><span>Gram</span></label>
-            <label class="exam-toggle"><input type="checkbox" value="cBAC" data-category="Líquor" /><span>cBAC</span></label>
-            <label class="exam-toggle"><input type="checkbox" value="pFUN" data-category="Líquor" /><span>pFUN</span></label>
-            <label class="exam-toggle"><input type="checkbox" value="CrAg" data-category="Líquor" /><span>CrAg</span></label>
-            <label class="exam-toggle"><input type="checkbox" value="cFUN" data-category="Líquor" /><span>cFUN</span></label>
-            <label class="exam-toggle"><input type="checkbox" value="pBAAR" data-category="Líquor" /><span>pBAAR</span></label>
-            <label class="exam-toggle"><input type="checkbox" value="TRM-TB" data-category="Líquor" /><span>TRM-TB</span></label>
-            <label class="exam-toggle"><input type="checkbox" value="cMIC" data-category="Líquor" /><span>cMIC</span></label>
-            <label class="exam-toggle"><input type="checkbox" value="EV" data-category="Líquor" /><span>EV</span></label>
-            <label class="exam-toggle"><input type="checkbox" value="VZV" data-category="Líquor" /><span>VZV</span></label>
-            <label class="exam-toggle"><input type="checkbox" value="EBV" data-category="Líquor" /><span>EBV</span></label>
-            <label class="exam-toggle"><input type="checkbox" value="CMV" data-category="Líquor" /><span>CMV</span></label>
-            <label class="exam-toggle"><input type="checkbox" value="HAdV" data-category="Líquor" /><span>HAdV</span></label>
-            <label class="exam-toggle"><input type="checkbox" value="HSV1" data-category="Líquor" /><span>HSV1</span></label>
-            <label class="exam-toggle"><input type="checkbox" value="HSV2" data-category="Líquor" /><span>HSV2</span></label>
-            <label class="exam-toggle"><input type="checkbox" value="HHV6" data-category="Líquor" /><span>HHV6</span></label>
-            <label class="exam-toggle"><input type="checkbox" value="HHV7" data-category="Líquor" /><span>HHV7</span></label>
-            <label class="exam-toggle"><input type="checkbox" value="PVB19" data-category="Líquor" /><span>PVB19</span></label>
-            <label class="exam-toggle"><input type="checkbox" value="VDRL-LCR" data-category="Líquor" /><span>VDRL</span></label>
-          </div>
-        </div>
-
-      </div>
-      <p class="hint">Desmarque o que não quiser que apareça no texto.</p>
-    </div>
-
-    <!-- Preferências de Data/Hora -->
-    <div class="row">
-      <label>Exibição de data/hora</label>
-
-      <div class="date-time-controls">
-        <div class="dt-block">
-          <div class="dt-title">Datas</div>
-          <div class="segmented" id="dateFormat">
-            <button type="button" class="seg-btn" data-format="ddmm">(dd/mm)</button>
-            <button type="button" class="seg-btn active" data-format="ddmmyy">(dd/mm/aa)</button>
-            <button type="button" class="seg-btn" data-format="ddmmyyyy">(dd/mm/aaaa)</button>
-          </div>
-        </div>
-
-        <div class="dt-block">
-          <div class="dt-title">Mostrar hora</div>
-          <div class="segmented" id="showTime">
-            <button type="button" class="seg-btn" data-showtime="yes">Sim</button>
-            <button type="button" class="seg-btn active" data-showtime="no">Não</button>
-          </div>
+          <div id="tableContainer"></div>
         </div>
       </div>
 
-      <p class="hint">A hora é extraída de “Coletado em: dd/mm/aaaa hh:mm” quando disponível.</p>
-    </div>
-
-    <!-- Botões de ação -->
-    <div class="row">
-      <div class="actions">
-        <button class="btn-primary" id="btnGenerateLine">
-          Gerar texto (linha única por data)
-        </button>
-        <button class="btn-secondary" id="btnGenerateCategories">
-          Gerar texto separado por categorias
-        </button>
-        <button class="btn-secondary" id="btnCopyText">
-          Copiar texto
-        </button>
-        <span id="status" class="status-text"></span>
-      </div>
-    </div>
-
-    <!-- Saída do texto formatado -->
-    <div class="row">
-      <label for="outputText">Texto gerado para o prontuário</label>
-      <textarea id="outputText" readonly placeholder="O texto gerado aparecerá aqui..."></textarea>
-    </div>
-    
-    <!-- Tabela (Exames x Data/Hora) -->
-<div class="row">
-  <label>Tabela</label>
-
-    <div class="actions">
-      <button class="btn-secondary" id="btnToggleTable">
-        Mostrar tabela
-      </button>
-      <button class="btn-secondary" id="btnGenerateTable">
-        Gerar tabela
-      </button>
-      <button class="btn-secondary" id="btnExportExcel" disabled>
-        Exportar Excel
-      </button>
-    </div>
-
-  <div id="tableContainer" style="overflow:auto; border:1px solid #e5e7eb; border-radius:12px; background:#fff;"></div>
-</div>
+    </div> <!-- Fim dashboard-grid -->
 
     <footer class="footer">
-      <p class="hint">Versão 1.40</p>
+      <p class="hint">Versão 2.0</p>
     </footer>
-    </div>
-    
-<!-- Lib para exportar Excel (XLSX) -->
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<script src="script.js"></script>
-<script src="tableExport.js"></script>
+  </div>
 
+  <!-- Backdrop do Drawer Lateral -->
+  <div id="drawerBackdrop" class="drawer-backdrop"></div>
+
+  <!-- Elemento Flutuante para Mensagens (Toast Notifications) -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- Lib para exportar Excel (XLSX) -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="script.js"></script>
+  <script src="tableExport.js"></script>
 </body>
 </html>

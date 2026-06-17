@@ -26,8 +26,16 @@
       Cole abaixo o laudo bruto dos exames laboratoriais do HCFMUSP (copia/cola da tela) e use os botões para gerar o texto no formato de prontuário.
     </p>
 
-    <!-- Layout Split Dashboard -->
-    <div class="dashboard-grid">
+    <!-- Navegação por Abas -->
+    <div class="tab-navigation">
+      <button type="button" class="tab-btn active" id="tabExams">Exames Laboratoriais</button>
+      <button type="button" class="tab-btn" id="tabAntibiotics">Linha do Tempo de Antibióticos</button>
+    </div>
+
+    <!-- Seção de Exames -->
+    <div id="examsSection" class="tab-content active">
+      <!-- Layout Split Dashboard -->
+      <div class="dashboard-grid">
       
       <!-- Painel da Esquerda: Entrada de Dados e Filtros -->
       <div class="left-panel">
@@ -792,6 +800,49 @@
         <canvas id="evolutionChart" style="max-height: 350px; width: 100%;"></canvas>
       </div>
     </div>
+    </div> <!-- Fim examsSection -->
+
+    <!-- Seção de Antibióticos -->
+    <div id="antibioticsSection" class="tab-content" style="display: none;">
+      <div class="dashboard-grid">
+        
+        <!-- Coluna da Esquerda: Entrada de Dados -->
+        <div class="left-panel">
+          <div class="row">
+            <div class="input-header" style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+              <label for="antInput" style="margin-bottom:0; font-weight: 600;">Prescrições brutas de antimicrobianos</label>
+              <button type="button" class="btn-secondary btn-small" id="btnClearAntInput">Limpar Entrada</button>
+            </div>
+            <textarea id="antInput" placeholder="Cole aqui as linhas de prescrições de antimicrobianos..." style="height: 380px;"></textarea>
+          </div>
+          
+          <div class="row">
+            <button type="button" class="btn-primary" id="btnGenerateAntTimeline" style="width: 100%; justify-content: center; border-radius: 12px; padding: 12px;">
+              Gerar linha cronológica
+            </button>
+          </div>
+        </div>
+
+        <!-- Coluna da Direita: Saída formatada -->
+        <div class="right-panel">
+          <div class="row">
+            <label style="font-weight: 600;">Linha Cronológica Gerada</label>
+            <div class="actions" style="margin-bottom:12px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+              <button type="button" class="btn-primary" id="btnCopyAntTimeline">
+                Copiar resultado
+              </button>
+              <span id="antStatus" class="status-text"></span>
+            </div>
+          </div>
+          
+          <div class="row">
+            <label for="antOutput" style="font-weight: 600;">Texto formatado para prontuário</label>
+            <textarea id="antOutput" readonly placeholder="A linha cronológica gerada aparecerá aqui..." style="height: 380px;"></textarea>
+          </div>
+        </div>
+
+      </div>
+    </div>
 
     <footer class="footer">
       <p class="hint">Versão 2.0</p>
@@ -811,5 +862,6 @@
   <script src="script.js"></script>
   <script src="tableExport.js"></script>
   <script src="chartManager.js"></script>
+  <script src="antibioticParser.js"></script>
 </body>
 </html>

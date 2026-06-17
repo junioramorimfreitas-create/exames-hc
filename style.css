@@ -826,3 +826,47 @@ body.dark-theme .btn-primary:hover {
   color: var(--text-primary);
 }
 
+/* ==========================================================================
+   Navegação por Abas (Exames vs Antibióticos)
+   ========================================================================== */
+
+.tab-navigation {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 8px;
+}
+
+.tab-btn {
+  background: none !important;
+  border: none !important;
+  border-bottom: 3px solid transparent !important;
+  border-radius: 0 !important;
+  padding: 8px 16px !important;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-secondary) !important;
+  cursor: pointer;
+  box-shadow: none !important;
+  transition: all 0.2s ease;
+}
+
+.tab-btn:hover {
+  color: var(--text-primary) !important;
+  transform: none !important;
+}
+
+.tab-btn.active {
+  color: var(--primary) !important;
+  border-bottom-color: var(--primary) !important;
+}
+
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+}
+

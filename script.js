@@ -1305,7 +1305,8 @@ Object.assign(window.__EXAMES_APP__, {
   formatDateTimeLabel,
   prefs,
   liquorAbbrSet,
-  formatLiquorMicroValue
+  formatLiquorMicroValue,
+  showToast
 });
 
 // ---------- Alternância de Tema (Light/Dark Mode) ----------
@@ -1347,4 +1348,31 @@ Object.assign(window.__EXAMES_APP__, {
 
 // Inicializar contagem de filtros
 updateFilterCount();
+
+// ---------- Alternância de Abas ----------
+(function setupTabs() {
+  const tabExams = document.getElementById("tabExams");
+  const tabAntibiotics = document.getElementById("tabAntibiotics");
+  const examsSection = document.getElementById("examsSection");
+  const antibioticsSection = document.getElementById("antibioticsSection");
+
+  if (tabExams && tabAntibiotics && examsSection && antibioticsSection) {
+    const switchTab = (activeTab, inactiveTab, activeSec, inactiveSec) => {
+      activeTab.classList.add("active");
+      inactiveTab.classList.remove("active");
+      activeSec.classList.add("active");
+      inactiveSec.classList.remove("active");
+      activeSec.style.display = "block";
+      inactiveSec.style.display = "none";
+    };
+
+    tabExams.addEventListener("click", () => {
+      switchTab(tabExams, tabAntibiotics, examsSection, antibioticsSection);
+    });
+
+    tabAntibiotics.addEventListener("click", () => {
+      switchTab(tabAntibiotics, tabExams, antibioticsSection, examsSection);
+    });
+  }
+})();
 

@@ -40,7 +40,8 @@
     for (const abbr of app.examOrder) {
       if (app.sorologiaAbbrs.has(abbr)) continue;
       if (!selectedAbbrs.includes(abbr)) continue;
-      rows.push({ label: abbr, type: "abbr", abbr });
+      const label = (typeof app.getDisplayName === "function") ? app.getDisplayName(abbr) : abbr;
+      rows.push({ label, type: "abbr", abbr });
     }
 
     // Sorologias fúngicas (agrupadas do seu jeito, apenas se selecionadas)
@@ -121,11 +122,25 @@
             } else {
               cell = "";
             }
+          } else if (r.abbr === "Pleural_LMN") {
+            const linf = parseFloat(String(bucket.Pleural_Linf?.value || "").replace(",", "."));
+            const mono = parseFloat(String(bucket.Pleural_Mono?.value || "").replace(",", "."));
+            if (Number.isFinite(linf) && Number.isFinite(mono)) {
+              cell = `${(linf + mono).toString().replace(".", ",")}%`;
+            } else {
+              cell = (bucket.Pleural_Linf?.value) ? `${bucket.Pleural_Linf.value}%` : "";
+            }
           } else {
             let val = bucket[r.abbr]?.value ?? "";
             const isLiquorQualitative = app.liquorAbbrSet?.has(r.abbr) && !["Cel", "Hem", "Pt", "Gli", "Lac", "ADA"].includes(r.abbr);
             if (isLiquorQualitative && typeof app.formatLiquorMicroValue === "function") {
               val = app.formatLiquorMicroValue(val);
+            }
+            if (bucket[r.abbr] && bucket[r.abbr].category === "Sorologias" && typeof app.formatSorologiaValue === "function") {
+              val = app.formatSorologiaValue(val);
+            }
+            if ((r.abbr === "U1_Nit" || r.abbr === "U1_LE") && typeof app.formatU1Value === "function") {
+              val = app.formatU1Value(val);
             }
             cell = val;
           }

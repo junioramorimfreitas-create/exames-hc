@@ -97,6 +97,7 @@ const examDefinitions = [
   { match: "CALCIO TOTAL", abbr: "CaT", category: "Eletrólitos/Renal" },
   { match: "CALCIO IONICO", abbr: "CaIon", category: "Eletrólitos/Renal" },
   { match: "ACIDO URICO", abbr: "AcUrico", category: "Eletrólitos/Renal" },
+  { match: "RELACAO DE MICROALBUMINURIA/CREATININA", abbr: "RelAlb/Cr", category: "Eletrólitos/Renal" },
 
   // Gasometria (entrada manual só serve para filtros; a leitura é por parser separado)
   { match: "GASOMETRIA ARTERIAL", abbr: "GasArterial", category: "Gasometria" },
@@ -149,6 +150,14 @@ const examDefinitions = [
   { match: "TIROXINA (T4)", abbr: "T4", category: "Hormônios/Marcadores" },
   { match: "TIROXINA LIVRE (T4L)", abbr: "T4L", category: "Hormônios/Marcadores" },
   { match: "HORMONIO TIREO-ESTIMULANTE (TSH)", abbr: "TSH", category: "Hormônios/Marcadores" },
+  { match: "HORMONIO FOLICUL0-ESTIMULANTE (FSH)", abbr: "FSH", category: "Hormônios/Marcadores" },
+  { match: "HORMONIO FOLICULO-ESTIMULANTE (FSH)", abbr: "FSH", category: "Hormônios/Marcadores" },
+  { match: "PROLACTINA", abbr: "Prolactina", category: "Hormônios/Marcadores" },
+  { match: "TESTOSTERONA LIVRE", abbr: "TestoLivre", category: "Hormônios/Marcadores" },
+  { match: "TESTOSTERONA TOTAL", abbr: "TestoTotal", category: "Hormônios/Marcadores" },
+  { match: "GLOBULINA LIGADORA DOS HORMONIOS SEXUAIS (SHBG)", abbr: "SHBG", category: "Hormônios/Marcadores" },
+  { match: "ESTRADIOL", abbr: "Estradiol", category: "Hormônios/Marcadores" },
+  { match: "HORMONIO LUTEINIZANTE (LH)", abbr: "LH", category: "Hormônios/Marcadores" },
   { match: "ALFAFETOPROTEINA", abbr: "AFP", category: "Hormônios/Marcadores" },
   
   // Pancreático
@@ -206,20 +215,38 @@ const examDefinitions = [
   { match: "FLUCONAZOL", abbr: "Fluconazol", category: "Fármacos" },
   { match: "ITRACONAZOL", abbr: "Itraconazol", category: "Fármacos" },
   { match: "VORICONAZOL", abbr: "Voriconazol", category: "Fármacos" },
-   
+  { match: "EVEROLIMUS", abbr: "EVR", category: "Fármacos" },
+
+  // Urina 1
+  { match: "NITRITO", abbr: "U1_Nit", category: "Urina 1", onlyU1: true },
+  { match: "LEUCOCITO ESTERASE", abbr: "U1_LE", category: "Urina 1", onlyU1: true },
+  { match: "LEUCOCITOS", abbr: "U1_Leuco", category: "Urina 1", onlyU1: true },
+  { match: "ERITROCITOS", abbr: "U1_Hem", category: "Urina 1", onlyU1: true },
+  { match: "GLICOSE", abbr: "U1_Glic", category: "Urina 1", onlyU1: true },
+
+  // Líquido Pleural
+  { match: "TOTAL DE CELULAS NUCLEADAS", abbr: "Pleural_Cel", category: "Líquido Pleural", onlyPleural: true },
+  { match: "TOTAL DE CÉLULAS NUCLEADAS", abbr: "Pleural_Cel", category: "Líquido Pleural", onlyPleural: true },
+  { match: "NEUTROFILOS", abbr: "Pleural_PMN", category: "Líquido Pleural", onlyPleural: true },
+  { match: "LINFOCITOS", abbr: "Pleural_Linf", category: "Líquido Pleural", onlyPleural: true },
+  { match: "MONOCITOS", abbr: "Pleural_Mono", category: "Líquido Pleural", onlyPleural: true },
+  { match: "GLICOSE", abbr: "Pleural_Glic", category: "Líquido Pleural", onlyPleural: true },
+  { match: "PROTEINAS TOTAIS", abbr: "Pleural_Pt", category: "Líquido Pleural", onlyPleural: true },
+  { match: "PH", abbr: "Pleural_pH", category: "Líquido Pleural", onlyPleural: true },
+  { match: "DESIDROGENASE LACTICA", abbr: "Pleural_LDH", category: "Líquido Pleural", onlyPleural: true },
+  { match: "HEMATOCRITO", abbr: "Pleural_Ht", category: "Líquido Pleural", onlyPleural: true },
+  { match: "LEUCOCITOS", abbr: "Pleural_Leuco", category: "Líquido Pleural", onlyPleural: true }
 ];
 
 const examOrder = [
-  "Cel", "LMN", "PMN", "Hem", "Pt", "Gli", "Lac", "ADA", "Gram", "cBAC", "pFUN", "CrAg", "cFUN", "pBAAR", "TRM-TB", "cMIC",
-  "EV", "VZV", "EBV", "CMV", "HAdV", "HSV1", "HSV2", "HHV6", "HHV7", "PVB19", "VDRL-LCR",
   "Hb", "Ht", "Leuco", "Plaq",
   "PCR", "VHS",
-  "Na", "K", "Cl", "Cr", "Ur", "CaT", "CaIon", "Mg", "P", "AcUrico",
+  "Cr", "Ur", "Na", "K", "CaT", "CaIon", "Mg", "P", "Cl", "AcUrico", "RelAlb/Cr",
   "ALT", "AST", "FA", "GGT", "BT", "BD", "BI",
   "TGL", "CT", "HDL", "LDL", "VLDL", "nHDL",
   "ProtTot", "Alb", "Glob", "CPK", "LDH",
   "Ret", "Hapto", "VitB12", "AF", "Ferro", "Ferritina", "CTLF", "SatTransf", "Transf",
-  "VitD25", "PTH", "Tropo", "NTproBNP", "Glic", "Insulina", "HbA1c", "T3", "T4", "T4L", "TSH", "AFP",
+  "VitD25", "PTH", "Tropo", "NTproBNP", "Glic", "Insulina", "HbA1c", "T3", "T4", "T4L", "TSH", "LH", "FSH", "Estradiol", "TestoLivre", "TestoTotal", "SHBG", "Prolactina", "AFP",
   "Amilase", "Lipase",
   "TP", "INR", "TTPA", "R", "DD",
   "ID Histoplasma", "ID Aspergillus", "ID P. brasiliensis",
@@ -233,7 +260,11 @@ const examOrder = [
   "EBV IgM", "EBV IgG", "CMV IgM", "CMV IgG", "Toxo IgM", "Toxo IgG",
   "PCR-CMV", "HBV-DNA", "CV-HIV",
   "CD4", "CD8", "CD4/CD8",
-  "Vancomicina", "FK", "Fluconazol", "Itraconazol", "Voriconazol",
+  "Vancomicina", "FK", "Fluconazol", "Itraconazol", "Voriconazol", "EVR",
+  "U1_Nit", "U1_LE", "U1_Leuco", "U1_Hem", "U1_Glic",
+  "Pleural_Cel", "Pleural_PMN", "Pleural_Linf", "Pleural_Mono", "Pleural_Glic", "Pleural_Pt", "Pleural_pH", "Pleural_LDH", "Pleural_Ht", "Pleural_Leuco",
+  "Cel", "LMN", "PMN", "Hem", "Pt", "Gli", "Lac", "ADA", "Gram", "cBAC", "pFUN", "CrAg", "cFUN", "pBAAR", "TRM-TB", "cMIC",
+  "EV", "VZV", "EBV", "CMV", "HAdV", "HSV1", "HSV2", "HHV6", "HHV7", "PVB19", "VDRL-LCR"
 ];
 
 
@@ -253,7 +284,9 @@ const categoryOrder = [
   "Virologia",
   "Imunológico",
   "Fármacos",
-  "Líquor",
+  "Urina 1",
+  "Líquido Pleural",
+  "Líquor"
 ];
 
 // Sorologias fúngicas com tratamento especial
@@ -270,7 +303,24 @@ const sorologiaGroups = [
 ];
 
 function getDisplayName(abbr) {
-  return abbr;
+  const customNames = {
+    EVR: "Everolimus",
+    U1_Nit: "Nit (U1)",
+    U1_LE: "LE (U1)",
+    U1_Leuco: "Leuco (U1)",
+    U1_Hem: "Hem (U1)",
+    Pleural_Cel: "Cel (Pleural)",
+    Pleural_PMN: "PMN (Pleural)",
+    Pleural_LMN: "LMN (Pleural)",
+    Pleural_Glic: "Glic (Pleural)",
+    Pleural_Pt: "Pt (Pleural)",
+    Pleural_pH: "pH (Pleural)",
+    Pleural_LDH: "LDH (Pleural)",
+    "RelAlb/Cr": "Rel Alb/Cr",
+    TestoLivre: "Testo Livre",
+    TestoTotal: "Testo Total"
+  };
+  return customNames[abbr] || abbr;
 }
 
 function formatSorologiaValue(rawValue) {
@@ -282,6 +332,14 @@ function formatSorologiaValue(rawValue) {
     return "R";
   }
   return rawValue.trim();
+}
+
+function formatU1Value(val) {
+  if (!val) return "";
+  const norm = normalize(val);
+  if (norm.includes("NAO REAGENTE") || norm.includes("NEGATIVO")) return "-";
+  if (norm.includes("REAGENTE") || norm.includes("POSITIVO")) return "+";
+  return val;
 }
 
 function buildSorologiaParts(bucket, selectedAbbrs) {
@@ -309,6 +367,9 @@ function findExamDefinition(examName) {
   const norm = normalize(name);
   const normSection = normalize(section);
   const isLiquor = norm.includes("LIQUOR") || normSection.includes("LIQUOR") || normSection.includes("LCR");
+  const isU1 = norm.includes("URINA TIPO 1") || norm.includes("URINA T1") || normSection.includes("URINA TIPO 1") || normSection.includes("URINA T1");
+  const isPleural = norm.includes("PLEURAL") || normSection.includes("PLEURAL");
+  const isUrine = norm.includes("URINA") || normSection.includes("URINA");
   let bestDef = null;
 
   for (const def of examDefinitions) {
@@ -322,6 +383,16 @@ function findExamDefinition(examName) {
     }
     if (ok && def.onlyLiquor && !isLiquor) ok = false;
     if (ok && def.internal === true && !isLiquor) ok = false;
+    
+    if (ok && def.onlyU1 && !isU1) ok = false;
+    if (ok && def.onlyPleural && !isPleural) ok = false;
+    
+    // Se o contexto for U1, só aceita definições marcadas como onlyU1
+    if (ok && isU1 && !def.onlyU1) ok = false;
+    // Se o contexto for Pleural, só aceita definições marcadas como onlyPleural
+    if (ok && isPleural && !def.onlyPleural) ok = false;
+    // Se for exame de urina, impede o casamento com definições séricas (não-Urina 1 e não-RelAlb/Cr)
+    if (ok && isUrine && def.category !== "Urina 1" && def.abbr !== "RelAlb/Cr") ok = false;
 
     if (!ok) continue;
 
@@ -397,6 +468,12 @@ function parseExams(rawText) {
     if (coletado) {
       currentDate = coletado.date;
       currentTime = coletado.time || "";
+      continue;
+    }
+
+    // Cabeçalho de Urina 1 e Líquido Pleural
+    if (/(URINA TIPO 1|URINA T1|URINA T\.1|URINA AMOSTRA ISOLADA|PLEURAL)/i.test(line) && line.includes(" - ")) {
+      currentSection = line.trim();
       continue;
     }
 
@@ -484,42 +561,79 @@ function parseExams(rawText) {
       continue;
     }
 
-    let parts = line.split(/\s{2,}|\t+/).filter(Boolean);
-    if (parts.length < 2) {
-      // Tenta fazer o split inteligente por espaço simples se contiver algum termo mapeado
-      let bestMatchDef = null;
-      const normLine = normalize(line);
-      const isLiquor = normLine.includes("LIQUOR") || normalize(currentSection).includes("LIQUOR") || normalize(currentSection).includes("LCR");
+    let parts = [];
+    const normLine = normalize(line);
+    const normSection = normalize(currentSection);
+    const isLiquor = normLine.includes("LIQUOR") || normSection.includes("LIQUOR") || normSection.includes("LCR");
+    const isU1 = normLine.includes("URINA TIPO 1") || normLine.includes("URINA T1") || normSection.includes("URINA TIPO 1") || normSection.includes("URINA T1");
+    const isPleural = normLine.includes("PLEURAL") || normSection.includes("PLEURAL");
+    const isUrine = normLine.includes("URINA") || normSection.includes("URINA");
 
-      for (const def of examDefinitions) {
-        if (def.onlyLiquor && !isLiquor) continue;
-        if (def.internal === true && !isLiquor) continue;
+    // 1. Tenta Smart Split primeiro
+    let bestMatchDef = null;
+    for (const def of examDefinitions) {
+      if (def.onlyLiquor && !isLiquor) continue;
+      if (def.internal === true && !isLiquor) continue;
+      if (def.onlyU1 && !isU1) continue;
+      if (def.onlyPleural && !isPleural) continue;
+      if (isU1 && !def.onlyU1) continue;
+      if (isPleural && !def.onlyPleural) continue;
+      if (isUrine && def.category !== "Urina 1" && def.abbr !== "RelAlb/Cr") continue;
 
-        if (normLine.includes(def.match)) {
-          if (!bestMatchDef || def.match.length > bestMatchDef.match.length) {
-            bestMatchDef = def;
-          }
+      if (normLine.includes(def.match)) {
+        if (!bestMatchDef || def.match.length > bestMatchDef.match.length) {
+          bestMatchDef = def;
         }
       }
+    }
 
-      if (bestMatchDef) {
-        const matchPos = normLine.indexOf(bestMatchDef.match);
-        if (matchPos !== -1) {
+    if (bestMatchDef) {
+      const matchPos = normLine.indexOf(bestMatchDef.match);
+      if (matchPos !== -1) {
+        const prefix = line.slice(0, matchPos);
+        const isValidPrefix = /^[^\w]*$/.test(prefix) || /^\d+[\s.)-]*$/.test(prefix.trim());
+        if (isValidPrefix) {
           const splitIndex = matchPos + bestMatchDef.match.length;
           const namePart = line.slice(0, splitIndex).trim();
-          const remainder = line.slice(splitIndex).trim();
+          const remainderRaw = line.slice(splitIndex).trim();
           
-          if (remainder) {
-            const normRemainder = normalize(remainder);
-            const startsWithVal = /^[<>*]?\s*\d/.test(remainder);
-            const isQualitative = /^(REAGENTE|NAO\s+REAGENTE|NEGATIVO|POSITIVO|INDETERMINADO|NORMAL|DETECTADO|NAO\s+DETECTADO|NEG|POS|NR|AUSENCIA|NAO\s+FORAM|PARCIAL)\b/.test(normRemainder);
+          let remainderClean = remainderRaw.replace(/^[::=\s]+/, "").trim();
+          if (remainderClean) {
+            const normRemainderClean = normalize(remainderClean);
+            const startsWithVal = /^[<>*]?\s*\d/.test(remainderClean);
+            const isQualitative = /^(REAGENTE|NAO\s+REAGENTE|NEGATIVO|POSITIVO|INDETERMINADO|NORMAL|DETECTADO|NAO\s+DETECTADO|NEG|POS|NR|AUSENCIA|AUSENTE|AUSENTES|NAO\s+FORAM|PARCIAL)\b/.test(normRemainderClean);
             
             if (startsWithVal || isQualitative) {
-              parts = [namePart, remainder];
+              let valuePart = remainderClean;
+              const doubleSpaceIndex = remainderClean.search(/\s{2,}|\t+/);
+              if (doubleSpaceIndex !== -1) {
+                valuePart = remainderClean.slice(0, doubleSpaceIndex).trim();
+              } else {
+                const mQual1 = remainderClean.match(/^(NAO\s+REAGENTE|REAGENTE|NEGATIVO|POSITIVO|INDETERMINADO|NORMAL|DETECTADO|NAO\s+DETECTADO|NEG|POS|NR|AUSENCIA|AUSENTE|AUSENTES|PARCIAL)\b/i);
+                if (mQual1) {
+                  const firstQual = mQual1[0];
+                  const rest = remainderClean.slice(mQual1.index + firstQual.length).trim();
+                  const mQual2 = rest.match(/^(NAO\s+REAGENTE|REAGENTE|NEGATIVO|POSITIVO|INDETERMINADO|NORMAL|DETECTADO|NAO\s+DETECTADO|NEG|POS|NR|AUSENCIA|AUSENTE|AUSENTES|PARCIAL)\b/i);
+                  if (mQual2) {
+                    valuePart = firstQual;
+                  } else {
+                    const isRef = /^(ATE|NORMAL|ADULTOS|HOMENS|MULHERES|VALOR|VALORES|LIMITES|LIMITE|REFERENCIA|REF)\b/i.test(normalize(rest)) || /^[<>=\d]/.test(rest);
+                    if (isRef) {
+                      valuePart = firstQual;
+                    }
+                  }
+                }
+              }
+              parts = [namePart, valuePart];
             }
           }
         }
       }
+    }
+
+    // 2. Se o Smart Split falhou em achar 2 partes, tenta o split bruto
+    if (parts.length < 2) {
+      parts = line.split(/\s{2,}|\t+/).filter(Boolean);
     }
 
     if (parts.length < 2) continue;
@@ -552,44 +666,48 @@ function parseExams(rawText) {
       continue;
     }
 
-    // Quantitativos
+    // Quantitativos ou Qualitativos
+    let parsedAsQuant = false;
     if (/\d/.test(valueUnit)) {
-      const m = valueUnit.match(/^([<>*]?\s*[\d.,+-]+)\s*(.*)$/);
+      const m = valueUnit.match(/^([<>*]?\s*[+-]?\s*[\d.,]+)\s*(.*)$/);
       if (m) {
         exams.push({
           date: currentDate || "",
           time: currentTime || "",
           section: currentSection || "",
-          name,
-          value: m[1].trim(),
+          name: name,
+          value: m[1].trim().replace(/([+-])\s+/g, "$1"),
           unit: m[2].trim(),
-          normName
+          normName: normName
         });
+        parsedAsQuant = true;
       }
-    } else {
+    }
+    
+    if (!parsedAsQuant) {
       // Qualitativos (R/NR etc.)
       const value = valueUnit.trim();
-      if (!value) continue;
+      if (value) {
+        const examObj = {
+          date: currentDate || "",
+          time: currentTime || "",
+          section: currentSection || "",
+          name,
+          value,
+          unit: "",
+          normName
+        };
+        exams.push(examObj);
 
-      const examObj = {
-        date: currentDate || "",
-        time: currentTime || "",
-        section: currentSection || "",
-        name,
-        value,
-        unit: "",
-        normName
-      };
-      exams.push(examObj);
-
-      // Contraimuno reagente → pode ganhar título depois
-      if (
-        (normName.includes("CONTRAIMUNO") || normName.includes("VDRL")) &&
-        normalize(value).includes("REAGENTE")
-      ) {
-        pendingTiterExam = examObj;
-      } else if (normName.includes("CONTRAIMUNO") || normName.includes("VDRL")) {
-        pendingTiterExam = null;
+        // Contraimuno reagente → pode ganhar título depois
+        if (
+          (normName.includes("CONTRAIMUNO") || normName.includes("VDRL")) &&
+          normalize(value).includes("REAGENTE")
+        ) {
+          pendingTiterExam = examObj;
+        } else if (normName.includes("CONTRAIMUNO") || normName.includes("VDRL")) {
+          pendingTiterExam = null;
+        }
       }
     }
   }
@@ -840,6 +958,103 @@ function buildLiquorText(bucket, selectedAbbrs) {
   return `LCR: ${parts.join(" | ")}`;
 }
 
+const u1AbbrSet = new Set(["U1_Nit", "U1_LE", "U1_Leuco", "U1_Hem", "U1_Glic"]);
+const pleuralAbbrSet = new Set([
+  "Pleural_Cel", "Pleural_PMN", "Pleural_Linf", "Pleural_Mono",
+  "Pleural_Glic", "Pleural_Pt", "Pleural_pH", "Pleural_LDH",
+  "Pleural_Ht", "Pleural_Leuco"
+]);
+
+function formatPercent(val) {
+  if (val == null) return "";
+  const s = String(val).trim();
+  if (s.endsWith("%")) return s;
+  return s + "%";
+}
+
+function buildUrina1Text(bucket, selectedAbbrs) {
+  const hasU1Data = Object.keys(bucket).some(key => u1AbbrSet.has(key));
+  if (!hasU1Data) return "";
+
+  const parts = [];
+  if (selectedAbbrs.includes("U1_Nit") && bucket.U1_Nit) {
+    parts.push(`Nit ${formatU1Value(bucket.U1_Nit.value)}`);
+  }
+  if (selectedAbbrs.includes("U1_LE") && bucket.U1_LE) {
+    parts.push(`LE ${formatU1Value(bucket.U1_LE.value)}`);
+  }
+  if (selectedAbbrs.includes("U1_Leuco") && bucket.U1_Leuco) {
+    parts.push(`Leuco ${bucket.U1_Leuco.value}`);
+  }
+  if (selectedAbbrs.includes("U1_Hem") && bucket.U1_Hem) {
+    parts.push(`Hem ${bucket.U1_Hem.value}`);
+  }
+
+  if (!parts.length) return "";
+  return `U1: ${parts.join(" | ")}`;
+}
+
+function buildPleuralText(bucket, selectedAbbrs) {
+  const hasPleuralData = Object.keys(bucket).some(key => pleuralAbbrSet.has(key));
+  if (!hasPleuralData) return "";
+
+  const parts = [];
+  if (selectedAbbrs.includes("Pleural_Cel") && bucket.Pleural_Cel) {
+    let celText = `Cel ${bucket.Pleural_Cel.value}`;
+    const sub = [];
+
+    if (selectedAbbrs.includes("Pleural_PMN") && bucket.Pleural_PMN) {
+      sub.push(`PMN ${formatPercent(bucket.Pleural_PMN.value)}`);
+    }
+
+    if (selectedAbbrs.includes("Pleural_LMN")) {
+      const linf = bucket.Pleural_Linf ? parseFloat(String(bucket.Pleural_Linf.value).replace(",", ".")) : null;
+      const mono = bucket.Pleural_Mono ? parseFloat(String(bucket.Pleural_Mono.value).replace(",", ".")) : null;
+      if (linf !== null && mono !== null && !isNaN(linf) && !isNaN(mono)) {
+        const sum = linf + mono;
+        sub.push(`LMN ${formatPercent(sum.toString().replace(".", ","))}`);
+      } else if (linf !== null && !isNaN(linf)) {
+        sub.push(`LMN ${formatPercent(linf.toString().replace(".", ","))}`);
+      }
+    }
+
+    if (sub.length) {
+      celText += ` (${sub.join(" | ")})`;
+    }
+    parts.push(celText);
+  } else {
+    if (selectedAbbrs.includes("Pleural_PMN") && bucket.Pleural_PMN) {
+      parts.push(`PMN ${formatPercent(bucket.Pleural_PMN.value)}`);
+    }
+    if (selectedAbbrs.includes("Pleural_LMN")) {
+      const linf = bucket.Pleural_Linf ? parseFloat(String(bucket.Pleural_Linf.value).replace(",", ".")) : null;
+      const mono = bucket.Pleural_Mono ? parseFloat(String(bucket.Pleural_Mono.value).replace(",", ".")) : null;
+      if (linf !== null && mono !== null && !isNaN(linf) && !isNaN(mono)) {
+        const sum = linf + mono;
+        parts.push(`LMN ${formatPercent(sum.toString().replace(".", ","))}`);
+      } else if (linf !== null && !isNaN(linf)) {
+        parts.push(`LMN ${formatPercent(linf.toString().replace(".", ","))}`);
+      }
+    }
+  }
+
+  if (selectedAbbrs.includes("Pleural_Glic") && bucket.Pleural_Glic) {
+    parts.push(`Glic ${bucket.Pleural_Glic.value}`);
+  }
+  if (selectedAbbrs.includes("Pleural_Pt") && bucket.Pleural_Pt) {
+    parts.push(`Pt ${bucket.Pleural_Pt.value}`);
+  }
+  if (selectedAbbrs.includes("Pleural_pH") && bucket.Pleural_pH) {
+    parts.push(`pH ${bucket.Pleural_pH.value}`);
+  }
+  if (selectedAbbrs.includes("Pleural_LDH") && bucket.Pleural_LDH) {
+    parts.push(`LDH ${bucket.Pleural_LDH.value}`);
+  }
+
+  if (!parts.length) return "";
+  return `Líq. Pleural: ${parts.join(" | ")}`;
+}
+
 // ---------- Construção por data ----------
 
 function buildDateMap(exams, selectedAbbrs) {
@@ -847,7 +1062,8 @@ function buildDateMap(exams, selectedAbbrs) {
   for (const ex of exams) {
     const def = findExamDefinition(ex);
     if (!def) continue;
-    const isRequiredInternal = def.internal && selectedAbbrs && selectedAbbrs.includes("LMN");
+    const isRequiredInternal = (def.internal && selectedAbbrs && selectedAbbrs.includes("LMN")) ||
+      ((def.abbr === "Pleural_Linf" || def.abbr === "Pleural_Mono") && selectedAbbrs && selectedAbbrs.includes("Pleural_LMN"));
     if (selectedAbbrs && !selectedAbbrs.includes(def.abbr) && !isRequiredInternal) continue;
 
     const collectionKey = makeCollectionKey(ex.date || "-", ex.time || "");
@@ -905,9 +1121,15 @@ function generateLinesPerDate(exams, selectedAbbrs, gasoMap) {
     for (const abbr of examOrder) {
       if (sorologiaAbbrs.has(abbr)) continue;
       if (liquorAbbrSet.has(abbr)) continue;
+      if (u1AbbrSet.has(abbr)) continue;
+      if (pleuralAbbrSet.has(abbr)) continue;
       if (!selectedAbbrs.includes(abbr)) continue;
       if (bucket[abbr]) {
-        parts.push(`${getDisplayName(abbr)} ${bucket[abbr].value}`);
+        let val = bucket[abbr].value;
+        if (bucket[abbr].category === "Sorologias") {
+          val = formatSorologiaValue(val);
+        }
+        parts.push(`${getDisplayName(abbr)} ${val}`);
       }
     }
 
@@ -920,9 +1142,19 @@ function generateLinesPerDate(exams, selectedAbbrs, gasoMap) {
     const gasoText = buildGasometriaTextForDate(collectionKey, gasoMap, selectedAbbrs);
     if (gasoText) parts.push(gasoText);
 
+    const label = formatDateTimeLabel(date, time);
     if (parts.length) {
-      const label = formatDateTimeLabel(date, time);
       lines.push(`(${label}) ${parts.join(" | ")}`);
+    }
+
+    const u1Text = buildUrina1Text(bucket, selectedAbbrs);
+    if (u1Text) {
+      lines.push(`(${label}) ${u1Text}`);
+    }
+
+    const pleuralText = buildPleuralText(bucket, selectedAbbrs);
+    if (pleuralText) {
+      lines.push(`(${label}) ${pleuralText}`);
     }
   }
 
@@ -944,12 +1176,18 @@ function generateTextByCategories(exams, selectedAbbrs, gasoMap) {
     for (const abbr of examOrder) {
       if (sorologiaAbbrs.has(abbr)) continue;
       if (liquorAbbrSet.has(abbr)) continue;
+      if (u1AbbrSet.has(abbr)) continue;
+      if (pleuralAbbrSet.has(abbr)) continue;
       if (!selectedAbbrs.includes(abbr)) continue;
       const entry = bucket[abbr];
       if (!entry) continue;
       const cat = entry.category;
       if (!categoryLines[cat]) categoryLines[cat] = [];
-      categoryLines[cat].push(`${getDisplayName(abbr)} ${entry.value}`);
+      let val = entry.value;
+      if (cat === "Sorologias") {
+        val = formatSorologiaValue(val);
+      }
+      categoryLines[cat].push(`${getDisplayName(abbr)} ${val}`);
     }
 
     const sorologiaParts = buildSorologiaParts(bucket, selectedAbbrs);
@@ -962,6 +1200,18 @@ function generateTextByCategories(exams, selectedAbbrs, gasoMap) {
     if (liquorText) {
       if (!categoryLines["Líquor"]) categoryLines["Líquor"] = [];
       categoryLines["Líquor"].push(liquorText.replace(/^LCR:\s*/, ""));
+    }
+
+    const u1Text = buildUrina1Text(bucket, selectedAbbrs);
+    if (u1Text) {
+      if (!categoryLines["Urina 1"]) categoryLines["Urina 1"] = [];
+      categoryLines["Urina 1"].push(u1Text.replace(/^U1:\s*/, ""));
+    }
+
+    const pleuralText = buildPleuralText(bucket, selectedAbbrs);
+    if (pleuralText) {
+      if (!categoryLines["Líquido Pleural"]) categoryLines["Líquido Pleural"] = [];
+      categoryLines["Líquido Pleural"].push(pleuralText.replace(/^Líq\.\s*Pleural:\s*/i, ""));
     }
 
     const gasoText = buildGasometriaTextForDate(collectionKey, gasoMap, selectedAbbrs);
@@ -1306,7 +1556,15 @@ Object.assign(window.__EXAMES_APP__, {
   prefs,
   liquorAbbrSet,
   formatLiquorMicroValue,
-  showToast
+  showToast,
+  getDisplayName,
+  u1AbbrSet,
+  pleuralAbbrSet,
+  findExamDefinition,
+  generateLinesPerDate,
+  generateTextByCategories,
+  formatSorologiaValue,
+  formatU1Value
 });
 
 // ---------- Alternância de Tema (Light/Dark Mode) ----------

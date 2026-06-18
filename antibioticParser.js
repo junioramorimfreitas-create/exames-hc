@@ -7,6 +7,7 @@
   const btnClearAntInput = document.getElementById("btnClearAntInput");
   const btnCopyAntTimeline = document.getElementById("btnCopyAntTimeline");
   const antStatus = document.getElementById("antStatus");
+  const antDateFormat = document.getElementById("antDateFormat");
 
   function cleanText(str) {
     return (str || "")
@@ -230,15 +231,27 @@
     return combined;
   }
 
-  function formatTimelineOutput(combined) {
-    function formatDayMonth(dateStr) {
-      const parts = dateStr.split("/");
-      return `${parts[0]}/${parts[1]}`;
+  function formatTimelineOutput(combined, dateFormat = "dd/mm") {
+    function formatDate(dateStr) {
+      const parts = dateStr.split("/"); // [DD, MM, YYYY]
+      const dd = parts[0];
+      const mm = parts[1];
+      const yyyy = parts[2];
+      const aa = yyyy.slice(-2);
+
+      if (dateFormat === "dd/mm/aaaa") {
+        return `${dd}/${mm}/${yyyy}`;
+      } else if (dateFormat === "dd/mm/aa") {
+        return `${dd}/${mm}/${aa}`;
+      } else {
+        // default "dd/mm"
+        return `${dd}/${mm}`;
+      }
     }
 
     return combined.map(item => {
-      const startStr = formatDayMonth(item.start);
-      const endStr = formatDayMonth(item.end);
+      const startStr = formatDate(item.start);
+      const endStr = formatDate(item.end);
 
       if (item.start === item.end) {
         return `${item.name} (${startStr})`;
@@ -248,7 +261,7 @@
     }).join("\n");
   }
 
-  function parseAntibioticTimeline(inputText) {
+  function parseAntibioticTimeline(inputText, dateFormat = "dd/mm") {
     const prescriptions = parsePrescriptionLines(inputText);
     if (prescriptions.length === 0) return "";
 
@@ -264,7 +277,7 @@
       return a.endDateObj - b.endDateObj;
     });
 
-    return formatTimelineOutput(combined);
+    return formatTimelineOutput(combined, dateFormat);
   }
 
   // Expose main functions for testability
@@ -276,20 +289,31 @@
   app.combineIntervalsWithSameDates = combineIntervalsWithSameDates;
   app.formatTimelineOutput = formatTimelineOutput;
 
+  function generateTimeline() {
+    if (!antInput || !antOutput) return;
+    const raw = antInput.value;
+    const format = (antDateFormat && antDateFormat.value) ? antDateFormat.value : "dd/mm";
+    const result = parseAntibioticTimeline(raw, format);
+    
+    if (!result.trim() && raw.trim()) {
+      antOutput.value = "Nenhum antimicrobiano reconhecido. Verifique se o formato está correto (DD/MM/AA no início de cada linha).";
+      if (antStatus) antStatus.textContent = "";
+    } else {
+      antOutput.value = result;
+      const count = parsePrescriptionLines(raw).length;
+      if (antStatus) antStatus.textContent = `${count} prescrições processadas.`;
+    }
+  }
+
   // DOM Event Bindings
   if (btnGenerateAntTimeline) {
-    btnGenerateAntTimeline.addEventListener("click", () => {
-      if (!antInput || !antOutput) return;
-      const raw = antInput.value;
-      const result = parseAntibioticTimeline(raw);
-      
-      if (!result.trim() && raw.trim()) {
-        antOutput.value = "Nenhum antimicrobiano reconhecido. Verifique se o formato está correto (DD/MM/AA no início de cada linha).";
-        if (antStatus) antStatus.textContent = "";
-      } else {
-        antOutput.value = result;
-        const count = parsePrescriptionLines(raw).length;
-        if (antStatus) antStatus.textContent = `${count} prescrições processadas.`;
+    btnGenerateAntTimeline.addEventListener("click", generateTimeline);
+  }
+
+  if (antDateFormat) {
+    antDateFormat.addEventListener("change", () => {
+      if (antInput && antInput.value.trim()) {
+        generateTimeline();
       }
     });
   }

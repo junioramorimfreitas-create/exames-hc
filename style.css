@@ -870,3 +870,12 @@ body.dark-theme .btn-primary:hover {
   display: block;
 }
 
+/* Antibiotic Parser Textareas */
+#antInput, #antOutput {
+  height: 320px;
+}
+
+#antOutput {
+  font-weight: 500;
+}
+

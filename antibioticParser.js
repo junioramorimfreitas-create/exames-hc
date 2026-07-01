@@ -106,6 +106,15 @@
     if (line.includes("voriconazol")) {
       return "Voriconazol";
     }
+    if (line.includes("cefalexina")) {
+      return "Cefalexina";
+    }
+    if (line.includes("cefazolina")) {
+      return "Cefazolina";
+    }
+    if (line.includes("ivermectina")) {
+      return "Ivermectina";
+    }
     return null;
   }
 

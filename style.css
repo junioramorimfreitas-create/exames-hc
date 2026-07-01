@@ -879,3 +879,153 @@ body.dark-theme .btn-primary:hover {
   font-weight: 500;
 }
 
+/* Vitals Parser Textareas */
+#vitalsInput, #vitalsOutput {
+  height: 320px;
+}
+
+#vitalsOutput {
+  font-weight: 500;
+}
+
+/* Colorized Toggle Buttons */
+.btn-toggle-dataset.btn-fc { --btn-color: #ff4d4d; }
+.btn-toggle-dataset.btn-pas { --btn-color: #ff9f40; }
+.btn-toggle-dataset.btn-pad { --btn-color: #ffcd56; }
+.btn-toggle-dataset.btn-pam { --btn-color: #4bc0c0; }
+.btn-toggle-dataset.btn-fr { --btn-color: #36a2eb; }
+.btn-toggle-dataset.btn-spo2 { --btn-color: #9966ff; }
+.btn-toggle-dataset.btn-temp { --btn-color: #ff6384; }
+.btn-toggle-dataset.btn-dx { --btn-color: #94a3b8; }
+
+.btn-toggle-dataset {
+  background-color: var(--btn-sec-bg);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-pill);
+  padding: 6px 14px;
+  font-family: var(--font-main);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.btn-toggle-dataset:hover {
+  background-color: var(--btn-sec-hover);
+  color: var(--btn-color);
+  border-color: var(--btn-color);
+}
+
+.btn-toggle-dataset.active {
+  background-color: var(--btn-color);
+  color: #ffffff;
+  border-color: var(--btn-color);
+}
+
+/* For bright colors (like yellow PAD), use dark text for contrast */
+.btn-toggle-dataset.active.btn-pad {
+  color: #0b111e !important;
+}
+
+body.dark-theme .btn-toggle-dataset.active {
+  color: #0b111e;
+}
+
+/* Glycemia Parser Textareas */
+#glycemiaInput, #glycemiaOutput {
+  height: 320px;
+}
+
+#glycemiaOutput {
+  font-weight: 500;
+}
+
+/* Insulin marker tag styling */
+.insulin-marker-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background-color: var(--btn-sec-bg);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  border-radius: var(--radius-pill);
+  padding: 4px 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s ease;
+}
+
+.insulin-marker-tag .btn-remove-marker {
+  border: none;
+  background: none;
+  color: var(--text-secondary);
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0;
+  font-size: 0.9rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.insulin-marker-tag .btn-remove-marker:hover {
+  color: #ffffff;
+  background-color: #ef4444;
+}
+
+/* Temperature Parser Textareas */
+#temperatureInput, #temperatureOutput {
+  height: 320px;
+}
+
+#temperatureOutput {
+  font-weight: 500;
+}
+
+/* Antibiotic start marker tag styling */
+.antibiotic-marker-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background-color: var(--btn-sec-bg);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  border-radius: var(--radius-pill);
+  padding: 4px 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s ease;
+}
+
+.antibiotic-marker-tag .btn-remove-marker {
+  border: none;
+  background: none;
+  color: var(--text-secondary);
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0;
+  font-size: 0.9rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.antibiotic-marker-tag .btn-remove-marker:hover {
+  color: #ffffff;
+  background-color: #ef4444;
+}
+

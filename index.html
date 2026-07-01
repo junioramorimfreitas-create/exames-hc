@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <title>Organizador de Exames - HCFMUSP</title>
+  <title>Organizador de Exames e Controles do HC</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -11,25 +11,22 @@
 <body>
   <div class="page">
     <div class="header-wrapper">
-      <h1>Organizador de Exames do HC</h1>
+      <h1>Organizador de Exames e Controles do HC</h1>
       <div class="header-actions" style="display: flex; align-items: center; gap: 12px;">
-        <button type="button" class="btn-secondary" id="btnToggleFilters" style="border-radius: 12px; padding: 10px 16px; display: flex; align-items: center; gap: 8px; font-weight: 600;">
-          <span id="filterStatusLabel">Filtros de Exames (Carregando...)</span>
-          <span class="arrow-icon" style="transition: transform 0.3s ease; font-size: 0.8rem;">▼</span>
-        </button>
         <button type="button" id="themeToggle" class="btn-theme" aria-label="Alternar tema">
           <span class="theme-icon">🌙</span>
         </button>
       </div>
     </div>
-    <p class="subtitle">
-      Cole abaixo o laudo bruto dos exames laboratoriais do HCFMUSP (copia/cola da tela) e use os botões para gerar o texto no formato de prontuário.
-    </p>
+    <p class="subtitle">Selecione abaixo a ferramenta desejada</p>
 
     <!-- Navegação por Abas -->
     <div class="tab-navigation">
       <button type="button" class="tab-btn active" id="tabExams">Exames Laboratoriais</button>
       <button type="button" class="tab-btn" id="tabAntibiotics">Linha do Tempo de Antibióticos</button>
+      <button type="button" class="tab-btn" id="tabVitals">Organizador de Controles</button>
+      <button type="button" class="tab-btn" id="tabGlycemia">Evolução de Glicemia</button>
+      <button type="button" class="tab-btn" id="tabTemperature">Evolução de Temperatura</button>
     </div>
 
     <!-- Seção de Exames -->
@@ -44,7 +41,13 @@
         <div class="row">
           <div class="input-header" style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
             <label for="rawInput" style="margin-bottom:0;">Laudo bruto</label>
-            <button type="button" class="btn-secondary btn-small" id="btnClearInput">Limpar Laudo</button>
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <button type="button" class="btn-secondary btn-small" id="btnToggleFilters" style="display: flex; align-items: center; gap: 6px;">
+                <span id="filterStatusLabel">Filtros de Exames (Carregando...)</span>
+                <span class="arrow-icon" style="transition: transform 0.3s ease; font-size: 0.8rem;">▼</span>
+              </button>
+              <button type="button" class="btn-secondary btn-small" id="btnClearInput">Limpar Laudo</button>
+            </div>
           </div>
           <textarea id="rawInput" placeholder="Cole aqui o laudo inteiro com os exames..."></textarea>
         </div>
@@ -964,8 +967,274 @@
       </div>
     </div>
 
+    <!-- Seção de Controles / Sinais Vitais -->
+    <div id="vitalsSection" class="tab-content" style="display: none;">
+      <div class="dashboard-grid">
+        
+        <!-- Coluna da Esquerda: Entrada de Dados -->
+        <div class="left-panel">
+          <div class="row" style="margin-bottom: 12px;">
+            <div class="input-header" style="margin-bottom:6px;">
+              <label for="vitalsInput" style="margin-bottom:0; font-weight: 600;">Cole aqui a tabela de sinais vitais e balanço hídrico do MV</label>
+            </div>
+            <textarea id="vitalsInput" placeholder="Cole aqui os dados copiados do MV contendo Sinais Vitais e Balanço Hídrico..."></textarea>
+          </div>
+          
+          <div class="row">
+            <div class="actions">
+              <button type="button" class="btn-primary" id="btnGenerateVitals">
+                Gerar controles
+              </button>
+              <button type="button" class="btn-secondary" id="btnClearVitalsInput">
+                Limpar Entrada
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Coluna da Direita: Saída formatada -->
+        <div class="right-panel">
+          <div class="row" style="margin-bottom: 12px;">
+            <div class="input-header" style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+              <label for="vitalsOutput" style="margin-bottom:0; font-weight: 600;">Texto formatado para prontuário</label>
+              <span id="vitalsStatus" class="status-text"></span>
+            </div>
+            <textarea id="vitalsOutput" readonly placeholder="Os controles formatados aparecerão aqui..."></textarea>
+          </div>
+          
+          <div class="row">
+            <div class="actions">
+              <button type="button" class="btn-primary" id="btnCopyVitals">
+                Copiar resultado
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Gráfico de Sinais Vitais -->
+      <div class="row" style="margin-top: 32px;">
+        <label>Evolução de Sinais Vitais (24h)</label>
+        <div class="actions" style="margin-bottom:12px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+          <button class="btn-secondary" id="btnToggleVitalsChart">
+            Mostrar gráfico de sinais vitais
+          </button>
+        </div>
+        <!-- Controles de Visibilidade das Séries do Gráfico -->
+        <div id="vitalsChartControls" style="display: none; margin-bottom: 16px; gap: 8px; flex-wrap: wrap; align-items: center;">
+          <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); margin-right: 4px;">Exibir:</span>
+          <button type="button" class="btn-toggle-dataset active btn-fc" data-dataset-idx="0">FC</button>
+          <button type="button" class="btn-toggle-dataset active btn-pas" data-dataset-idx="1">PAS</button>
+          <button type="button" class="btn-toggle-dataset active btn-pad" data-dataset-idx="2">PAD</button>
+          <button type="button" class="btn-toggle-dataset active btn-pam" data-dataset-idx="3">PAM</button>
+          <button type="button" class="btn-toggle-dataset btn-fr" data-dataset-idx="4">FR</button>
+          <button type="button" class="btn-toggle-dataset btn-spo2" data-dataset-idx="5">SpO2</button>
+          <button type="button" class="btn-toggle-dataset btn-temp" data-dataset-idx="6">Temp</button>
+          <button type="button" class="btn-toggle-dataset btn-dx" data-dataset-idx="7">Dx</button>
+        </div>
+        <div id="vitalsChartContainer" style="display: none; margin-top: 12px;">
+          <canvas id="vitalsChart" style="max-height: 400px; width: 100%;"></canvas>
+          <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 8px; font-style: italic; text-align: center;">
+            *Nota: Os horários exibidos no gráfico acima não são precisos, servindo apenas como uma estimativa da distribuição das aferições ao longo de 24h.
+          </p>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- Seção de Evolução de Glicemia -->
+    <div id="glycemiaSection" class="tab-content" style="display: none;">
+      <div class="dashboard-grid">
+        
+        <!-- Coluna da Esquerda: Entrada de Dados -->
+        <div class="left-panel">
+          <div class="row" style="margin-bottom: 12px;">
+            <div class="input-header" style="margin-bottom:6px;">
+              <label for="glycemiaInput" style="margin-bottom:0; font-weight: 600;">Cole aqui a tabela com histórico de glicemia capilar do MV</label>
+            </div>
+            <textarea id="glycemiaInput" placeholder="Cole aqui os dados contendo Data, Hora e Glicemia Capilar..."></textarea>
+          </div>
+          
+          <div class="row">
+            <div class="actions">
+              <button type="button" class="btn-primary" id="btnGenerateGlycemia">
+                Gerar evolução
+              </button>
+              <button type="button" class="btn-secondary" id="btnClearGlycemiaInput">
+                Limpar Entrada
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Coluna da Direita: Saída formatada -->
+        <div class="right-panel">
+          <div class="row" style="margin-bottom: 12px;">
+            <div class="input-header" style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+              <label for="glycemiaOutput" style="margin-bottom:0; font-weight: 600;">Glicemia capilar formatada</label>
+              <span id="glycemiaStatus" class="status-text"></span>
+            </div>
+            <textarea id="glycemiaOutput" readonly placeholder="A evolução formatada aparecerá aqui..."></textarea>
+          </div>
+          
+          <div class="row">
+            <div class="actions">
+              <button type="button" class="btn-primary" id="btnCopyGlycemia">
+                Copiar resultado
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Gráfico de Evolução de Glicemia -->
+      <div class="row" style="margin-top: 32px;">
+        <label>Evolução da Glicemia Capilar (Proporcional ao tempo)</label>
+        
+        <!-- Controles de Insulina -->
+        <div class="insulin-controls" style="margin-bottom: 16px; padding: 16px; background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-md);">
+          <div style="font-weight: 600; margin-bottom: 8px; font-size: 0.85rem; color: var(--text-primary);">Adicionar Marcador de Insulina:</div>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+            <select id="insulinTypeSelect" class="chart-selector" style="padding: 6px 12px; font-family: var(--font-main); font-weight: 600; font-size: 0.85rem; border-radius: var(--radius-pill); border: 1px solid var(--border-color); background-color: var(--bg-page); color: var(--text-primary);">
+              <option value="Ultralonga">Ultralonga</option>
+              <option value="NPH">NPH</option>
+              <option value="Regular">Regular</option>
+              <option value="Ultrarrápida">Ultrarrápida</option>
+            </select>
+            <input type="datetime-local" id="insulinDateTime" class="chart-selector" style="padding: 6px 12px; font-family: var(--font-main); font-weight: 600; font-size: 0.85rem; border-radius: var(--radius-pill); border: 1px solid var(--border-color); background-color: var(--bg-page); color: var(--text-primary);" />
+            <button type="button" class="btn-primary btn-small" id="btnAddInsulinMarker">Adicionar</button>
+            <button type="button" class="btn-secondary btn-small" id="btnClearInsulinMarkers">Limpar Tudo</button>
+          </div>
+          <div id="insulinMarkersList" style="margin-top: 12px; font-size: 0.8rem; color: var(--text-secondary); display: flex; gap: 8px; flex-wrap: wrap;"></div>
+        </div>
+
+        <!-- Seletor de Período do Gráfico -->
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
+          <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-secondary);">Período de exibição:</span>
+          <select id="glycemiaPeriodSelect" class="chart-selector" style="padding: 6px 12px; font-family: var(--font-main); font-weight: 600; font-size: 0.85rem; border-radius: var(--radius-pill); border: 1px solid var(--border-color); background-color: var(--bg-page); color: var(--text-primary);">
+            <option value="24h">Últimas 24h</option>
+            <option value="3d">Últimos 3 dias</option>
+            <option value="7d">Últimos 7 dias</option>
+            <option value="14d">Últimos 14 dias</option>
+            <option value="30d">Últimos 30 dias</option>
+            <option value="all" selected>Todo o período</option>
+          </select>
+        </div>
+
+        <div id="glycemiaChartContainer" style="height: 400px; width: 100%; position: relative;">
+          <canvas id="glycemiaChart" style="max-height: 400px; width: 100%;"></canvas>
+        </div>
+
+        <!-- Indicadores Estatísticos -->
+        <div id="glycemiaStatsContainer" style="display: flex; gap: 16px; margin-top: 16px; flex-wrap: wrap;">
+          <div class="stat-card" style="flex: 1; min-width: 150px; padding: 16px; background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-md); text-align: center; box-shadow: var(--shadow-sm);">
+            <div style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Acima da Meta (> 180 mg/dL)</div>
+            <div id="statAbove180" style="font-size: 1.6rem; font-weight: 700; color: #ef4444; margin-top: 6px;">--</div>
+          </div>
+          <div class="stat-card" style="flex: 1; min-width: 150px; padding: 16px; background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-md); text-align: center; box-shadow: var(--shadow-sm);">
+            <div style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Na Meta (70 - 180 mg/dL)</div>
+            <div id="statInTarget" style="font-size: 1.6rem; font-weight: 700; color: #10b981; margin-top: 6px;">--</div>
+          </div>
+          <div class="stat-card" style="flex: 1; min-width: 150px; padding: 16px; background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-md); text-align: center; box-shadow: var(--shadow-sm);">
+            <div style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Abaixo da Meta (< 70 mg/dL)</div>
+            <div id="statBelow70" style="font-size: 1.6rem; font-weight: 700; color: #3b82f6; margin-top: 6px;">--</div>
+          </div>
+        </div>
+
+        <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 12px; font-style: italic; text-align: center;">
+          *Dica: Você também pode clicar diretamente em qualquer ponto do gráfico para adicionar um marcador de insulina naquele horário.
+        </p>
+      </div>
+    </div>
+
+    <!-- Seção de Evolução de Temperatura -->
+    <div id="temperatureSection" class="tab-content" style="display: none;">
+      <div class="dashboard-grid">
+        
+        <!-- Coluna da Esquerda: Entrada de Dados -->
+        <div class="left-panel">
+          <div class="row" style="margin-bottom: 12px;">
+            <div class="input-header" style="margin-bottom:6px;">
+              <label for="temperatureInput" style="margin-bottom:0; font-weight: 600;">Cole aqui a tabela com histórico de temperatura do corpo do MV</label>
+            </div>
+            <textarea id="temperatureInput" placeholder="Cole aqui os dados contendo Data, Hora e Temperatura Corporal..."></textarea>
+          </div>
+          
+          <div class="row">
+            <div class="actions">
+              <button type="button" class="btn-primary" id="btnGenerateTemperature">
+                Gerar evolução
+              </button>
+              <button type="button" class="btn-secondary" id="btnClearTemperatureInput">
+                Limpar Entrada
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Coluna da Direita: Saída formatada -->
+        <div class="right-panel">
+          <div class="row" style="margin-bottom: 12px;">
+            <div class="input-header" style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+              <label for="temperatureOutput" style="margin-bottom:0; font-weight: 600;">Febres registradas (T &ge; 37,7 &deg;C)</label>
+              <span id="temperatureStatus" class="status-text"></span>
+            </div>
+            <textarea id="temperatureOutput" readonly placeholder="A evolução formatada das febres aparecerá aqui..."></textarea>
+          </div>
+          
+          <div class="row">
+            <div class="actions">
+              <button type="button" class="btn-primary" id="btnCopyTemperature">
+                Copiar resultado
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Gráfico de Evolução de Temperatura -->
+      <div class="row" style="margin-top: 32px;">
+        <label>Evolução da Temperatura Corporal (Proporcional ao tempo)</label>
+        
+        <!-- Controles de Início de Antibiótico -->
+        <div class="antibiotic-start-controls" style="margin-bottom: 16px; padding: 16px; background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-md);">
+          <div style="font-weight: 600; margin-bottom: 8px; font-size: 0.85rem; color: var(--text-primary);">Adicionar Início de Antibiótico:</div>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+            <input type="text" id="antibioticNameInput" placeholder="Nome do Antibiótico (ex: Ceftriaxona)" class="chart-selector" style="padding: 6px 12px; font-family: var(--font-main); font-size: 0.85rem; border-radius: var(--radius-pill); border: 1px solid var(--border-color); background-color: var(--bg-page); color: var(--text-primary); width: 250px;" />
+            <input type="datetime-local" id="antibioticStartDateTime" class="chart-selector" style="padding: 6px 12px; font-family: var(--font-main); font-weight: 600; font-size: 0.85rem; border-radius: var(--radius-pill); border: 1px solid var(--border-color); background-color: var(--bg-page); color: var(--text-primary);" />
+            <button type="button" class="btn-primary btn-small" id="btnAddAntibioticStartMarker">Adicionar</button>
+            <button type="button" class="btn-secondary btn-small" id="btnClearAntibioticStartMarkers">Limpar Tudo</button>
+          </div>
+          <div id="antibioticStartMarkersList" style="margin-top: 12px; font-size: 0.8rem; color: var(--text-secondary); display: flex; gap: 8px; flex-wrap: wrap;"></div>
+        </div>
+
+        <!-- Seletor de Período do Gráfico -->
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
+          <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-secondary);">Período de exibição:</span>
+          <select id="temperaturePeriodSelect" class="chart-selector" style="padding: 6px 12px; font-family: var(--font-main); font-weight: 600; font-size: 0.85rem; border-radius: var(--radius-pill); border: 1px solid var(--border-color); background-color: var(--bg-page); color: var(--text-primary);">
+            <option value="24h">Últimas 24h</option>
+            <option value="3d">Últimos 3 dias</option>
+            <option value="7d">Últimos 7 dias</option>
+            <option value="14d">Últimos 14 dias</option>
+            <option value="30d">Últimos 30 dias</option>
+            <option value="all" selected>Todo o período</option>
+          </select>
+        </div>
+
+        <div id="temperatureChartContainer" style="height: 400px; width: 100%; position: relative;">
+          <canvas id="temperatureChart" style="max-height: 400px; width: 100%;"></canvas>
+          <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 12px; font-style: italic; text-align: center;">
+            *Dica: Você também pode clicar diretamente em qualquer ponto do gráfico para adicionar o início de um antibiótico naquele horário.
+          </p>
+        </div>
+      </div>
+    </div>
+
     <footer class="footer">
-      <p class="hint">Versão 2.0</p>
+      <p class="hint">Versão 2.1</p>
     </footer>
   </div>
 
@@ -983,5 +1252,8 @@
   <script src="tableExport.js"></script>
   <script src="chartManager.js"></script>
   <script src="antibioticParser.js"></script>
+  <script src="vitalsParser.js"></script>
+  <script src="glycemiaParser.js"></script>
+  <script src="temperatureParser.js"></script>
 </body>
 </html>

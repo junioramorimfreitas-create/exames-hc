@@ -55,9 +55,19 @@
       rows.push({ label: "Paracoco (ID/CI)", type: "soro", group: "Paracoco" });
     }
 
-    // Gasometria (duas linhas)
-    if (selectedAbbrs.includes("GasArterial")) rows.push({ label: "Gaso art", type: "gaso", kind: "arterial" });
-    if (selectedAbbrs.includes("GasVenosa")) rows.push({ label: "Gaso ven", type: "gaso", kind: "venosa" });
+    // Gasometria (linhas isoladas)
+    if (selectedAbbrs.includes("GasArterial")) {
+      const subkeys = ["pH", "pO2", "pCO2", "HCO3", "BE", "SO2", "Lactato"];
+      for (const k of subkeys) {
+        rows.push({ label: `${k} (art)`, type: "gaso_item", kind: "arterial", subkey: k });
+      }
+    }
+    if (selectedAbbrs.includes("GasVenosa")) {
+      const subkeys = ["pH", "HCO3", "BE", "Lactato"];
+      for (const k of subkeys) {
+        rows.push({ label: `${k} (ven)`, type: "gaso_item", kind: "venosa", subkey: k });
+      }
+    }
 
     return rows;
   }
@@ -148,6 +158,15 @@
           cell = sorologiaCellText(bucket, selectedAbbrs, r.group);
         } else if (r.type === "gaso") {
           cell = gasoCellText(c.collectionKey, gasoMap, selectedAbbrs, r.kind);
+        } else if (r.type === "gaso_item") {
+          cell = "";
+          if (gasoMap && gasoMap.has(c.collectionKey)) {
+            const lista = gasoMap.get(c.collectionKey);
+            const last = lista.find(g => g.tipo === r.kind);
+            if (last && last.valores && last.valores[r.subkey] != null) {
+              cell = last.valores[r.subkey];
+            }
+          }
         }
 
         line.push(cell);

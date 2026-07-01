@@ -37,7 +37,7 @@
     };
   }
 
-  function getAvailableNumericExams(exams, dateMap, selectedAbbrs) {
+  function getAvailableNumericExams(exams, dateMap, selectedAbbrs, gasoMap) {
     // Apenas exames que possuam pelo menos um valor numérico válido
     const numericAbbrs = new Set();
     
@@ -61,6 +61,46 @@
         numericAbbrs.add(abbr);
       }
     }
+
+    // Adiciona exames de gasometria se estiverem selecionados e existirem dados
+    if (selectedAbbrs.includes("GasArterial") && gasoMap && gasoMap.size > 0) {
+      const subkeys = ["pH", "pO2", "pCO2", "HCO3", "BE", "SO2", "Lactato"];
+      for (const k of subkeys) {
+        let hasVal = false;
+        for (const lista of gasoMap.values()) {
+          const art = lista.find(g => g.tipo === "arterial");
+          if (art && art.valores && art.valores[k] != null) {
+            if (extractNumericValue(art.valores[k]) !== null) {
+              hasVal = true;
+              break;
+            }
+          }
+        }
+        if (hasVal) {
+          numericAbbrs.add(`${k} (art)`);
+        }
+      }
+    }
+
+    if (selectedAbbrs.includes("GasVenosa") && gasoMap && gasoMap.size > 0) {
+      const subkeys = ["pH", "HCO3", "BE", "Lactato"];
+      for (const k of subkeys) {
+        let hasVal = false;
+        for (const lista of gasoMap.values()) {
+          const ven = lista.find(g => g.tipo === "venosa");
+          if (ven && ven.valores && ven.valores[k] != null) {
+            if (extractNumericValue(ven.valores[k]) !== null) {
+              hasVal = true;
+              break;
+            }
+          }
+        }
+        if (hasVal) {
+          numericAbbrs.add(`${k} (ven)`);
+        }
+      }
+    }
+
     return Array.from(numericAbbrs);
   }
 
@@ -82,7 +122,7 @@
 
     const { dateMap, gasoMap, selectedAbbrs, exams } = app.last;
     const sortedDates = app.getAllSortedDates(dateMap, gasoMap);
-    const availableExams = getAvailableNumericExams(exams, dateMap, selectedAbbrs);
+    const availableExams = getAvailableNumericExams(exams, dateMap, selectedAbbrs, gasoMap);
 
     if (availableExams.length === 0) {
       if (chartSelectorContainer) chartSelectorContainer.style.display = "none";
@@ -127,17 +167,41 @@
     const labels = [];
     const dataPoints = [];
 
+    const isGasoVirtual = selectedExam.endsWith(" (art)") || selectedExam.endsWith(" (ven)");
+
     for (const collectionKey of sortedDates) {
       const bucket = dateMap.get(collectionKey);
-      if (bucket && bucket[selectedExam]) {
-        const num = extractNumericValue(bucket[selectedExam].value);
-        if (num !== null) {
-          const [datePart = "", timePart = ""] = collectionKey.split("@@");
-          const date = bucket.__date || datePart;
-          const time = bucket.__time || timePart;
-          const formattedLabel = app.formatDateTimeLabel(date, time);
-          labels.push(formattedLabel);
-          dataPoints.push(num);
+
+      if (isGasoVirtual) {
+        const kind = selectedExam.endsWith(" (art)") ? "arterial" : "venosa";
+        const subkey = selectedExam.replace(" (art)", "").replace(" (ven)", "");
+
+        if (gasoMap && gasoMap.has(collectionKey)) {
+          const lista = gasoMap.get(collectionKey);
+          const last = lista.find(g => g.tipo === kind);
+          if (last && last.valores && last.valores[subkey] != null) {
+            const num = extractNumericValue(last.valores[subkey]);
+            if (num !== null) {
+              const [datePart = "", timePart = ""] = collectionKey.split("@@");
+              const date = (bucket && bucket.__date) || last.date || datePart;
+              const time = (bucket && bucket.__time) || last.time || timePart;
+              const formattedLabel = app.formatDateTimeLabel(date, time);
+              labels.push(formattedLabel);
+              dataPoints.push(num);
+            }
+          }
+        }
+      } else {
+        if (bucket && bucket[selectedExam]) {
+          const num = extractNumericValue(bucket[selectedExam].value);
+          if (num !== null) {
+            const [datePart = "", timePart = ""] = collectionKey.split("@@");
+            const date = bucket.__date || datePart;
+            const time = bucket.__time || timePart;
+            const formattedLabel = app.formatDateTimeLabel(date, time);
+            labels.push(formattedLabel);
+            dataPoints.push(num);
+          }
         }
       }
     }
@@ -257,6 +321,7 @@
 
   // Expor a função reativa
   app.updateChart = updateChart;
+  app.getAvailableNumericExams = getAvailableNumericExams;
 
   // Listeners
   btnToggleChart?.addEventListener("click", () => {

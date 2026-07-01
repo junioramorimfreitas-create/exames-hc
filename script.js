@@ -1611,26 +1611,42 @@ updateFilterCount();
 (function setupTabs() {
   const tabExams = document.getElementById("tabExams");
   const tabAntibiotics = document.getElementById("tabAntibiotics");
+  const tabVitals = document.getElementById("tabVitals");
+  const tabGlycemia = document.getElementById("tabGlycemia");
+  const tabTemperature = document.getElementById("tabTemperature");
+
   const examsSection = document.getElementById("examsSection");
   const antibioticsSection = document.getElementById("antibioticsSection");
+  const vitalsSection = document.getElementById("vitalsSection");
+  const glycemiaSection = document.getElementById("glycemiaSection");
+  const temperatureSection = document.getElementById("temperatureSection");
 
-  if (tabExams && tabAntibiotics && examsSection && antibioticsSection) {
-    const switchTab = (activeTab, inactiveTab, activeSec, inactiveSec) => {
-      activeTab.classList.add("active");
-      inactiveTab.classList.remove("active");
-      activeSec.classList.add("active");
-      inactiveSec.classList.remove("active");
-      activeSec.style.display = "block";
-      inactiveSec.style.display = "none";
-    };
+  const tabs = [
+    { tab: tabExams, sec: examsSection },
+    { tab: tabAntibiotics, sec: antibioticsSection },
+    { tab: tabVitals, sec: vitalsSection },
+    { tab: tabGlycemia, sec: glycemiaSection },
+    { tab: tabTemperature, sec: temperatureSection }
+  ];
 
-    tabExams.addEventListener("click", () => {
-      switchTab(tabExams, tabAntibiotics, examsSection, antibioticsSection);
-    });
-
-    tabAntibiotics.addEventListener("click", () => {
-      switchTab(tabAntibiotics, tabExams, antibioticsSection, examsSection);
-    });
-  }
+  tabs.forEach(item => {
+    if (item.tab && item.sec) {
+      item.tab.addEventListener("click", () => {
+        tabs.forEach(other => {
+          if (other.tab && other.sec) {
+            if (other.tab === item.tab) {
+              other.tab.classList.add("active");
+              other.sec.classList.add("active");
+              other.sec.style.display = "block";
+            } else {
+              other.tab.classList.remove("active");
+              other.sec.classList.remove("active");
+              other.sec.style.display = "none";
+            }
+          }
+        });
+      });
+    }
+  });
 })();
 

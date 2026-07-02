@@ -76,6 +76,10 @@ const examDefinitions = [
   { match: "MONOCITOS", abbr: "MonoLiquor", category: "Líquor", internal: true },
   { match: "NEUTROFILOS", abbr: "PMN", category: "Líquor", onlyLiquor: true },
 
+  // HEMOGLOBINA GLICADA deve preceder HEMOGLOBINA do hemograma para que o algoritmo
+  // de melhor-match-por-comprimento sempre prefira a definição mais específica (Bug 4)
+  { match: "HEMOGLOBINA GLICADA", abbr: "HbA1c", category: "Hormônios/Marcadores" },
+
   // Hemograma
   { match: "HEMOGLOBINA", abbr: "Hb", category: "Hemograma" },
   { match: "HEMATOCRITO", abbr: "Ht", category: "Hemograma" },
@@ -145,7 +149,7 @@ const examDefinitions = [
   { match: "NT-PROBNP", abbr: "NTproBNP", category: "Hormônios/Marcadores" },
   { match: "GLICOSE", abbr: "Glic", category: "Hormônios/Marcadores" },
   { match: "INSULINA", abbr: "Insulina", category: "Hormônios/Marcadores" },
-  { match: "HEMOGLOBINA GLICADA", abbr: "HbA1c", category: "Hormônios/Marcadores" },
+  // HEMOGLOBINA GLICADA foi movida para antes do bloco Hemograma (ver topo do array)
   { match: "TRIIODOTIRONINA (T3)", abbr: "T3", category: "Hormônios/Marcadores" },
   { match: "TIROXINA (T4)", abbr: "T4", category: "Hormônios/Marcadores" },
   { match: "TIROXINA LIVRE (T4L)", abbr: "T4L", category: "Hormônios/Marcadores" },
@@ -227,6 +231,7 @@ const examDefinitions = [
   // Líquido Pleural
   { match: "TOTAL DE CELULAS NUCLEADAS", abbr: "Pleural_Cel", category: "Líquido Pleural", onlyPleural: true },
   { match: "TOTAL DE CÉLULAS NUCLEADAS", abbr: "Pleural_Cel", category: "Líquido Pleural", onlyPleural: true },
+  { match: "HEMOGLOBINA", abbr: "Pleural_Hb", category: "Líquido Pleural", onlyPleural: true }, // Bug 1
   { match: "NEUTROFILOS", abbr: "Pleural_PMN", category: "Líquido Pleural", onlyPleural: true },
   { match: "LINFOCITOS", abbr: "Pleural_Linf", category: "Líquido Pleural", onlyPleural: true },
   { match: "MONOCITOS", abbr: "Pleural_Mono", category: "Líquido Pleural", onlyPleural: true },
@@ -235,7 +240,42 @@ const examDefinitions = [
   { match: "PH", abbr: "Pleural_pH", category: "Líquido Pleural", onlyPleural: true },
   { match: "DESIDROGENASE LACTICA", abbr: "Pleural_LDH", category: "Líquido Pleural", onlyPleural: true },
   { match: "HEMATOCRITO", abbr: "Pleural_Ht", category: "Líquido Pleural", onlyPleural: true },
-  { match: "LEUCOCITOS", abbr: "Pleural_Leuco", category: "Líquido Pleural", onlyPleural: true }
+  { match: "LEUCOCITOS", abbr: "Pleural_Leuco", category: "Líquido Pleural", onlyPleural: true },
+
+  // Líquido Ascítico (Bug 3)
+  { match: "TOTAL DE CELULAS NUCLEADAS", abbr: "Asc_Cel",   category: "Líquido Ascítico",   onlyAscitic: true },
+  { match: "TOTAL DE CÉLULAS NUCLEADAS", abbr: "Asc_Cel",   category: "Líquido Ascítico",   onlyAscitic: true },
+  { match: "HEMOGLOBINA",               abbr: "Asc_Hb",    category: "Líquido Ascítico",   onlyAscitic: true },
+  { match: "NEUTROFILOS",               abbr: "Asc_PMN",   category: "Líquido Ascítico",   onlyAscitic: true },
+  { match: "LINFOCITOS",                abbr: "Asc_Linf",  category: "Líquido Ascítico",   onlyAscitic: true },
+  { match: "MONOCITOS",                 abbr: "Asc_Mono",  category: "Líquido Ascítico",   onlyAscitic: true },
+  { match: "GLICOSE",                   abbr: "Asc_Glic",  category: "Líquido Ascítico",   onlyAscitic: true },
+  { match: "PROTEINAS TOTAIS",          abbr: "Asc_Pt",    category: "Líquido Ascítico",   onlyAscitic: true },
+  { match: "ALBUMINA",                  abbr: "Asc_Alb",   category: "Líquido Ascítico",   onlyAscitic: true },
+  { match: "DESIDROGENASE LACTICA",     abbr: "Asc_LDH",   category: "Líquido Ascítico",   onlyAscitic: true },
+  { match: "LEUCOCITOS",                abbr: "Asc_Leuco", category: "Líquido Ascítico",   onlyAscitic: true },
+
+  // Líquido Sinovial (Bug 3)
+  { match: "TOTAL DE CELULAS NUCLEADAS", abbr: "Sin_Cel",   category: "Líquido Sinovial",   onlySynovial: true },
+  { match: "TOTAL DE CÉLULAS NUCLEADAS", abbr: "Sin_Cel",   category: "Líquido Sinovial",   onlySynovial: true },
+  { match: "NEUTROFILOS",               abbr: "Sin_PMN",   category: "Líquido Sinovial",   onlySynovial: true },
+  { match: "LINFOCITOS",                abbr: "Sin_Linf",  category: "Líquido Sinovial",   onlySynovial: true },
+  { match: "MONOCITOS",                 abbr: "Sin_Mono",  category: "Líquido Sinovial",   onlySynovial: true },
+  { match: "GLICOSE",                   abbr: "Sin_Glic",  category: "Líquido Sinovial",   onlySynovial: true },
+  { match: "PROTEINAS TOTAIS",          abbr: "Sin_Pt",    category: "Líquido Sinovial",   onlySynovial: true },
+  { match: "DESIDROGENASE LACTICA",     abbr: "Sin_LDH",   category: "Líquido Sinovial",   onlySynovial: true },
+  { match: "LEUCOCITOS",                abbr: "Sin_Leuco", category: "Líquido Sinovial",   onlySynovial: true },
+
+  // Líquido Pericárdico (Bug 3)
+  { match: "TOTAL DE CELULAS NUCLEADAS", abbr: "Per_Cel",   category: "Líquido Pericárdico", onlyPericardial: true },
+  { match: "TOTAL DE CÉLULAS NUCLEADAS", abbr: "Per_Cel",   category: "Líquido Pericárdico", onlyPericardial: true },
+  { match: "NEUTROFILOS",               abbr: "Per_PMN",   category: "Líquido Pericárdico", onlyPericardial: true },
+  { match: "LINFOCITOS",                abbr: "Per_Linf",  category: "Líquido Pericárdico", onlyPericardial: true },
+  { match: "MONOCITOS",                 abbr: "Per_Mono",  category: "Líquido Pericárdico", onlyPericardial: true },
+  { match: "GLICOSE",                   abbr: "Per_Glic",  category: "Líquido Pericárdico", onlyPericardial: true },
+  { match: "PROTEINAS TOTAIS",          abbr: "Per_Pt",    category: "Líquido Pericárdico", onlyPericardial: true },
+  { match: "DESIDROGENASE LACTICA",     abbr: "Per_LDH",   category: "Líquido Pericárdico", onlyPericardial: true },
+  { match: "LEUCOCITOS",                abbr: "Per_Leuco", category: "Líquido Pericárdico", onlyPericardial: true },
 ];
 
 const examOrder = [
@@ -262,7 +302,10 @@ const examOrder = [
   "CD4", "CD8", "CD4/CD8",
   "Vancomicina", "FK", "Fluconazol", "Itraconazol", "Voriconazol", "EVR",
   "U1_Nit", "U1_LE", "U1_Leuco", "U1_Hem", "U1_Glic",
-  "Pleural_Cel", "Pleural_PMN", "Pleural_Linf", "Pleural_Mono", "Pleural_Glic", "Pleural_Pt", "Pleural_pH", "Pleural_LDH", "Pleural_Ht", "Pleural_Leuco",
+  "Pleural_Cel", "Pleural_PMN", "Pleural_Linf", "Pleural_Mono", "Pleural_Glic", "Pleural_Pt", "Pleural_pH", "Pleural_LDH", "Pleural_Hb", "Pleural_Ht", "Pleural_Leuco",
+  "Asc_Cel", "Asc_PMN", "Asc_Linf", "Asc_Mono", "Asc_Glic", "Asc_Pt", "Asc_Alb", "Asc_LDH", "Asc_Hb", "Asc_Leuco",
+  "Sin_Cel", "Sin_PMN", "Sin_Linf", "Sin_Mono", "Sin_Glic", "Sin_Pt", "Sin_LDH", "Sin_Leuco",
+  "Per_Cel", "Per_PMN", "Per_Linf", "Per_Mono", "Per_Glic", "Per_Pt", "Per_LDH", "Per_Leuco",
   "Cel", "LMN", "PMN", "Hem", "Pt", "Gli", "Lac", "ADA", "Gram", "cBAC", "pFUN", "CrAg", "cFUN", "pBAAR", "TRM-TB", "cMIC",
   "EV", "VZV", "EBV", "CMV", "HAdV", "HSV1", "HSV2", "HHV6", "HHV7", "PVB19", "VDRL-LCR"
 ];
@@ -286,6 +329,9 @@ const categoryOrder = [
   "Fármacos",
   "Urina 1",
   "Líquido Pleural",
+  "Líquido Ascítico",
+  "Líquido Sinovial",
+  "Líquido Pericárdico",
   "Líquor"
 ];
 
@@ -312,10 +358,19 @@ function getDisplayName(abbr) {
     Pleural_Cel: "Cel (Pleural)",
     Pleural_PMN: "PMN (Pleural)",
     Pleural_LMN: "LMN (Pleural)",
+    Pleural_Hb: "Hb (Pleural)",
+    Pleural_Ht: "Ht (Pleural)",
     Pleural_Glic: "Glic (Pleural)",
     Pleural_Pt: "Pt (Pleural)",
     Pleural_pH: "pH (Pleural)",
     Pleural_LDH: "LDH (Pleural)",
+    Asc_Cel: "Cel (Asc)", Asc_PMN: "PMN (Asc)", Asc_Glic: "Glic (Asc)",
+    Asc_Pt: "Pt (Asc)", Asc_Alb: "Alb (Asc)", Asc_LDH: "LDH (Asc)",
+    Asc_Hb: "Hb (Asc)", Asc_Leuco: "Leuco (Asc)",
+    Sin_Cel: "Cel (Sin)", Sin_PMN: "PMN (Sin)", Sin_Glic: "Glic (Sin)",
+    Sin_Pt: "Pt (Sin)", Sin_LDH: "LDH (Sin)", Sin_Leuco: "Leuco (Sin)",
+    Per_Cel: "Cel (Per)", Per_PMN: "PMN (Per)", Per_Glic: "Glic (Per)",
+    Per_Pt: "Pt (Per)", Per_LDH: "LDH (Per)", Per_Leuco: "Leuco (Per)",
     "RelAlb/Cr": "Rel Alb/Cr",
     TestoLivre: "Testo Livre",
     TestoTotal: "Testo Total"
@@ -368,7 +423,11 @@ function findExamDefinition(examName) {
   const normSection = normalize(section);
   const isLiquor = norm.includes("LIQUOR") || normSection.includes("LIQUOR") || normSection.includes("LCR");
   const isU1 = norm.includes("URINA TIPO 1") || norm.includes("URINA T1") || normSection.includes("URINA TIPO 1") || normSection.includes("URINA T1");
-  const isPleural = norm.includes("PLEURAL") || normSection.includes("PLEURAL");
+  const isPleural     = norm.includes("PLEURAL")     || normSection.includes("PLEURAL");
+  const isAscitic     = norm.includes("ASCITICO")    || normSection.includes("ASCITICO") ||
+                        norm.includes("ASCITE")       || normSection.includes("ASCITE");
+  const isSynovial    = norm.includes("SINOVIAL")    || normSection.includes("SINOVIAL");
+  const isPericardial = norm.includes("PERICARDICO") || normSection.includes("PERICARDICO");
   const isUrine = norm.includes("URINA") || normSection.includes("URINA");
   let bestDef = null;
 
@@ -383,14 +442,18 @@ function findExamDefinition(examName) {
     }
     if (ok && def.onlyLiquor && !isLiquor) ok = false;
     if (ok && def.internal === true && !isLiquor) ok = false;
-    
     if (ok && def.onlyU1 && !isU1) ok = false;
-    if (ok && def.onlyPleural && !isPleural) ok = false;
-    
+    if (ok && def.onlyPleural     && !isPleural)     ok = false;
+    if (ok && def.onlyAscitic     && !isAscitic)     ok = false;
+    if (ok && def.onlySynovial    && !isSynovial)    ok = false;
+    if (ok && def.onlyPericardial && !isPericardial) ok = false;
     // Se o contexto for U1, só aceita definições marcadas como onlyU1
     if (ok && isU1 && !def.onlyU1) ok = false;
-    // Se o contexto for Pleural, só aceita definições marcadas como onlyPleural
-    if (ok && isPleural && !def.onlyPleural) ok = false;
+    // Se o contexto for um fluido corporal, só aceita definições do fluido correto
+    if (ok && isPleural     && !def.onlyPleural)     ok = false;
+    if (ok && isAscitic     && !def.onlyAscitic)     ok = false;
+    if (ok && isSynovial    && !def.onlySynovial)    ok = false;
+    if (ok && isPericardial && !def.onlyPericardial) ok = false;
     // Se for exame de urina, impede o casamento com definições séricas (não-Urina 1 e não-RelAlb/Cr)
     if (ok && isUrine && def.category !== "Urina 1" && def.abbr !== "RelAlb/Cr") ok = false;
 
@@ -468,11 +531,13 @@ function parseExams(rawText) {
     if (coletado) {
       currentDate = coletado.date;
       currentTime = coletado.time || "";
+      currentSection = ""; // Bug 7: resetar contexto de seção ao iniciar nova coleta
       continue;
     }
 
-    // Cabeçalho de Urina 1 e Líquido Pleural
-    if (/(URINA TIPO 1|URINA T1|URINA T\.1|URINA AMOSTRA ISOLADA|PLEURAL)/i.test(line) && line.includes(" - ")) {
+    // Cabeçalho de Urina 1, Líquido Pleural e outros fluidos corporais (Bug 5 + Bug 3)
+    // Não requer " - " — qualquer linha que identifique o tipo de fluido é tratada como cabeçalho
+    if (/(URINA TIPO 1|URINA T1|URINA T\.1|URINA AMOSTRA ISOLADA|PLEURAL|ASCITICO|ASCITE|SINOVIAL|PERICARDICO)/i.test(line)) {
       currentSection = line.trim();
       continue;
     }
@@ -566,18 +631,28 @@ function parseExams(rawText) {
     const normSection = normalize(currentSection);
     const isLiquor = normLine.includes("LIQUOR") || normSection.includes("LIQUOR") || normSection.includes("LCR");
     const isU1 = normLine.includes("URINA TIPO 1") || normLine.includes("URINA T1") || normSection.includes("URINA TIPO 1") || normSection.includes("URINA T1");
-    const isPleural = normLine.includes("PLEURAL") || normSection.includes("PLEURAL");
+    const isPleural     = normLine.includes("PLEURAL")     || normSection.includes("PLEURAL");
+    const isAscitic     = normLine.includes("ASCITICO")    || normSection.includes("ASCITICO") ||
+                          normLine.includes("ASCITE")       || normSection.includes("ASCITE");
+    const isSynovial    = normLine.includes("SINOVIAL")    || normSection.includes("SINOVIAL");
+    const isPericardial = normLine.includes("PERICARDICO") || normSection.includes("PERICARDICO");
     const isUrine = normLine.includes("URINA") || normSection.includes("URINA");
 
     // 1. Tenta Smart Split primeiro
     let bestMatchDef = null;
     for (const def of examDefinitions) {
-      if (def.onlyLiquor && !isLiquor) continue;
-      if (def.internal === true && !isLiquor) continue;
-      if (def.onlyU1 && !isU1) continue;
-      if (def.onlyPleural && !isPleural) continue;
-      if (isU1 && !def.onlyU1) continue;
-      if (isPleural && !def.onlyPleural) continue;
+      if (def.onlyLiquor     && !isLiquor)     continue;
+      if (def.internal === true && !isLiquor)  continue;
+      if (def.onlyU1         && !isU1)         continue;
+      if (def.onlyPleural    && !isPleural)    continue;
+      if (def.onlyAscitic    && !isAscitic)    continue;
+      if (def.onlySynovial   && !isSynovial)   continue;
+      if (def.onlyPericardial && !isPericardial) continue;
+      if (isU1         && !def.onlyU1)         continue;
+      if (isPleural    && !def.onlyPleural)    continue;
+      if (isAscitic    && !def.onlyAscitic)    continue;
+      if (isSynovial   && !def.onlySynovial)   continue;
+      if (isPericardial && !def.onlyPericardial) continue;
       if (isUrine && def.category !== "Urina 1" && def.abbr !== "RelAlb/Cr") continue;
 
       if (normLine.includes(def.match)) {
@@ -962,7 +1037,19 @@ const u1AbbrSet = new Set(["U1_Nit", "U1_LE", "U1_Leuco", "U1_Hem", "U1_Glic"]);
 const pleuralAbbrSet = new Set([
   "Pleural_Cel", "Pleural_PMN", "Pleural_Linf", "Pleural_Mono",
   "Pleural_Glic", "Pleural_Pt", "Pleural_pH", "Pleural_LDH",
-  "Pleural_Ht", "Pleural_Leuco"
+  "Pleural_Hb", "Pleural_Ht", "Pleural_Leuco" // Bug 1: Pleural_Hb adicionado
+]);
+const asciticAbbrSet = new Set([
+  "Asc_Cel", "Asc_PMN", "Asc_LMN", "Asc_Linf", "Asc_Mono",
+  "Asc_Glic", "Asc_Pt", "Asc_Alb", "Asc_LDH", "Asc_Hb", "Asc_Leuco"
+]);
+const synovialAbbrSet = new Set([
+  "Sin_Cel", "Sin_PMN", "Sin_LMN", "Sin_Linf", "Sin_Mono",
+  "Sin_Glic", "Sin_Pt", "Sin_LDH", "Sin_Leuco"
+]);
+const pericardialAbbrSet = new Set([
+  "Per_Cel", "Per_PMN", "Per_LMN", "Per_Linf", "Per_Mono",
+  "Per_Glic", "Per_Pt", "Per_LDH", "Per_Leuco"
 ]);
 
 function formatPercent(val) {
@@ -994,65 +1081,79 @@ function buildUrina1Text(bucket, selectedAbbrs) {
   return `U1: ${parts.join(" | ")}`;
 }
 
-function buildPleuralText(bucket, selectedAbbrs) {
-  const hasPleuralData = Object.keys(bucket).some(key => pleuralAbbrSet.has(key));
-  if (!hasPleuralData) return "";
+// Função genérica compartilhada para todos os fluidos corporais (Pleural, Ascítico, Sinovial, Pericárdico)
+function buildGenericFluidText(bucket, selectedAbbrs, prefix, displayLabel) {
+  const celKey   = `${prefix}_Cel`;
+  const pmnKey   = `${prefix}_PMN`;
+  const lmnKey   = `${prefix}_LMN`;
+  const linfKey  = `${prefix}_Linf`;
+  const monoKey  = `${prefix}_Mono`;
+  const glicKey  = `${prefix}_Glic`;
+  const ptKey    = `${prefix}_Pt`;
+  const pHKey    = `${prefix}_pH`;
+  const ldhKey   = `${prefix}_LDH`;
+  const hbKey    = `${prefix}_Hb`;
+  const htKey    = `${prefix}_Ht`;
+  const albKey   = `${prefix}_Alb`;
+
+  const hasData = [celKey, pmnKey, glicKey, ptKey, ldhKey, hbKey, htKey, albKey]
+    .some(k => bucket[k]);
+  if (!hasData) return "";
 
   const parts = [];
-  if (selectedAbbrs.includes("Pleural_Cel") && bucket.Pleural_Cel) {
-    let celText = `Cel ${bucket.Pleural_Cel.value}`;
+
+  if (selectedAbbrs.includes(celKey) && bucket[celKey]) {
+    let celText = `Cel ${bucket[celKey].value}`;
     const sub = [];
-
-    if (selectedAbbrs.includes("Pleural_PMN") && bucket.Pleural_PMN) {
-      sub.push(`PMN ${formatPercent(bucket.Pleural_PMN.value)}`);
-    }
-
-    if (selectedAbbrs.includes("Pleural_LMN")) {
-      const linf = bucket.Pleural_Linf ? parseFloat(String(bucket.Pleural_Linf.value).replace(",", ".")) : null;
-      const mono = bucket.Pleural_Mono ? parseFloat(String(bucket.Pleural_Mono.value).replace(",", ".")) : null;
-      if (linf !== null && mono !== null && !isNaN(linf) && !isNaN(mono)) {
-        const sum = linf + mono;
-        sub.push(`LMN ${formatPercent(sum.toString().replace(".", ","))}`);
-      } else if (linf !== null && !isNaN(linf)) {
+    if (selectedAbbrs.includes(pmnKey) && bucket[pmnKey])
+      sub.push(`PMN ${formatPercent(bucket[pmnKey].value)}`);
+    if (selectedAbbrs.includes(lmnKey)) {
+      const linf = bucket[linfKey] ? parseFloat(String(bucket[linfKey].value).replace(",", ".")) : null;
+      const mono = bucket[monoKey] ? parseFloat(String(bucket[monoKey].value).replace(",", ".")) : null;
+      if (linf != null && mono != null && !isNaN(linf) && !isNaN(mono))
+        sub.push(`LMN ${formatPercent((linf + mono).toString().replace(".", ","))}`);
+      else if (linf != null && !isNaN(linf))
         sub.push(`LMN ${formatPercent(linf.toString().replace(".", ","))}`);
-      }
     }
-
-    if (sub.length) {
-      celText += ` (${sub.join(" | ")})`;
-    }
+    if (sub.length) celText += ` (${sub.join(" | ")})`;
     parts.push(celText);
   } else {
-    if (selectedAbbrs.includes("Pleural_PMN") && bucket.Pleural_PMN) {
-      parts.push(`PMN ${formatPercent(bucket.Pleural_PMN.value)}`);
-    }
-    if (selectedAbbrs.includes("Pleural_LMN")) {
-      const linf = bucket.Pleural_Linf ? parseFloat(String(bucket.Pleural_Linf.value).replace(",", ".")) : null;
-      const mono = bucket.Pleural_Mono ? parseFloat(String(bucket.Pleural_Mono.value).replace(",", ".")) : null;
-      if (linf !== null && mono !== null && !isNaN(linf) && !isNaN(mono)) {
-        const sum = linf + mono;
-        parts.push(`LMN ${formatPercent(sum.toString().replace(".", ","))}`);
-      } else if (linf !== null && !isNaN(linf)) {
+    if (selectedAbbrs.includes(pmnKey) && bucket[pmnKey])
+      parts.push(`PMN ${formatPercent(bucket[pmnKey].value)}`);
+    if (selectedAbbrs.includes(lmnKey)) {
+      const linf = bucket[linfKey] ? parseFloat(String(bucket[linfKey].value).replace(",", ".")) : null;
+      const mono = bucket[monoKey] ? parseFloat(String(bucket[monoKey].value).replace(",", ".")) : null;
+      if (linf != null && mono != null && !isNaN(linf) && !isNaN(mono))
+        parts.push(`LMN ${formatPercent((linf + mono).toString().replace(".", ","))}`);
+      else if (linf != null && !isNaN(linf))
         parts.push(`LMN ${formatPercent(linf.toString().replace(".", ","))}`);
-      }
     }
   }
 
-  if (selectedAbbrs.includes("Pleural_Glic") && bucket.Pleural_Glic) {
-    parts.push(`Glic ${bucket.Pleural_Glic.value}`);
-  }
-  if (selectedAbbrs.includes("Pleural_Pt") && bucket.Pleural_Pt) {
-    parts.push(`Pt ${bucket.Pleural_Pt.value}`);
-  }
-  if (selectedAbbrs.includes("Pleural_pH") && bucket.Pleural_pH) {
-    parts.push(`pH ${bucket.Pleural_pH.value}`);
-  }
-  if (selectedAbbrs.includes("Pleural_LDH") && bucket.Pleural_LDH) {
-    parts.push(`LDH ${bucket.Pleural_LDH.value}`);
-  }
+  if (selectedAbbrs.includes(glicKey) && bucket[glicKey]) parts.push(`Glic ${bucket[glicKey].value}`);
+  if (selectedAbbrs.includes(ptKey)   && bucket[ptKey])   parts.push(`Pt ${bucket[ptKey].value}`);
+  if (selectedAbbrs.includes(albKey)  && bucket[albKey])  parts.push(`Alb ${bucket[albKey].value}`);
+  if (selectedAbbrs.includes(pHKey)   && bucket[pHKey])   parts.push(`pH ${bucket[pHKey].value}`);
+  if (selectedAbbrs.includes(ldhKey)  && bucket[ldhKey])  parts.push(`LDH ${bucket[ldhKey].value}`);
+  if (selectedAbbrs.includes(hbKey)   && bucket[hbKey])   parts.push(`Hb ${bucket[hbKey].value}`);
+  if (selectedAbbrs.includes(htKey)   && bucket[htKey])   parts.push(`Ht ${bucket[htKey].value}`);
 
   if (!parts.length) return "";
-  return `Líq. Pleural: ${parts.join(" | ")}`;
+  return `${displayLabel}: ${parts.join(" | ")}`;
+}
+
+// Wrappers por tipo de fluido
+function buildPleuralText(bucket, selectedAbbrs) {
+  return buildGenericFluidText(bucket, selectedAbbrs, "Pleural", "Líq. Pleural");
+}
+function buildAsciticText(bucket, selectedAbbrs) {
+  return buildGenericFluidText(bucket, selectedAbbrs, "Asc", "Líq. Ascítico");
+}
+function buildSynovialText(bucket, selectedAbbrs) {
+  return buildGenericFluidText(bucket, selectedAbbrs, "Sin", "Líq. Sinovial");
+}
+function buildPericardialText(bucket, selectedAbbrs) {
+  return buildGenericFluidText(bucket, selectedAbbrs, "Per", "Líq. Pericárdico");
 }
 
 // ---------- Construção por data ----------
@@ -1123,6 +1224,9 @@ function generateLinesPerDate(exams, selectedAbbrs, gasoMap) {
       if (liquorAbbrSet.has(abbr)) continue;
       if (u1AbbrSet.has(abbr)) continue;
       if (pleuralAbbrSet.has(abbr)) continue;
+      if (asciticAbbrSet.has(abbr)) continue;
+      if (synovialAbbrSet.has(abbr)) continue;
+      if (pericardialAbbrSet.has(abbr)) continue;
       if (!selectedAbbrs.includes(abbr)) continue;
       if (bucket[abbr]) {
         let val = bucket[abbr].value;
@@ -1148,14 +1252,19 @@ function generateLinesPerDate(exams, selectedAbbrs, gasoMap) {
     }
 
     const u1Text = buildUrina1Text(bucket, selectedAbbrs);
-    if (u1Text) {
-      lines.push(`(${label}) ${u1Text}`);
-    }
+    if (u1Text) { lines.push(`(${label}) ${u1Text}`); }
 
     const pleuralText = buildPleuralText(bucket, selectedAbbrs);
-    if (pleuralText) {
-      lines.push(`(${label}) ${pleuralText}`);
-    }
+    if (pleuralText) { lines.push(`(${label}) ${pleuralText}`); }
+
+    const asciticText = buildAsciticText(bucket, selectedAbbrs);
+    if (asciticText) { lines.push(`(${label}) ${asciticText}`); }
+
+    const synovialText = buildSynovialText(bucket, selectedAbbrs);
+    if (synovialText) { lines.push(`(${label}) ${synovialText}`); }
+
+    const pericardialText = buildPericardialText(bucket, selectedAbbrs);
+    if (pericardialText) { lines.push(`(${label}) ${pericardialText}`); }
   }
 
   return lines;
@@ -1178,6 +1287,9 @@ function generateTextByCategories(exams, selectedAbbrs, gasoMap) {
       if (liquorAbbrSet.has(abbr)) continue;
       if (u1AbbrSet.has(abbr)) continue;
       if (pleuralAbbrSet.has(abbr)) continue;
+      if (asciticAbbrSet.has(abbr)) continue;
+      if (synovialAbbrSet.has(abbr)) continue;
+      if (pericardialAbbrSet.has(abbr)) continue;
       if (!selectedAbbrs.includes(abbr)) continue;
       const entry = bucket[abbr];
       if (!entry) continue;
@@ -1212,6 +1324,24 @@ function generateTextByCategories(exams, selectedAbbrs, gasoMap) {
     if (pleuralText) {
       if (!categoryLines["Líquido Pleural"]) categoryLines["Líquido Pleural"] = [];
       categoryLines["Líquido Pleural"].push(pleuralText.replace(/^Líq\.\s*Pleural:\s*/i, ""));
+    }
+
+    const asciticText = buildAsciticText(bucket, selectedAbbrs);
+    if (asciticText) {
+      if (!categoryLines["Líquido Ascítico"]) categoryLines["Líquido Ascítico"] = [];
+      categoryLines["Líquido Ascítico"].push(asciticText.replace(/^Líq\.\s*Ascítico:\s*/i, ""));
+    }
+
+    const synovialText = buildSynovialText(bucket, selectedAbbrs);
+    if (synovialText) {
+      if (!categoryLines["Líquido Sinovial"]) categoryLines["Líquido Sinovial"] = [];
+      categoryLines["Líquido Sinovial"].push(synovialText.replace(/^Líq\.\s*Sinovial:\s*/i, ""));
+    }
+
+    const pericardialText = buildPericardialText(bucket, selectedAbbrs);
+    if (pericardialText) {
+      if (!categoryLines["Líquido Pericárdico"]) categoryLines["Líquido Pericárdico"] = [];
+      categoryLines["Líquido Pericárdico"].push(pericardialText.replace(/^Líq\.\s*Pericárdico:\s*/i, ""));
     }
 
     const gasoText = buildGasometriaTextForDate(collectionKey, gasoMap, selectedAbbrs);

@@ -19,17 +19,20 @@
   function normalizeAntibioticName(rawLine) {
     const line = cleanText(rawLine);
 
+    if (line.includes("ceftolozana")) {
+      return "Ceftolozane-Tazobactam";
+    }
     if (line.includes("piperacilina") || line.includes("tazobactam")) {
-      return "Piperacilina Tazobactam";
+      return "Piperacilina-Tazobactam";
     }
     if (line.includes("sulbactam")) {
       return "Ampicilina Sulbactam";
     }
     if (line.includes("clavulanato") || line.includes("amoxicilina")) {
-      return "Amoxicilina Clavulanato";
+      return "Amoxicilina-Clavulanato";
     }
     if (line.includes("sulfametoxazol") || line.includes("trimetoprim") || line.includes("cotrimoxazol")) {
-      return "Sulfametoxazol Trimetoprim";
+      return "Sulfametoxazol-Trimetoprim";
     }
     if (line.includes("anfotericina")) {
       return "Anfotericina B";
@@ -114,6 +117,12 @@
     }
     if (line.includes("ivermectina")) {
       return "Ivermectina";
+    }
+    if (line.includes("valaciclovir")) {
+      return "Valaciclovir";
+    }
+    if (line.includes("aciclovir")) {
+      return "Aciclovir";
     }
     return null;
   }

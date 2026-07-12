@@ -19,20 +19,47 @@
   function normalizeAntibioticName(rawLine) {
     const line = cleanText(rawLine);
 
-    if (line.includes("ceftolozana")) {
-      return "Ceftolozane-Tazobactam";
+    // ---- Tuberculostáticos (combinações primeiro, mais específico → menos específico) ----
+
+    // RIPE = Rifampicina + Isoniazida + Pirazinamida + Etambutol (4 drogas)
+    if (line.includes("rifampicina") && line.includes("isoniazida") &&
+        line.includes("pirazinamida") && line.includes("etambutol")) {
+      return "RIPE";
     }
+
+    // RI = Rifampicina + Isoniazida (2 drogas, sem Pirazinamida/Etambutol)
+    if (line.includes("rifampicina") && line.includes("isoniazida")) {
+      return "RI";
+    }
+
+    // Isolados — só casa se NÃO for combinação já tratada acima
+    if (line.includes("rifampicina") && !line.includes("isoniazida") &&
+        !line.includes("pirazinamida") && !line.includes("etambutol")) {
+      return "Rifampicina";
+    }
+    if (line.includes("isoniazida") && !line.includes("rifampicina")) {
+      return "Isoniazida";
+    }
+    if (line.includes("pirazinamida") && !line.includes("rifampicina")) {
+      return "Pirazinamida";
+    }
+    if (line.includes("etambutol") && !line.includes("rifampicina")) {
+      return "Etambutol";
+    }
+
+    // ---- Demais antimicrobianos ----
+
     if (line.includes("piperacilina") || line.includes("tazobactam")) {
-      return "Piperacilina-Tazobactam";
+      return "Piperacilina Tazobactam";
     }
     if (line.includes("sulbactam")) {
       return "Ampicilina Sulbactam";
     }
     if (line.includes("clavulanato") || line.includes("amoxicilina")) {
-      return "Amoxicilina-Clavulanato";
+      return "Amoxicilina Clavulanato";
     }
     if (line.includes("sulfametoxazol") || line.includes("trimetoprim") || line.includes("cotrimoxazol")) {
-      return "Sulfametoxazol-Trimetoprim";
+      return "Sulfametoxazol Trimetoprim";
     }
     if (line.includes("anfotericina")) {
       return "Anfotericina B";
@@ -117,12 +144,6 @@
     }
     if (line.includes("ivermectina")) {
       return "Ivermectina";
-    }
-    if (line.includes("valaciclovir")) {
-      return "Valaciclovir";
-    }
-    if (line.includes("aciclovir")) {
-      return "Aciclovir";
     }
     return null;
   }

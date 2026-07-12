@@ -49,17 +49,26 @@
 
     // ---- Demais antimicrobianos ----
 
-    if (line.includes("piperacilina") || line.includes("tazobactam")) {
-      return "Piperacilina Tazobactam";
+    // Combinações específicas ANTES das regras genéricas que usam os mesmos substrings
+    if (line.includes("ceftazidima") && line.includes("avibactam")) {
+      return "Ceftazidima/Avibactam";
+    }
+    if ((line.includes("ceftolozano") || line.includes("ceftolozane")) && line.includes("tazobactam")) {
+      return "Ceftolozane/Tazobactam";
+    }
+
+    if ((line.includes("piperacilina") || line.includes("tazobactam")) &&
+        !line.includes("ceftolozano") && !line.includes("ceftolozane")) {
+      return "Piperacilina/Tazobactam";
     }
     if (line.includes("sulbactam")) {
-      return "Ampicilina Sulbactam";
+      return "Ampicilina/Sulbactam";
     }
     if (line.includes("clavulanato") || line.includes("amoxicilina")) {
-      return "Amoxicilina Clavulanato";
+      return "Amoxicilina/Clavulanato";
     }
     if (line.includes("sulfametoxazol") || line.includes("trimetoprim") || line.includes("cotrimoxazol")) {
-      return "Sulfametoxazol Trimetoprim";
+      return "Sulfametoxazol/Trimetoprim";
     }
     if (line.includes("anfotericina")) {
       return "Anfotericina B";
@@ -73,7 +82,7 @@
     if (line.includes("cefepima")) {
       return "Cefepima";
     }
-    if (line.includes("ceftazidima")) {
+    if (line.includes("ceftazidima") && !line.includes("avibactam")) {
       return "Ceftazidima";
     }
     if (line.includes("azitromicina")) {

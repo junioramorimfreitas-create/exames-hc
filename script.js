@@ -827,11 +827,11 @@ function parseGasometrias(rawText) {
     // Data
     const coletado = parseColetadoEmLine(line);
     if (coletado) {
+      finalizarBloco();
       currentDate = coletado.date;
       currentTime = coletado.time || "";
       continue;
     }
-
 
     // Início de bloco de gasometria
     if (/GASOMETRIA/i.test(line)) {
@@ -842,7 +842,31 @@ function parseGasometrias(rawText) {
       if (norm.includes("ARTERIAL")) currentTipo = "arterial";
       else if (norm.includes("VENOSO") || norm.includes("VENOSA")) currentTipo = "venosa";
       else currentTipo = "desconhecido";
+
+      // Fallback: se a própria linha de cabeçalho contiver a data/hora e currentDate ainda estiver vazio
+      if (!currentDate) {
+        const mDate = line.match(/(\d{2}\/\d{2}\/\d{4})(?:\s+(\d{2}):(\d{2}))?/);
+        if (mDate) {
+          currentDate = mDate[1];
+          if (mDate[2] && mDate[3]) currentTime = `${mDate[2]}:${mDate[3]}`;
+        }
+      }
       continue;
+    }
+
+    // Se estiver lendo gasometria e encontrar cabeçalho de outro exame, finaliza o bloco da gasometria
+    if (inGaso && currentValores && Object.keys(currentValores).length > 0) {
+      if (
+        /- SANGUE/i.test(line) ||
+        /HEMOGRAMA/i.test(line) ||
+        /PLAQUETAS/i.test(line) ||
+        /(URINA TIPO 1|URINA T1|URINA T\.1|URINA AMOSTRA ISOLADA|PLEURAL|ASCITICO|ASCITE|SINOVIAL|PERICARDICO)/i.test(line) ||
+        /(LIQUOR|LCR)/i.test(normalize(line)) ||
+        /CULTURA/i.test(line)
+      ) {
+        finalizarBloco();
+        continue;
+      }
     }
 
     if (!inGaso) continue;

@@ -147,6 +147,8 @@ const examDefinitions = [
   { match: "PARATORMONIO (PTH)", abbr: "PTH", category: "Hormônios/Marcadores" },
   { match: "TROPONINA", abbr: "Tropo", category: "Hormônios/Marcadores" },
   { match: "NT-PROBNP", abbr: "NTproBNP", category: "Hormônios/Marcadores" },
+  { match: "NT PROBNP", abbr: "NTproBNP", category: "Hormônios/Marcadores" },
+  { match: "NT-PRO-BNP", abbr: "NTproBNP", category: "Hormônios/Marcadores" },
   { match: "GLICOSE", abbr: "Glic", category: "Hormônios/Marcadores" },
   { match: "INSULINA", abbr: "Insulina", category: "Hormônios/Marcadores" },
   // HEMOGLOBINA GLICADA foi movida para antes do bloco Hemograma (ver topo do array)
@@ -526,12 +528,20 @@ function parseExams(rawText) {
       continue;
     }
 
-    // Data + hora (Coletado em)
+  // Data + hora (Coletado em)
     const coletado = parseColetadoEmLine(line);
     if (coletado) {
       currentDate = coletado.date;
       currentTime = coletado.time || "";
       currentSection = ""; // Bug 7: resetar contexto de seção ao iniciar nova coleta
+      for (let i = exams.length - 1; i >= 0; i--) {
+        if (!exams[i].date || exams[i].date === "-") {
+          exams[i].date = currentDate;
+          exams[i].time = currentTime;
+        } else {
+          break;
+        }
+      }
       continue;
     }
 
@@ -577,9 +587,10 @@ function parseExams(rawText) {
     if (/LABORATORIO DE INVESTIGACAO MEDICA/i.test(normalize(line))) continue;
     if (/^Pedido\s*:/i.test(line)) continue;
     if (/^\d{2}\/\d{2}\/\d{4}\s+\d{2}:\d{2}:\d{2}$/.test(line)) continue;
-    if (/Novos valores de referência/i.test(line)) continue;
-    if (/Automatizado|Colorimétrico|Enzimático|Eletrodo íon seletivo|Cinético UV|IFCC|Citometria de fluxo|PCR em Tempo Real|HPLC/i.test(line)) continue;
+    if (/Novos valores de referência|Nova metodologia|Novas metodologias/i.test(line)) continue;
+    if (/Automatizado|Colorimétrico|Enzimático|Eletrodo íon seletivo|Cinético UV|IFCC|Citometria de fluxo|PCR em Tempo Real|HPLC|Imunoensaio|Quimioluminescência|CMIA/i.test(line)) continue;
     if (/Alteração nos valores de referência/i.test(line)) continue;
+    if (/^Nota\s*:/i.test(line)) continue;
     if (/Titulos ate 1\/2/i.test(normalize(line))) continue;
 
     // Culturas positivas em microbiologia podem vir como "1 - Microrganismo"

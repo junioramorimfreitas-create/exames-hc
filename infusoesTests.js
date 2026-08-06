@@ -41,83 +41,120 @@
     }
 
     // ------------------------------------------------------------------------
-    // CASO 1: Noradrenalina 16 mg/250 mL, Peso 80 kg, Bomba 12 mL/h -> 0.16 mcg/kg/min
+    // CASO 1: Noradrenalina 16 mg/250 mL (64 mcg/mL), Peso 80 kg, 12 mL/h -> 0.16 mcg/kg/min
     // ------------------------------------------------------------------------
     const c1 = engine.convertMlHToDose(12, "mcg/kg/min", { concMcgMl: 64, weightKg: 80 });
-    assertEqual(c1.value, 0.16, 1e-3, "Caso 1: Noradrenalina 12 mL/h -> mcg/kg/min");
-    assertValidInverse("mlh_to_dose", 12, c1.value, "mcg/kg/min", { concMcgMl: 64, weightKg: 80 }, "Caso 1 Inversa");
+    assertEqual(c1.value, 0.16, 1e-3, "Noradrenalina: 12 mL/h -> 0.16 mcg/kg/min");
+    assertValidInverse("mlh_to_dose", 12, c1.value, "mcg/kg/min", { concMcgMl: 64, weightKg: 80 }, "Noradrenalina Inversa");
 
     // ------------------------------------------------------------------------
-    // CASO 2: Noradrenalina 32 mg/250 mL, Peso 80 kg, Dose 0.2 mcg/kg/min -> 7.5 mL/h
+    // CASO 2: Adrenalina 4 mg/250 mL (16 mcg/mL), Peso 80 kg, 15 mL/h -> 0.05 mcg/kg/min
     // ------------------------------------------------------------------------
-    const c2 = engine.convertDoseToMlH(0.2, "mcg/kg/min", { concMcgMl: 128, weightKg: 80 });
-    assertEqual(c2.value, 7.5, 1e-3, "Caso 2: Noradrenalina 0.2 mcg/kg/min -> mL/h");
-    assertValidInverse("dose_to_mlh", 0.2, c2.value, "mcg/kg/min", { concMcgMl: 128, weightKg: 80 }, "Caso 2 Inversa");
+    const c2 = engine.convertMlHToDose(15, "mcg/kg/min", { concMcgMl: 16, weightKg: 80 });
+    assertEqual(c2.value, 0.05, 1e-3, "Adrenalina: 15 mL/h -> 0.05 mcg/kg/min");
+    assertValidInverse("mlh_to_dose", 15, c2.value, "mcg/kg/min", { concMcgMl: 16, weightKg: 80 }, "Adrenalina Inversa");
 
     // ------------------------------------------------------------------------
-    // CASO 3: Vasopressina 20 UI/100 mL, Bomba 9 mL/h -> 0.03 UI/min e 1.8 UI/h
+    // CASO 3: Dopamina 200 mg/250 mL (0.8 mg/mL), Peso 80 kg, 15 mL/h -> 2.5 mcg/kg/min
     // ------------------------------------------------------------------------
-    const c3a = engine.convertMlHToDose(9, "UI/min", { concUIMl: 0.2 });
-    assertEqual(c3a.value, 0.03, 1e-3, "Caso 3a: Vasopressina 9 mL/h -> UI/min");
-    assertValidInverse("mlh_to_dose", 9, c3a.value, "UI/min", { concUIMl: 0.2 }, "Caso 3a Inversa");
-
-    const c3b = engine.convertMlHToDose(9, "UI/h", { concUIMl: 0.2 });
-    assertEqual(c3b.value, 1.8, 1e-3, "Caso 3b: Vasopressina 9 mL/h -> UI/h");
-    assertValidInverse("mlh_to_dose", 9, c3b.value, "UI/h", { concUIMl: 0.2 }, "Caso 3b Inversa");
+    const c3 = engine.convertMlHToDose(15, "mcg/kg/min", { concMcgMl: 800, concMgMl: 0.8, weightKg: 80 });
+    assertEqual(c3.value, 2.5, 1e-3, "Dopamina: 15 mL/h -> 2.5 mcg/kg/min");
+    assertValidInverse("mlh_to_dose", 15, c3.value, "mcg/kg/min", { concMcgMl: 800, concMgMl: 0.8, weightKg: 80 }, "Dopamina Inversa");
 
     // ------------------------------------------------------------------------
-    // CASO 4: Dobutamina 250 mg/250 mL, Peso 75 kg, Bomba 22.5 mL/h -> 5 mcg/kg/min
+    // CASO 4: Dobutamina 250 mg/250 mL (1 mg/mL), Peso 75 kg, 22.5 mL/h -> 5 mcg/kg/min
     // ------------------------------------------------------------------------
     const c4 = engine.convertMlHToDose(22.5, "mcg/kg/min", { concMcgMl: 1000, concMgMl: 1, weightKg: 75 });
-    assertEqual(c4.value, 5.0, 1e-3, "Caso 4: Dobutamina 22.5 mL/h -> 5 mcg/kg/min");
-    assertValidInverse("mlh_to_dose", 22.5, c4.value, "mcg/kg/min", { concMcgMl: 1000, concMgMl: 1, weightKg: 75 }, "Caso 4 Inversa");
+    assertEqual(c4.value, 5.0, 1e-3, "Dobutamina: 22.5 mL/h -> 5 mcg/kg/min");
+    assertValidInverse("mlh_to_dose", 22.5, c4.value, "mcg/kg/min", { concMcgMl: 1000, concMgMl: 1, weightKg: 75 }, "Dobutamina Inversa");
 
     // ------------------------------------------------------------------------
-    // CASO 5: Propofol 10 mg/mL, Peso 60 kg, Bomba 18 mL/h -> 50 mcg/kg/min e 3 mg/kg/h
+    // CASO 5: Vasopressina 20 UI/100 mL (0.2 UI/mL), Bomba 9 mL/h -> 0.03 UI/min
     // ------------------------------------------------------------------------
-    const c5a = engine.convertMlHToDose(18, "mcg/kg/min", { concMcgMl: 10000, concMgMl: 10, weightKg: 60 });
-    assertEqual(c5a.value, 50.0, 1e-3, "Caso 5a: Propofol 18 mL/h -> 50 mcg/kg/min");
-
-    const c5b = engine.convertMlHToDose(18, "mg/kg/h", { concMgMl: 10, weightKg: 60 });
-    assertEqual(c5b.value, 3.0, 1e-3, "Caso 5b: Propofol 18 mL/h -> 3 mg/kg/h");
+    const c5 = engine.convertMlHToDose(9, "UI/min", { concUIMl: 0.2 });
+    assertEqual(c5.value, 0.03, 1e-3, "Vasopressina: 9 mL/h -> 0.03 UI/min");
+    assertValidInverse("mlh_to_dose", 9, c5.value, "UI/min", { concUIMl: 0.2 }, "Vasopressina Inversa");
 
     // ------------------------------------------------------------------------
-    // CASO 6: Dexmedetomidina 4 mcg/mL, Peso 70 kg, Dose 0.7 mcg/kg/h -> 12.25 mL/h
+    // CASO 6: Midazolam 50 mg/50 mL (1 mg/mL), Peso 80 kg, 4 mL/h -> 0.05 mg/kg/h
     // ------------------------------------------------------------------------
-    const c6 = engine.convertDoseToMlH(0.7, "mcg/kg/h", { concMcgMl: 4, weightKg: 70 });
-    assertEqual(c6.value, 12.25, 1e-3, "Caso 6: Dexmedetomidina 0.7 mcg/kg/h -> 12.25 mL/h");
-    assertValidInverse("dose_to_mlh", 0.7, c6.value, "mcg/kg/h", { concMcgMl: 4, weightKg: 70 }, "Caso 6 Inversa");
+    const c6 = engine.convertMlHToDose(4, "mg/kg/h", { concMgMl: 1, weightKg: 80 });
+    assertEqual(c6.value, 0.05, 1e-3, "Midazolam: 4 mL/h -> 0.05 mg/kg/h");
+    assertValidInverse("mlh_to_dose", 4, c6.value, "mg/kg/h", { concMgMl: 1, weightKg: 80 }, "Midazolam Inversa");
 
     // ------------------------------------------------------------------------
-    // CASO 7: Midazolam 1 mg/mL, Peso 80 kg, Bomba 4 mL/h -> 4 mg/h, 0.05 mg/kg/h, ~0.833 mcg/kg/min
+    // CASO 7: Propofol 1% (10 mg/mL), Peso 60 kg, 18 mL/h -> 50 mcg/kg/min
     // ------------------------------------------------------------------------
-    const c7a = engine.convertMlHToDose(4, "mg/h", { concMgMl: 1, weightKg: 80 });
-    assertEqual(c7a.value, 4.0, 1e-3, "Caso 7a: Midazolam 4 mL/h -> 4 mg/h");
-
-    const c7b = engine.convertMlHToDose(4, "mg/kg/h", { concMgMl: 1, weightKg: 80 });
-    assertEqual(c7b.value, 0.05, 1e-3, "Caso 7b: Midazolam 4 mL/h -> 0.05 mg/kg/h");
-
-    const c7c = engine.convertMlHToDose(4, "mcg/kg/min", { concMcgMl: 1000, weightKg: 80 });
-    assertEqual(c7c.value, 0.8333, 1e-2, "Caso 7c: Midazolam 4 mL/h -> 0.833 mcg/kg/min");
+    const c7 = engine.convertMlHToDose(18, "mcg/kg/min", { concMcgMl: 10000, concMgMl: 10, weightKg: 60 });
+    assertEqual(c7.value, 50.0, 1e-3, "Propofol: 18 mL/h -> 50 mcg/kg/min");
+    assertValidInverse("mlh_to_dose", 18, c7.value, "mcg/kg/min", { concMcgMl: 10000, concMgMl: 10, weightKg: 60 }, "Propofol Inversa");
 
     // ------------------------------------------------------------------------
-    // CASO 8: Fentanil 10 mcg/mL, Peso 70 kg, Bomba 10 mL/h -> 100 mcg/h, ~1.43 mcg/kg/h
+    // CASO 8: Fentanil 500 mcg/50 mL (10 mcg/mL), Peso 70 kg, 10 mL/h -> 1.4285 mcg/kg/h
     // ------------------------------------------------------------------------
-    const c8a = engine.convertMlHToDose(10, "mcg/h", { concMcgMl: 10, weightKg: 70 });
-    assertEqual(c8a.value, 100.0, 1e-3, "Caso 8a: Fentanil 10 mL/h -> 100 mcg/h");
-
-    const c8b = engine.convertMlHToDose(10, "mcg/kg/h", { concMcgMl: 10, weightKg: 70 });
-    assertEqual(c8b.value, 1.4285, 1e-2, "Caso 8b: Fentanil 10 mL/h -> ~1.43 mcg/kg/h");
+    const c8 = engine.convertMlHToDose(10, "mcg/kg/h", { concMcgMl: 10, weightKg: 70 });
+    assertEqual(c8.value, 1.4285, 1e-2, "Fentanil: 10 mL/h -> 1.43 mcg/kg/h");
+    assertValidInverse("mlh_to_dose", 10, c8.value, "mcg/kg/h", { concMcgMl: 10, weightKg: 70 }, "Fentanil Inversa");
 
     // ------------------------------------------------------------------------
-    // TESTES ADICIONAIS: Validações e Casos Limite
+    // CASO 9: Cetamina 250 mg/50 mL (5 mg/mL), Peso 70 kg, 7 mL/h -> 0.5 mg/kg/h
+    // ------------------------------------------------------------------------
+    const c9 = engine.convertMlHToDose(7, "mg/kg/h", { concMgMl: 5, weightKg: 70 });
+    assertEqual(c9.value, 0.5, 1e-3, "Cetamina: 7 mL/h -> 0.5 mg/kg/h");
+    assertValidInverse("mlh_to_dose", 7, c9.value, "mg/kg/h", { concMgMl: 5, weightKg: 70 }, "Cetamina Inversa");
+
+    // ------------------------------------------------------------------------
+    // CASO 10: Dexmedetomidina 200 mcg/50 mL (4 mcg/mL), Peso 70 kg, 12.25 mL/h -> 0.7 mcg/kg/h
+    // ------------------------------------------------------------------------
+    const c10 = engine.convertMlHToDose(12.25, "mcg/kg/h", { concMcgMl: 4, weightKg: 70 });
+    assertEqual(c10.value, 0.7, 1e-3, "Dexmedetomidina: 12.25 mL/h -> 0.7 mcg/kg/h");
+    assertValidInverse("mlh_to_dose", 12.25, c10.value, "mcg/kg/h", { concMcgMl: 4, weightKg: 70 }, "Dexmedetomidina Inversa");
+
+    // ------------------------------------------------------------------------
+    // CASO 11: Morfina 50 mg/50 mL (1 mg/mL), 3 mL/h -> 3 mg/h
+    // ------------------------------------------------------------------------
+    const c11 = engine.convertMlHToDose(3, "mg/h", { concMgMl: 1 });
+    assertEqual(c11.value, 3.0, 1e-3, "Morfina: 3 mL/h -> 3 mg/h");
+    assertValidInverse("mlh_to_dose", 3, c11.value, "mg/h", { concMgMl: 1 }, "Morfina Inversa");
+
+    // ------------------------------------------------------------------------
+    // CASO 12: Nitroglicerina 50 mg/250 mL (200 mcg/mL), 15 mL/h -> 50 mcg/min
+    // ------------------------------------------------------------------------
+    const c12 = engine.convertMlHToDose(15, "mcg/min", { concMcgMl: 200 });
+    assertEqual(c12.value, 50.0, 1e-3, "Nitroglicerina: 15 mL/h -> 50 mcg/min");
+    assertValidInverse("mlh_to_dose", 15, c12.value, "mcg/min", { concMcgMl: 200 }, "Nitroglicerina Inversa");
+
+    // ------------------------------------------------------------------------
+    // CASO 13: Nitroprussiato 50 mg/250 mL (200 mcg/mL), Peso 70 kg, 21 mL/h -> 1 mcg/kg/min
+    // ------------------------------------------------------------------------
+    const c13 = engine.convertMlHToDose(21, "mcg/kg/min", { concMcgMl: 200, weightKg: 70 });
+    assertEqual(c13.value, 1.0, 1e-3, "Nitroprussiato: 21 mL/h -> 1 mcg/kg/min");
+    assertValidInverse("mlh_to_dose", 21, c13.value, "mcg/kg/min", { concMcgMl: 200, weightKg: 70 }, "Nitroprussiato Inversa");
+
+    // ------------------------------------------------------------------------
+    // CASO 14: Cisatracúrio 100 mg/100 mL (1000 mcg/mL), Peso 70 kg, 6.3 mL/h -> 1.5 mcg/kg/min
+    // ------------------------------------------------------------------------
+    const c14 = engine.convertMlHToDose(6.3, "mcg/kg/min", { concMcgMl: 1000, weightKg: 70 });
+    assertEqual(c14.value, 1.5, 1e-3, "Cisatracúrio: 6.3 mL/h -> 1.5 mcg/kg/min");
+    assertValidInverse("mlh_to_dose", 6.3, c14.value, "mcg/kg/min", { concMcgMl: 1000, weightKg: 70 }, "Cisatracúrio Inversa");
+
+    // ------------------------------------------------------------------------
+    // CASO 15: Rocurônio 500 mg/100 mL (5000 mcg/mL), Peso 70 kg, 4.2 mL/h -> 5 mcg/kg/min
+    // ------------------------------------------------------------------------
+    const c15 = engine.convertMlHToDose(4.2, "mcg/kg/min", { concMcgMl: 5000, weightKg: 70 });
+    assertEqual(c15.value, 5.0, 1e-3, "Rocurônio: 4.2 mL/h -> 5 mcg/kg/min");
+    assertValidInverse("mlh_to_dose", 4.2, c15.value, "mcg/kg/min", { concMcgMl: 5000, weightKg: 70 }, "Rocurônio Inversa");
+
+    // ------------------------------------------------------------------------
+    // TESTES ADICIONAIS: Validações
     // ------------------------------------------------------------------------
     // Separador vírgula
-    const cComma = engine.convertDoseToMlH("0,2", "mcg/kg/min", { concMcgMl: 128, weightKg: 80 });
-    assertEqual(cComma.value, 7.5, 1e-3, "Teste Vírgula Decimal (0,2)");
+    const cComma = engine.convertMlHToDose("12,5", "mcg/kg/min", { concMcgMl: 64, weightKg: 80 });
+    assertEqual(cComma.value, 0.1666, 1e-2, "Teste Vírgula Decimal (12,5 mL/h)");
 
     // Bloqueio Peso Zero
     const cZeroW = engine.convertMlHToDose(10, "mcg/kg/min", { concMcgMl: 64, weightKg: 0 });
+    assertEqual(cZeroW.error ? true : false, true, 0, "Bloqueio Peso Zero");
     assertEqual(cZeroW.error != null, true, true, "Bloqueio Peso Zero");
 
     // Troca de concentração (16mg/250mL a 20 mL/h para 32mg/250mL -> 10 mL/h)

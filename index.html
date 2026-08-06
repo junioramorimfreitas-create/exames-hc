@@ -27,7 +27,7 @@
       <button type="button" class="tab-btn" id="tabVitals">Organizador de Controles</button>
       <button type="button" class="tab-btn" id="tabGlycemia">Evolução de Glicemia</button>
       <button type="button" class="tab-btn" id="tabTemperature">Evolução de Temperatura</button>
-      <button type="button" class="tab-btn" id="tabInfusions">💧 Calculadora de Infusões</button>
+      <button type="button" class="tab-btn" id="tabInfusions">Calculadora de Infusões</button>
     </div>
 
     <!-- Seção de Exames -->
@@ -388,8 +388,8 @@
                   <span>Tropo</span>
                 </label>
                 <label class="exam-toggle">
-                  <input type="checkbox" value="NTProBNP" data-category="Hormônios/Marcadores" />
-                  <span>NTProBNP</span>
+                  <input type="checkbox" value="NTproBNP" data-category="Hormônios/Marcadores" />
+                  <span>NTproBNP</span>
                 </label>
                 <label class="exam-toggle">
                   <input type="checkbox" value="Glic" data-category="Hormônios/Marcadores" />
@@ -1322,10 +1322,12 @@
             <div id="infusionCategoryFilters" class="segmented-control" style="flex-wrap: wrap;"></div>
           </div>
 
-          <!-- Seleção de Medicamento com Busca -->
+          <!-- Seleção de Medicamento -->
           <div class="row">
-            <label for="infusionDrugSearch">Medicamento</label>
-            <input type="text" id="infusionDrugSearch" placeholder="🔍 Buscar por nome ou sinônimo (ex: Nora, Epinefrina, Quetamina...)" style="margin-bottom: 8px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <label for="infusionDrugSelect" style="margin-bottom: 0;">Medicamento</label>
+              <button type="button" class="btn-secondary btn-small" id="btnCustomDrug">+ Novo Medicamento</button>
+            </div>
             <select id="infusionDrugSelect"></select>
           </div>
 
@@ -1340,44 +1342,15 @@
 
           <!-- Peso do Paciente -->
           <div class="row">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-              <label for="infusionWeightInput" style="margin-bottom: 0;">Peso do Paciente (kg)</label>
-              <button type="button" class="btn-secondary btn-small" id="btnIdealWeightModal">🧮 Calc. Peso Ideal / Ajustado</button>
-            </div>
-            <div style="display: grid; grid-template-columns: 1fr 140px; gap: 8px;">
-              <input type="text" id="infusionWeightInput" placeholder="Ex: 70" value="80">
-              <select id="infusionWeightTypeSelect">
-                <option value="real" selected>Peso Real</option>
-                <option value="ideal">Peso Ideal</option>
-                <option value="adjusted">Peso Ajustado</option>
-                <option value="dry">Peso Seco</option>
-                <option value="manual">Manual</option>
-              </select>
-            </div>
+            <label for="infusionWeightInput" style="margin-bottom: 6px;">Peso do Paciente (kg)</label>
+            <input type="text" id="infusionWeightInput" placeholder="Ex: 70" value="80">
             <div id="infusionWeightNotice" class="hint" style="display: none; margin-top: 6px; color: var(--accent);"></div>
           </div>
 
-          <!-- Sentido da Conversão -->
+          <!-- Velocidade da Bomba -->
           <div class="row">
-            <label>Sentido da Conversão</label>
-            <div class="segmented-control">
-              <button type="button" class="seg-btn active" id="btnDirMlHToDose">mL/h ➔ Dose</button>
-              <button type="button" class="seg-btn" id="btnDirDoseToMlH">Dose ➔ mL/h</button>
-            </div>
-          </div>
-
-          <!-- Unidade de Dose & Valor Digitado -->
-          <div class="row">
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-              <div>
-                <label for="infusionDoseUnitSelect">Unidade da Dose</label>
-                <select id="infusionDoseUnitSelect"></select>
-              </div>
-              <div>
-                <label for="infusionInputValue">Valor Informado</label>
-                <input type="text" id="infusionInputValue" placeholder="Ex: 12" value="12">
-              </div>
-            </div>
+            <label for="infusionInputValue" style="margin-bottom: 6px;">Velocidade da Bomba de Infusão (mL/h)</label>
+            <input type="text" id="infusionInputValue" placeholder="Ex: 10" value="10">
           </div>
 
           <!-- Contexto Clínico (quando aplicável) -->
@@ -1407,31 +1380,27 @@
                 </div>
                 <div>
                   <span style="color: var(--text-secondary); display: block;">Peso Utilizado:</span>
-                  <strong id="infusionResultWeightLabel">80 kg (Peso Real)</strong>
+                  <strong id="infusionResultWeightLabel">80 kg</strong>
                 </div>
                 <div>
-                  <span style="color: var(--text-secondary); display: block;">Valor de Entrada:</span>
-                  <strong id="infusionResultInputValueLabel">12 mL/h</strong>
+                  <span style="color: var(--text-secondary); display: block;">Velocidade da Bomba:</span>
+                  <strong id="infusionResultInputValueLabel">10 mL/h</strong>
                 </div>
                 <div>
-                  <span style="color: var(--text-secondary); display: block; color: var(--primary);">Resultado Calculado:</span>
-                  <strong id="infusionResultOutputValueLabel" style="font-size: 1.3rem; color: var(--primary);">0,16 mcg/kg/min</strong>
+                  <span style="color: var(--text-secondary); display: block; color: var(--primary);">Dose Administrada:</span>
+                  <strong id="infusionResultOutputValueLabel" style="font-size: 1.3rem; color: var(--primary);">0,13 mcg/kg/min</strong>
                 </div>
               </div>
             </div>
 
-            <!-- Caixa de Alerta Clínico -->
-            <div id="infusionAlertNoticeBox" class="alert-box box-info" style="margin-bottom: 12px;">
-              Valor dentro da faixa usual de referência.
+            <!-- Faixas Terapêuticas de Referência -->
+            <div style="margin-bottom: 14px;">
+              <label style="font-weight: 600; font-size: 0.85rem; color: var(--text-secondary); display: block; margin-bottom: 6px;">FAIXAS TERAPÊUTICAS DE REFERÊNCIA:</label>
+              <div id="infusionTherapeuticRangesBox" style="background: var(--bg-page); padding: 10px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); font-size: 0.85rem;"></div>
             </div>
 
             <!-- Detector de Erro de Unidade -->
             <div id="infusionUnitErrorNoticeBox" class="alert-box box-danger" style="display: none; margin-bottom: 12px;"></div>
-
-            <!-- Verificação Inversa Badge -->
-            <div style="margin-bottom: 14px;">
-              <span id="infusionReverseCheckBadge" class="reverse-badge badge-pass" style="display: inline-flex;">✓ Verificação Matemática Inversa Confirmada</span>
-            </div>
 
             <!-- Cálculo Detalhado Passo a Passo -->
             <div style="margin-bottom: 14px;">
@@ -1442,120 +1411,15 @@
             <!-- Equivalências Notáveis -->
             <div id="infusionEquivalencesBox" style="display: none; background: rgba(14, 165, 233, 0.08); padding: 10px; border-radius: var(--radius-sm); font-size: 0.85rem; margin-bottom: 14px; border-left: 3px solid var(--accent);"></div>
 
-            <!-- Checkbox Obrigatório para Alerta Crítico -->
-            <div id="infusionCriticalCheckRow" style="display: none; background: rgba(239, 68, 68, 0.1); padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--danger); margin-bottom: 14px;">
-              <label style="display: flex; align-items: center; gap: 8px; font-weight: 600; color: var(--danger); cursor: pointer;">
-                <input type="checkbox" id="infusionCriticalCheckbox">
-                Confirmei medicamento, peso, concentração, unidade e programação da bomba.
-              </label>
-            </div>
-
-            <!-- Botões de Ação do Resultado -->
-            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-              <button type="button" class="btn-primary" id="btnCopyInfusionResult">📋 Copiar Resultado</button>
-              <button type="button" class="btn-secondary" id="btnCopyInfusionSteps">📄 Copiar Passo a Passo</button>
-              <button type="button" class="btn-secondary" id="btnReverseInfusionDir">🔄 Inverter Conversão</button>
-              <button type="button" class="btn-secondary" id="btnClearInfusionForm">🧹 Limpar</button>
-            </div>
           </div>
         </div>
       </div>
 
-      <!-- FERRAMENTAS SECUNDÁRIAS (ACORDEÃO RECOLHÍVEL) -->
-      <div style="margin-top: 24px;">
-        <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--text-primary); margin-bottom: 12px;">Ferramentas Adicionais e Análises de Infusão</h3>
 
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px;">
-          <!-- Card 1: Troca de Concentração -->
-          <div class="output-card" style="display: block;">
-            <h4 style="margin-top:0; font-size: 1rem; color: var(--primary);">🔄 Troca de Concentração</h4>
-            <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 8px;">Calcule a nova velocidade da bomba para manter a mesma dose ao alterar a diluição.</p>
-            <div style="margin-bottom: 8px;">
-              <label style="font-size: 0.8rem;">Velocidade Atual (mL/h):</label>
-              <input type="text" id="swapCurrentRate" value="20" placeholder="Ex: 20">
-            </div>
-            <div style="margin-bottom: 8px;">
-              <label style="font-size: 0.8rem;">Nova Diluição:</label>
-              <select id="swapNewPresetSelect"></select>
-            </div>
-            <div id="swapResultText" style="font-size: 0.85rem; background: var(--bg-page); padding: 8px; border-radius: var(--radius-sm); margin-top: 6px;"></div>
-          </div>
-
-          <!-- Card 2: Tempo Restante -->
-          <div class="output-card" style="display: block;">
-            <h4 style="margin-top:0; font-size: 1rem; color: var(--primary);">⏱️ Tempo Restante da Infusão</h4>
-            <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 8px;">Estime o tempo até o término do frasco/seringa.</p>
-            <div style="margin-bottom: 8px;">
-              <label style="font-size: 0.8rem;">Volume Restante na Seringa/Bolsa (mL):</label>
-              <input type="text" id="timeRemainingVolInput" placeholder="Ex: 150">
-            </div>
-            <div id="timeRemainingResultText" style="font-size: 0.85rem; background: var(--bg-page); padding: 8px; border-radius: var(--radius-sm); margin-top: 6px;"></div>
-          </div>
-
-          <!-- Card 3: Previsão de Consumo -->
-          <div class="output-card" style="display: block;">
-            <h4 style="margin-top:0; font-size: 1rem; color: var(--primary);">📦 Consumo em 6h, 12h e 24h</h4>
-            <div id="consumptionResultText" style="font-size: 0.85rem; background: var(--bg-page); padding: 8px; border-radius: var(--radius-sm); margin-top: 6px;"></div>
-          </div>
-        </div>
-
-        <!-- Tabela de Titulação -->
-        <div class="output-card" style="display: block; margin-top: 16px;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-            <h4 style="margin:0; font-size: 1rem; color: var(--primary);">📈 Tabela de Titulação de Bomba</h4>
-            <div>
-              <label style="font-size: 0.8rem; margin-right: 6px;">Incremento (mL/h):</label>
-              <select id="titrationStepSelect" style="width: auto; display: inline-block;">
-                <option value="0.1">0,1 mL/h</option>
-                <option value="0.5">0,5 mL/h</option>
-                <option value="1" selected>1,0 mL/h</option>
-                <option value="2">2,0 mL/h</option>
-              </select>
-              <button type="button" class="btn-secondary btn-small" id="btnCopyTitration" style="margin-left: 8px;">📋 Copiar Tabela</button>
-            </div>
-          </div>
-          <table class="data-table" style="width: 100%; font-size: 0.85rem;">
-            <thead>
-              <tr>
-                <th>Velocidade da Bomba</th>
-                <th>Dose Resultante</th>
-              </tr>
-            </thead>
-            <tbody id="titrationTableBody"></tbody>
-          </table>
-        </div>
-
-        <!-- Histórico Local -->
-        <div class="output-card" style="display: block; margin-top: 16px;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-            <h4 style="margin:0; font-size: 1rem; color: var(--primary);">📜 Histórico Local Recente (Anônimo)</h4>
-            <button type="button" class="btn-secondary btn-small" id="btnClearInfusionHistory">Limpar Histórico</button>
-          </div>
-          <table class="data-table" style="width: 100%; font-size: 0.85rem;">
-            <thead>
-              <tr>
-                <th>Hora</th>
-                <th>Medicamento / Diluição</th>
-                <th>Entrada</th>
-                <th>Resultado</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody id="infusionHistoryTableBody">
-              <tr><td colspan="5"><em>Nenhum histórico recente.</em></td></tr>
-            </tbody>
-          </table>
-        </div>
-
-        <!-- Botão Suíte de Testes Automatizados -->
-        <div style="margin-top: 16px; text-align: center;">
-          <button type="button" class="btn-secondary" id="btnOpenTestsModal" onclick="document.getElementById('modalTests').style.display='flex'">🧪 Executar Suíte de Testes Automatizados (Validação Técnica)</button>
-        </div>
-      </div>
 
       <!-- Rodapé de Segurança da Calculadora -->
       <footer class="calculator-footer" style="margin-top: 30px; padding: 14px; background: rgba(16, 102, 204, 0.05); border-radius: var(--radius-md); border: 1px solid var(--border-color); text-align: center; font-size: 0.8rem; color: var(--text-secondary);">
-        Ferramenta auxiliar de cálculo. Confira sempre o medicamento, a apresentação, a diluição, o peso, a unidade prescrita e a programação da bomba. As concentrações e faixas de dose devem ser validadas conforme o protocolo institucional. Esta ferramenta não substitui avaliação médica, prescrição, dupla checagem ou conferência da farmácia e da enfermagem.
+        Ferramenta auxiliar de cálculo. Confira sempre o medicamento, a apresentação, a diluição, o peso e a programação da bomba. As concentrações e faixas de dose devem ser validadas conforme o protocolo institucional. Esta ferramenta não substitui avaliação médica, prescrição, dupla checagem ou conferência da farmácia e da enfermagem.
       </footer>
     </div>
 
@@ -1589,18 +1453,22 @@
     </div>
   </div>
 
-  <!-- MODAL 2: Diluição Personalizada -->
+  <!-- MODAL 2A: Cadastrar Diluição Personalizada para a Medicação Atual -->
   <div id="modalCustomDilution" class="modal-overlay" style="display: none;">
-    <div class="modal-card">
+    <div class="modal-card" style="max-width: 460px;">
       <h3>+ Cadastrar Diluição Personalizada</h3>
+      <div id="customDilutionTargetDrugLabel" style="font-size: 0.88rem; color: var(--primary); font-weight: 600; margin-bottom: 12px; background: rgba(16, 102, 204, 0.08); padding: 8px 10px; border-radius: var(--radius-sm);">
+        Para: Noradrenalina
+      </div>
+
       <div style="margin-bottom: 10px;">
-        <label>Rótulo Identificador:</label>
-        <input type="text" id="customDilLabelInput" placeholder="Ex.: Seringa Concentrada 1:1">
+        <label>Rótulo da Diluição / Concentração:</label>
+        <input type="text" id="customDilLabelInput" placeholder="Ex.: 32 mg em 250 mL (128 mcg/mL)">
       </div>
       <div style="display: grid; grid-template-columns: 1fr 100px; gap: 8px; margin-bottom: 10px;">
         <div>
           <label>Quantidade de Medicamento:</label>
-          <input type="text" id="customDilAmountInput" placeholder="Ex: 16">
+          <input type="text" id="customDilAmountInput" placeholder="Ex: 32">
         </div>
         <div>
           <label>Unidade:</label>
@@ -1616,30 +1484,94 @@
         <label>Volume Final da Solução (mL):</label>
         <input type="text" id="customDilVolInput" placeholder="Ex: 250">
       </div>
-      <div style="display: flex; gap: 8px;">
+      <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px;">
         <button type="button" class="btn-primary" id="btnSaveCustomDilution">Salvar Diluição Localmente</button>
         <button type="button" class="btn-secondary" id="btnCloseCustomDilutionModal">Cancelar</button>
+        <button type="button" class="btn-secondary id-clear-custom" id="btnClearCustomData1" style="color: var(--danger); border-color: var(--danger); margin-left: auto;">🗑️ Apagar Dados Salvos</button>
       </div>
     </div>
   </div>
 
-  <!-- MODAL 3: Suíte de Testes Automatizados -->
-  <div id="modalTests" class="modal-overlay" style="display: none;">
-    <div class="modal-card" style="max-width: 600px;">
-      <h3>🧪 Suíte de Testes Automatizados da Calculadora</h3>
-      <p style="font-size: 0.85rem; color: var(--text-secondary);">Executa a verificação técnica rigorosa de todas as conversões, limites de referência e checagem matemática inversa.</p>
-      <div id="testOutputBox" style="background: #0b111e; color: #34d399; font-family: var(--font-mono); font-size: 0.82rem; padding: 12px; border-radius: var(--radius-sm); max-height: 250px; overflow-y: auto; margin-bottom: 14px;">
-        Aguardando execução...
+  <!-- MODAL 2B: Cadastrar Novo Medicamento Personalizado -->
+  <div id="modalCustomDrug" class="modal-overlay" style="display: none;">
+    <div class="modal-card" style="max-width: 480px;">
+      <h3>+ Cadastrar Novo Medicamento</h3>
+      <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 12px;">Cadastre uma nova medicação e sua diluição inicial para salvamento local.</p>
+      
+      <div style="margin-bottom: 10px;">
+        <label>Nome do Medicamento:</label>
+        <input type="text" id="customDrugNameInput" placeholder="Ex.: Cisatracúrio, Milrinona, Nitroglicerina...">
       </div>
-      <div style="display: flex; gap: 8px;">
-        <button type="button" class="btn-primary" onclick="
-          const res = window.__INFUSOES_TESTS__.runAll();
-          document.getElementById('testOutputBox').innerHTML = res.logs.join('<br>') + `<br><br><strong>RESULTADO FINAL: ${res.passed} PASSAAM, ${res.failed} FALHARAM.</strong>`;
-        ">Rodar Suíte Agora</button>
-        <button type="button" class="btn-secondary" onclick="document.getElementById('modalTests').style.display='none'">Fechar</button>
+      
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px;">
+        <div>
+          <label>Categoria:</label>
+          <select id="customDrugCategorySelect">
+            <option value="vasopressores" selected>Vasopressores/Inotrópicos</option>
+            <option value="sedacao">Sedação/Analgesia</option>
+          </select>
+        </div>
+        <div>
+          <label>Unidade Padronizada:</label>
+          <select id="customDrugUnitSelect">
+            <option value="mcg/kg/min" selected>mcg/kg/min</option>
+            <option value="mg/kg/h">mg/kg/h</option>
+            <option value="mcg/kg/h">mcg/kg/h</option>
+            <option value="mg/h">mg/h</option>
+            <option value="UI/min">UI/min</option>
+            <option value="mcg/min">mcg/min</option>
+            <option value="mg/min">mg/min</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="margin-bottom: 10px;">
+        <label>Depende do Peso do Paciente?</label>
+        <select id="customDrugRequiresWeightSelect">
+          <option value="yes" selected>Sim (cálculo utiliza peso em kg)</option>
+          <option value="no">Não (dose fixa independente do peso)</option>
+        </select>
+      </div>
+
+      <div style="border-top: 1px solid var(--border-color); padding-top: 10px; margin-top: 10px;">
+        <label style="font-weight: 700; font-size: 0.85rem; color: var(--primary); display: block; margin-bottom: 6px;">DILUIÇÃO INICIAL DO MEDICAMENTO:</label>
+        
+        <div style="margin-bottom: 10px;">
+          <label>Rótulo da Diluição / Concentração:</label>
+          <input type="text" id="customDrugDilLabelInput" placeholder="Ex.: 20 mg em 100 mL (0,2 mg/mL)">
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 100px; gap: 8px; margin-bottom: 10px;">
+          <div>
+            <label>Quantidade:</label>
+            <input type="text" id="customDrugDilAmountInput" placeholder="Ex: 20">
+          </div>
+          <div>
+            <label>Unidade:</label>
+            <select id="customDrugDilUnitSelect">
+              <option value="mg" selected>mg</option>
+              <option value="mcg">mcg</option>
+              <option value="g">g</option>
+              <option value="UI">UI</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="margin-bottom: 14px;">
+          <label>Volume Final da Solução (mL):</label>
+          <input type="text" id="customDrugDilVolInput" placeholder="Ex: 100">
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px;">
+        <button type="button" class="btn-primary" id="btnSaveCustomDrug">Salvar Medicamento Localmente</button>
+        <button type="button" class="btn-secondary" id="btnCloseCustomDrugModal">Cancelar</button>
+        <button type="button" class="btn-secondary id-clear-custom" id="btnClearCustomData2" style="color: var(--danger); border-color: var(--danger); margin-left: auto;">🗑️ Apagar Dados Salvos</button>
       </div>
     </div>
   </div>
+
+
 
   <!-- MODAL 4: Disclaimer Inicial -->
   <div id="modalDisclaimer" class="modal-overlay" style="display: none;">

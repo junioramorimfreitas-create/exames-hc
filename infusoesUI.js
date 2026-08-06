@@ -8,6 +8,7 @@
 (function () {
   let currentDrug = null;
   let customDilutions = [];
+  let customDrugs = [];
   let favorites = [];
 
   // Elementos do DOM (inicializados no setup)
@@ -17,6 +18,7 @@
     cacheElements();
     if (!elements.container) return;
 
+    loadCustomDrugs();
     loadCustomDilutions();
     loadFavorites();
     populateCategoryFilters();
@@ -34,20 +36,13 @@
     elements = {
       container: document.getElementById("infusionsSection"),
       categoryFilterContainer: document.getElementById("infusionCategoryFilters"),
-      drugSearchInput: document.getElementById("infusionDrugSearch"),
       drugSelect: document.getElementById("infusionDrugSelect"),
       presetSelect: document.getElementById("infusionPresetSelect"),
       customDilutionBtn: document.getElementById("btnCustomDilution"),
       
       weightInput: document.getElementById("infusionWeightInput"),
-      weightTypeSelect: document.getElementById("infusionWeightTypeSelect"),
-      btnIdealWeightModal: document.getElementById("btnIdealWeightModal"),
       weightNoticeContainer: document.getElementById("infusionWeightNotice"),
 
-      directionToggleMlHToDose: document.getElementById("btnDirMlHToDose"),
-      directionToggleDoseToMlH: document.getElementById("btnDirDoseToMlH"),
-
-      doseUnitSelect: document.getElementById("infusionDoseUnitSelect"),
       inputValueInput: document.getElementById("infusionInputValue"),
       contextSelectRow: document.getElementById("infusionContextRow"),
       contextSelect: document.getElementById("infusionContextSelect"),
@@ -72,38 +67,17 @@
       // Botões de Ação
       btnCopyResult: document.getElementById("btnCopyInfusionResult"),
       btnCopySteps: document.getElementById("btnCopyInfusionSteps"),
-      btnReverseDir: document.getElementById("btnReverseInfusionDir"),
       btnClearForm: document.getElementById("btnClearInfusionForm"),
-      btnFavoriteDilution: document.getElementById("btnFavoriteDilution"),
 
       // Alerta Crítico Checkbox
       criticalCheckRow: document.getElementById("infusionCriticalCheckRow"),
       criticalCheckbox: document.getElementById("infusionCriticalCheckbox"),
 
-      // Ferramentas Secundárias
-      swapRateInput: document.getElementById("swapCurrentRate"),
-      swapNewPresetSelect: document.getElementById("swapNewPresetSelect"),
-      swapResultText: document.getElementById("swapResultText"),
-
-      titrationStepSelect: document.getElementById("titrationStepSelect"),
-      titrationTableBody: document.getElementById("titrationTableBody"),
-      btnCopyTitration: document.getElementById("btnCopyTitration"),
-
-      timeVolInput: document.getElementById("timeRemainingVolInput"),
-      timeResultText: document.getElementById("timeRemainingResultText"),
-
-      consumptionResultText: document.getElementById("consumptionResultText"),
-
       // Modais
-      modalIdealWeight: document.getElementById("modalIdealWeight"),
       modalCustomDilution: document.getElementById("modalCustomDilution"),
-      modalAdmin: document.getElementById("modalAdmin"),
-      modalTests: document.getElementById("modalTests"),
-      modalDisclaimer: document.getElementById("modalDisclaimer"),
-
-      // Histórico
-      historyTableBody: document.getElementById("infusionHistoryTableBody"),
-      btnClearHistory: document.getElementById("btnClearInfusionHistory")
+      modalCustomDrug: document.getElementById("modalCustomDrug"),
+      customDrugBtn: document.getElementById("btnCustomDrug"),
+      modalDisclaimer: document.getElementById("modalDisclaimer")
     };
   }
 
@@ -129,21 +103,10 @@
 
   function filterDrugsByCategory(catId) {
     if (!window.__INFUSOES_CONFIG__) return;
-    const searchVal = (elements.drugSearchInput?.value || "").toLowerCase().trim();
-
     let filtered = window.__INFUSOES_CONFIG__.drugs;
     if (catId !== "all") {
       filtered = filtered.filter(d => d.category === catId);
     }
-
-    if (searchVal) {
-      filtered = filtered.filter(d => {
-        const nameMatch = d.name.toLowerCase().includes(searchVal);
-        const synMatch = d.synonyms && d.synonyms.some(s => s.toLowerCase().includes(searchVal));
-        return nameMatch || synMatch;
-      });
-    }
-
     populateDrugSelectWithOptions(filtered);
   }
 
@@ -155,9 +118,22 @@
   function populateDrugSelectWithOptions(drugList) {
     if (!elements.drugSelect) return;
     let html = "";
-    drugList.forEach(d => {
+    
+    const standardDrugs = drugList.filter(d => !d.isCustom);
+    const userCustomDrugs = drugList.filter(d => d.isCustom);
+
+    standardDrugs.forEach(d => {
       html += `<option value="${d.id}">${d.name}</option>`;
     });
+
+    if (userCustomDrugs.length) {
+      html += `<optgroup label="★ Medicamentos Personalizados">`;
+      userCustomDrugs.forEach(d => {
+        html += `<option value="${d.id}">★ ${d.name}</option>`;
+      });
+      html += `</optgroup>`;
+    }
+
     if (!drugList.length) {
       html = `<option value="">Nenhum medicamento encontrado</option>`;
     }
@@ -165,18 +141,6 @@
   }
 
   function bindEvents() {
-    // Busca de Medicamentos por texto ou sinônimo
-    if (elements.drugSearchInput) {
-      elements.drugSearchInput.addEventListener("input", () => {
-        const activeCatBtn = elements.categoryFilterContainer?.querySelector("button.active");
-        const activeCat = activeCatBtn ? activeCatBtn.dataset.cat : "all";
-        filterDrugsByCategory(activeCat);
-        if (elements.drugSelect.options.length > 0) {
-          selectDrug(elements.drugSelect.value);
-        }
-      });
-    }
-
     // Seleção de Medicamento
     if (elements.drugSelect) {
       elements.drugSelect.addEventListener("change", (e) => {
@@ -188,44 +152,16 @@
     if (elements.presetSelect) {
       elements.presetSelect.addEventListener("change", () => {
         updateCalculation();
-        populateSwapNewPresetDropdown();
       });
     }
 
-    // Alteração de peso, tipo de peso, valor ou unidade
+    // Alteração de peso, valor digitado ou contexto
     [elements.weightInput, elements.inputValueInput].forEach(el => {
       if (el) el.addEventListener("input", updateCalculation);
     });
 
-    [elements.weightTypeSelect, elements.doseUnitSelect, elements.contextSelect].forEach(el => {
-      if (el) el.addEventListener("change", updateCalculation);
-    });
-
-    // Alternância de Sentido (mL/h -> Dose vs Dose -> mL/h)
-    if (elements.directionToggleMlHToDose && elements.directionToggleDoseToMlH) {
-      elements.directionToggleMlHToDose.addEventListener("click", () => {
-        elements.directionToggleMlHToDose.classList.add("active");
-        elements.directionToggleDoseToMlH.classList.remove("active");
-        updateCalculation();
-      });
-
-      elements.directionToggleDoseToMlH.addEventListener("click", () => {
-        elements.directionToggleDoseToMlH.classList.add("active");
-        elements.directionToggleMlHToDose.classList.remove("active");
-        updateCalculation();
-      });
-    }
-
-    // Inverter Sentido
-    if (elements.btnReverseDir) {
-      elements.btnReverseDir.addEventListener("click", () => {
-    const isMlHToDose = elements.directionToggleMlHToDose?.classList?.contains("active");
-        if (isMlHToDose) {
-          elements.directionToggleDoseToMlH?.click();
-        } else {
-          elements.directionToggleMlHToDose?.click();
-        }
-      });
+    if (elements.contextSelect) {
+      elements.contextSelect.addEventListener("change", updateCalculation);
     }
 
     // Limpar formulário
@@ -253,34 +189,21 @@
       });
     }
 
-    // Abrir Modal de Calculadora de Peso Ideal
-    if (elements.btnIdealWeightModal) {
-      elements.btnIdealWeightModal.addEventListener("click", openIdealWeightModal);
-    }
-
-    // Abrir Modal de Diluição Personalizada
+    // Abrir Modal de Diluição Personalizada (para o medicamento atual)
     if (elements.customDilutionBtn) {
       elements.customDilutionBtn.addEventListener("click", openCustomDilutionModal);
     }
 
-    // Ferramentas Anexas: Troca de Concentração
-    if (elements.swapRateInput) elements.swapRateInput.addEventListener("input", updateSwapCalculation);
-    if (elements.swapNewPresetSelect) elements.swapNewPresetSelect.addEventListener("change", updateSwapCalculation);
-
-    // Titulação
-    if (elements.titrationStepSelect) elements.titrationStepSelect.addEventListener("change", updateTitrationTable);
-    if (elements.btnCopyTitration) elements.btnCopyTitration.addEventListener("click", copyTitrationTable);
-
-    // Tempo Restante
-    if (elements.timeVolInput) elements.timeVolInput.addEventListener("input", updateTimeRemainingCalculation);
-
-    // Limpar Histórico
-    if (elements.btnClearHistory) {
-      elements.btnClearHistory.addEventListener("click", () => {
-        localStorage.removeItem("examesHC_infusoes_history");
-        renderHistory();
-      });
+    // Abrir Modal de Novo Medicamento Personalizado
+    if (elements.customDrugBtn) {
+      elements.customDrugBtn.addEventListener("click", openCustomDrugModal);
     }
+
+    // Botões para Apagar Dados Salvos
+    ["btnClearCustomData1", "btnClearCustomData2"].forEach(id => {
+      const btn = document.getElementById(id);
+      if (btn) btn.addEventListener("click", clearAllCustomData);
+    });
   }
 
   function selectDrug(drugId) {
@@ -308,14 +231,6 @@
 
     if (elements.presetSelect) elements.presetSelect.innerHTML = presetHtml;
 
-    // Atualizar Unidades Permitidas
-    let unitHtml = "";
-    drug.allowedUnits.forEach(u => {
-      const selectedAttr = u === drug.preferredUnit ? "selected" : "";
-      unitHtml += `<option value="${u}" ${selectedAttr}>${u}</option>`;
-    });
-    if (elements.doseUnitSelect) elements.doseUnitSelect.innerHTML = unitHtml;
-
     // Atualizar Aviso de Peso
     if (elements.weightNoticeContainer) {
       if (drug.noWeightNotice) {
@@ -327,7 +242,7 @@
     }
 
     // Habilitar / Desabilitar campo de Peso se o medicamento não utilizar
-    if (elements.weightInput && elements.weightTypeSelect) {
+    if (elements.weightInput) {
       if (drug.requiresWeight === false) {
         elements.weightInput.placeholder = "Não aplicável";
       } else {
@@ -349,7 +264,6 @@
       }
     }
 
-    populateSwapNewPresetDropdown();
     updateCalculation();
   }
 
@@ -371,15 +285,10 @@
     const preset = getSelectedPresetData();
     if (!preset) return;
 
-    const isMlHToDose = elements.directionToggleMlHToDose?.classList?.contains("active");
-    const direction = isMlHToDose ? "mlh_to_dose" : "dose_to_mlh";
-
-    const unit = elements.doseUnitSelect?.value || currentDrug.preferredUnit;
+    const unit = currentDrug.preferredUnit;
     const inputValueStr = elements.inputValueInput?.value || "";
     const inputVal = engine.parseNumericInput(inputValueStr);
-
     const weightKg = engine.parseNumericInput(elements.weightInput?.value);
-    const weightType = elements.weightTypeSelect?.value || "real";
 
     // Preparar concentrações em mcg/mL, mg/mL, UI/mL
     let concMcgMl = preset.concMcgMl || (preset.concMgMl ? preset.concMgMl * 1000 : 0);
@@ -393,129 +302,131 @@
       weightKg
     };
 
+    // Obter contexto ativo
+    const selectedCtxId = elements.contextSelect?.value;
+    const context = (currentDrug.contexts && currentDrug.contexts.find(c => c.id === selectedCtxId)) || (currentDrug.contexts && currentDrug.contexts[0]);
+
     // Caso não haja valor digitado
     if (isNaN(inputVal) || inputVal <= 0) {
-      renderEmptyResult();
+      renderEmptyResult(context);
       return;
     }
 
-    // Executar cálculo
-    let calcResult = null;
-    if (direction === "mlh_to_dose") {
-      calcResult = engine.convertMlHToDose(inputVal, unit, params);
-    } else {
-      calcResult = engine.convertDoseToMlH(inputVal, unit, params);
-    }
+    // Executar cálculo (mL/h -> Dose Padronizada)
+    const calcResult = engine.convertMlHToDose(inputVal, unit, params);
 
     if (calcResult.error) {
-      renderErrorResult(calcResult.error);
+      renderErrorResult(calcResult.error, context);
       return;
     }
 
     // Verificação Inversa
     const outputVal = calcResult.value;
-    const invResult = engine.verifyInverse(direction, inputVal, outputVal, unit, params);
+    const invResult = engine.verifyInverse("mlh_to_dose", inputVal, outputVal, unit, params);
 
-    // Validação de Faixa Clínica
-    const selectedCtxId = elements.contextSelect?.value;
-    const context = (currentDrug.contexts && currentDrug.contexts.find(c => c.id === selectedCtxId)) || (currentDrug.contexts && currentDrug.contexts[0]);
-    const classification = classifyClinicalRange(currentDrug, context, direction, unit, inputVal, outputVal, weightKg);
+    // Classificação da Faixa Clínica
+    const classification = classifyClinicalRange(currentDrug, context, outputVal);
 
     // Detecção de Erros de Unidade
-    const unitError = engine.detectUnitError(currentDrug.id, unit, isMlHToDose ? outputVal : inputVal, weightKg);
+    const unitError = engine.detectUnitError(currentDrug.id, unit, outputVal, weightKg);
 
     // Renderizar Painel de Resultado
     renderFullResult({
       drug: currentDrug,
+      context,
       preset,
-      direction,
       unit,
       inputVal,
       outputVal,
       weightKg,
-      weightType,
       steps: calcResult.steps,
       invResult,
       classification,
       unitError,
       params
     });
-
-    // Atualizar Ferramentas Anexas
-    updateSwapCalculation();
-    updateTitrationTable();
-    updateTimeRemainingCalculation();
-    updateConsumptionCalculation(isMlHToDose ? inputVal : outputVal, params);
-
-    // Salvar no Histórico Local (se verificado)
-    if (invResult.verified) {
-      saveToHistory({
-        date: new Date().toLocaleDateString(),
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        drugName: currentDrug.name,
-        presetLabel: preset.label,
-        weightKg,
-        weightType,
-        direction,
-        inputValue: inputVal,
-        inputUnit: isMlHToDose ? "mL/h" : unit,
-        outputValue: outputVal,
-        outputUnit: isMlHToDose ? unit : "mL/h",
-        statusLevel: classification.level
-      });
-    }
   }
 
-  function classifyClinicalRange(drug, context, direction, unit, inputVal, outputVal, weightKg) {
-    if (!context) return { level: "info", title: "Faixa usual", text: "Valor dentro dos parâmetros gerais." };
+  function classifyClinicalRange(drug, context, currentDose) {
+    if (!context || !context.ranges || !context.ranges.length) {
+      return { level: "info", title: "Faixa Usual de Referência", text: "Valor dentro dos parâmetros usuais." };
+    }
 
-    // A dose a ser avaliada na faixa deve ser em dose (não mL/h)
-    const doseVal = direction === "mlh_to_dose" ? outputVal : inputVal;
-
+    const activeRange = context.ranges.find(r => currentDose >= r.min && currentDose <= r.max);
     const messages = context.messages || {};
 
-    // 1. Alerta Crítico
-    if (context.criticalThreshold && doseVal >= context.criticalThreshold) {
+    if (activeRange) {
+      let msgText = activeRange.text;
+      if (activeRange.level === "critical" && messages.critical) msgText = messages.critical;
+      else if (activeRange.level === "attention" && messages.attention) msgText = messages.attention;
+
       return {
-        level: "critical",
-        title: "Alerta Crítico de Segurança",
-        text: messages.critical || `Dose muito elevada de ${drug.name} (≥ ${context.criticalThreshold} ${context.unit}). Faça dupla checagem independente.`
+        level: activeRange.level,
+        title: activeRange.label,
+        text: msgText
       };
     }
 
-    // 2. Alerta Reforçado (ex. Propofol PRIS > 67 mcg/kg/min)
-    if (context.reinforcedAlertThreshold && doseVal >= context.reinforcedAlertThreshold) {
+    // Caso a dose esteja abaixo da menor faixa
+    if (currentDose < context.ranges[0].min) {
       return {
-        level: "critical",
-        title: "Alerta de Risco (PRIS / Toxicidade)",
-        text: messages.reinforced || `Dose acima de ${context.reinforcedAlertThreshold} ${context.unit}. Reavalie necessidade clínica.`
+        level: "info",
+        title: "Abaixo da Faixa Habitual",
+        text: `Dose calculada (${currentDose.toFixed(2).replace(".", ",")} ${context.unit}) abaixo da faixa habitual.`
       };
     }
 
-    // 3. Dose Elevada
-    if (context.highDoseThreshold && doseVal >= context.highDoseThreshold) {
-      return {
-        level: "attention",
-        title: "Dose Elevada",
-        text: messages.highDose || `Dose elevada de ${drug.name} (> ${context.highDoseThreshold} ${context.unit}). Confirme peso, concentração e taxa.`
-      };
-    }
-
-    // 4. Faixa de Atenção
-    if (context.attentionThreshold && doseVal >= context.attentionThreshold) {
-      return {
-        level: "attention",
-        title: "Faixa de Atenção",
-        text: messages.attention || `Valor acima da faixa usual de referência (${context.attentionThreshold} ${context.unit}). Confirme os dados e o contexto clínico.`
-      };
-    }
-
-    // 5. Faixa Usual
+    // Caso a dose exceda a maior faixa
+    const lastRange = context.ranges[context.ranges.length - 1];
     return {
-      level: "info",
-      title: "Faixa Usual de Referência",
-      text: "Valor dentro da faixa usual de infusão de referência."
+      level: lastRange.level || "critical",
+      title: lastRange.label || "Dose Elevada",
+      text: messages.critical || messages.attention || lastRange.text
     };
+  }
+
+  function renderTherapeuticRanges(drug, context, currentDose) {
+    const box = document.getElementById("infusionTherapeuticRangesBox");
+    if (!box) return;
+
+    if (!context || !context.ranges || !context.ranges.length) {
+      box.innerHTML = `<em style="color: var(--text-secondary);">Sem faixas cadastradas para esta indicação.</em>`;
+      return;
+    }
+
+    let html = `<div style="display: flex; flex-direction: column; gap: 6px;">`;
+
+    context.ranges.forEach(r => {
+      const isActive = !isNaN(currentDose) && currentDose > 0 && currentDose >= r.min && currentDose <= r.max;
+      
+      let badgeClass = "badge-info";
+      let borderVar = "var(--primary)";
+      if (r.level === "critical") {
+        badgeClass = "badge-danger";
+        borderVar = "var(--danger)";
+      } else if (r.level === "attention") {
+        badgeClass = "badge-warning";
+        borderVar = "var(--warning, #f59e0b)";
+      }
+
+      const activeStyle = isActive 
+        ? `border-left: 4px solid ${borderVar}; background: rgba(16, 102, 204, 0.12); font-weight: 700; border-radius: var(--radius-sm); padding: 8px 10px;` 
+        : `border-left: 3px solid var(--border-color); background: var(--bg-card); opacity: 0.85; border-radius: var(--radius-sm); padding: 8px 10px;`;
+
+      html += `
+        <div style="${activeStyle}">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="color: var(--text-primary); font-size: 0.85rem;">
+              ${isActive ? "👉 " : "• "}<strong>${r.text}</strong>
+            </span>
+            ${isActive ? `<span class="status-badge ${badgeClass}" style="font-size: 0.75rem; padding: 2px 6px;">SELECIONADO</span>` : ""}
+          </div>
+        </div>
+      `;
+    });
+
+    html += `</div>`;
+    box.innerHTML = html;
   }
 
   function renderFullResult(data) {
@@ -534,35 +445,31 @@
     else if (data.preset.concUIMl) concStr = `${engine.formatNumber(data.preset.concUIMl)} UI/mL`;
     if (elements.resultConcLabel) elements.resultConcLabel.textContent = concStr;
 
-    const wTypeLabel = getWeightTypeLabel(data.weightType);
     if (elements.resultWeightLabel) {
       if (data.drug.requiresWeight === false) {
-        elements.resultWeightLabel.textContent = "Não utilizado no cálculo padrão";
+        elements.resultWeightLabel.textContent = "Não utilizado";
       } else {
-        elements.resultWeightLabel.textContent = `${engine.formatNumber(data.weightKg)} kg (${wTypeLabel})`;
+        elements.resultWeightLabel.textContent = `${engine.formatNumber(data.weightKg)} kg`;
       }
     }
 
     // Valores de Entrada e Saída
-    const isMlHToDose = data.direction === "mlh_to_dose";
     if (elements.resultInputValueLabel) {
-      elements.resultInputValueLabel.textContent = `${engine.formatNumber(data.inputVal)} ${isMlHToDose ? "mL/h" : data.unit}`;
+      elements.resultInputValueLabel.textContent = `${engine.formatNumber(data.inputVal)} mL/h`;
     }
 
     if (elements.resultOutputValueLabel) {
-      elements.resultOutputValueLabel.textContent = `${engine.formatNumber(data.outputVal)} ${isMlHToDose ? data.unit : "mL/h"}`;
+      elements.resultOutputValueLabel.textContent = `${engine.formatNumber(data.outputVal)} ${data.unit}`;
     }
 
-    // Status Badge & Alertas Clínicos
+    // Renderizar Faixas Terapêuticas de Referência
+    renderTherapeuticRanges(data.drug, data.context, data.outputVal);
+
+    // Status Badge
     const classif = data.classification;
     if (elements.statusBadge) {
       elements.statusBadge.className = `status-badge badge-${classif.level}`;
       elements.statusBadge.textContent = classif.title;
-    }
-
-    if (elements.alertNoticeBox) {
-      elements.alertNoticeBox.className = `alert-box box-${classif.level}`;
-      elements.alertNoticeBox.innerHTML = `<strong>${classif.title}:</strong> ${classif.text}`;
     }
 
     // Erro de Unidade
@@ -572,18 +479,6 @@
         elements.unitErrorNoticeBox.innerHTML = `⚠️ <strong>Possível Erro de Unidade:</strong> ${data.unitError}`;
       } else {
         elements.unitErrorNoticeBox.style.display = "none";
-      }
-    }
-
-    // Verificação Inversa Badge
-    if (elements.reverseCheckBadge) {
-      if (data.invResult.verified) {
-        elements.reverseCheckBadge.style.display = "inline-flex";
-        elements.reverseCheckBadge.innerHTML = `✓ Verificação Inversa Confirmada (Tolerância &lt; 0,0001)`;
-      } else {
-        elements.reverseCheckBadge.style.display = "inline-flex";
-        elements.reverseCheckBadge.className = "reverse-badge badge-fail";
-        elements.reverseCheckBadge.innerHTML = `❌ Falha na Verificação Inversa. Revise os dados.`;
       }
     }
 
@@ -617,30 +512,25 @@
   function updateActionButtonsState() {
     const isCritical = elements.criticalCheckRow?.style.display === "block";
     const isChecked = elements.criticalCheckbox?.checked;
-
     const disabled = isCritical && !isChecked;
 
     if (elements.btnCopyResult) elements.btnCopyResult.disabled = disabled;
     if (elements.btnCopySteps) elements.btnCopySteps.disabled = disabled;
   }
 
-  function renderEmptyResult() {
+  function renderEmptyResult(context) {
     if (!elements.resultCard) return;
     if (elements.resultOutputValueLabel) elements.resultOutputValueLabel.textContent = "--";
-    if (elements.stepByStepBox) elements.stepByStepBox.innerHTML = "<em>Preencha os campos para visualizar o cálculo passo a passo.</em>";
+    if (elements.stepByStepBox) elements.stepByStepBox.innerHTML = "<em>Preencha o valor da bomba em mL/h para visualizar o cálculo.</em>";
     if (elements.statusBadge) {
       elements.statusBadge.className = "status-badge badge-info";
-      elements.statusBadge.textContent = "Aguardando dados";
+      elements.statusBadge.textContent = "Aguardando velocidade";
     }
-    if (elements.alertNoticeBox) {
-      elements.alertNoticeBox.className = "alert-box box-info";
-      elements.alertNoticeBox.textContent = "Preencha a velocidade ou dose desejada.";
-    }
-    if (elements.reverseCheckBadge) elements.reverseCheckBadge.style.display = "none";
+    renderTherapeuticRanges(currentDrug, context, NaN);
     if (elements.unitErrorNoticeBox) elements.unitErrorNoticeBox.style.display = "none";
   }
 
-  function renderErrorResult(msg) {
+  function renderErrorResult(msg, context) {
     if (!elements.resultCard) return;
     if (elements.resultOutputValueLabel) elements.resultOutputValueLabel.textContent = "Erro";
     if (elements.stepByStepBox) elements.stepByStepBox.innerHTML = `<span style="color:var(--danger);">${msg}</span>`;
@@ -648,10 +538,8 @@
       elements.statusBadge.className = "status-badge badge-danger";
       elements.statusBadge.textContent = "Dados Incompletos";
     }
-    if (elements.alertNoticeBox) {
-      elements.alertNoticeBox.className = "alert-box box-danger";
-      elements.alertNoticeBox.textContent = msg;
-    }
+    renderTherapeuticRanges(currentDrug, context, NaN);
+    if (elements.unitErrorNoticeBox) elements.unitErrorNoticeBox.style.display = "none";
   }
 
   function getWeightTypeLabel(type) {
@@ -688,149 +576,7 @@
     });
   }
 
-  // --------------------------------------------------
-  // Troca de Concentração
-  // --------------------------------------------------
-  function populateSwapNewPresetDropdown() {
-    if (!currentDrug || !elements.swapNewPresetSelect) return;
-    let html = "";
-    currentDrug.presets.forEach((p, idx) => {
-      html += `<option value="${idx}">${p.label}</option>`;
-    });
-    elements.swapNewPresetSelect.innerHTML = html;
-  }
 
-  function updateSwapCalculation() {
-    const engine = window.__INFUSOES_ENGINE__;
-    if (!engine || !currentDrug || !elements.swapResultText) return;
-
-    const currentPreset = getSelectedPresetData();
-    const newIdx = parseInt(elements.swapNewPresetSelect?.value || "0", 10);
-    const newPreset = currentDrug.presets[newIdx];
-
-    const currentRate = engine.parseNumericInput(elements.swapRateInput?.value || elements.inputValueInput?.value || "10");
-
-    if (!currentPreset || !newPreset || isNaN(currentRate) || currentRate <= 0) {
-      elements.swapResultText.textContent = "Informe a velocidade atual para calcular a nova bomba.";
-      return;
-    }
-
-    const cOld = currentPreset.concMgMl || (currentPreset.concMcgMl / 1000) || (currentPreset.concUIMl);
-    const cNew = newPreset.concMgMl || (newPreset.concMcgMl / 1000) || (newPreset.concUIMl);
-
-    const swapRes = engine.calculateConcentrationSwap(currentRate, cOld, cNew);
-    if (swapRes.error) {
-      elements.swapResultText.textContent = swapRes.error;
-    } else {
-      elements.swapResultText.innerHTML = `🔄 <strong>Resultado da Troca:</strong> ${swapRes.explanation}`;
-    }
-  }
-
-  // --------------------------------------------------
-  // Tabela de Titulação
-  // --------------------------------------------------
-  function updateTitrationTable() {
-    const engine = window.__INFUSOES_ENGINE__;
-    if (!engine || !currentDrug || !elements.titrationTableBody) return;
-
-    const currentPreset = getSelectedPresetData();
-    if (!currentPreset) return;
-
-    const isMlHToDose = elements.directionToggleMlHToDose?.classList?.contains("active");
-    const unit = elements.doseUnitSelect?.value || currentDrug.preferredUnit;
-    const currentRate = engine.parseNumericInput(elements.inputValueInput?.value || "10");
-    const weightKg = engine.parseNumericInput(elements.weightInput?.value);
-    const step = engine.parseNumericInput(elements.titrationStepSelect?.value || "1");
-
-    const params = {
-      concMcgMl: currentPreset.concMcgMl || (currentPreset.concMgMl ? currentPreset.concMgMl * 1000 : 0),
-      concMgMl: currentPreset.concMgMl || (currentPreset.concMcgMl ? currentPreset.concMcgMl / 1000 : 0),
-      concUIMl: currentPreset.concUIMl || 0,
-      weightKg
-    };
-
-    const rows = engine.generateTitrationTable(currentRate, step, unit, params, currentDrug);
-
-    let html = "";
-    rows.forEach(r => {
-      const isCurrent = Math.abs(r.rateMlH - currentRate) < 1e-3;
-      html += `<tr ${isCurrent ? 'style="font-weight:700; background:rgba(16,102,204,0.1);"' : ''}>
-        <td>${engine.formatNumber(r.rateMlH, 1)} mL/h</td>
-        <td>${r.formattedDose} ${unit}</td>
-      </tr>`;
-    });
-
-    elements.titrationTableBody.innerHTML = html;
-  }
-
-  function copyTitrationTable() {
-    const engine = window.__INFUSOES_ENGINE__;
-    if (!currentDrug) return;
-    const unit = elements.doseUnitSelect?.value || currentDrug.preferredUnit;
-
-    let text = `[TABELA DE TITULAÇÃO - ${currentDrug.name.toUpperCase()}]\nVelocidade (mL/h) | Dose (${unit})\n----------------------------------------\n`;
-
-    const rows = elements.titrationTableBody?.querySelectorAll("tr") || [];
-    rows.forEach(r => {
-      const cols = r.querySelectorAll("td");
-      if (cols.length === 2) {
-        text += `${cols[0].innerText} | ${cols[1].innerText}\n`;
-      }
-    });
-
-    copyTextToClipboard(text);
-  }
-
-  // --------------------------------------------------
-  // Tempo Restante
-  // --------------------------------------------------
-  function updateTimeRemainingCalculation() {
-    const engine = window.__INFUSOES_ENGINE__;
-    if (!engine || !elements.timeResultText) return;
-
-    const rate = engine.parseNumericInput(elements.inputValueInput?.value || "10");
-    const vol = engine.parseNumericInput(elements.timeVolInput?.value);
-
-    if (isNaN(vol) || vol <= 0 || isNaN(rate) || rate <= 0) {
-      elements.timeResultText.textContent = "Informe o volume restante na seringa/bolsa.";
-      return;
-    }
-
-    const res = engine.calculateTimeRemaining(vol, rate);
-    if (res.error) {
-      elements.timeResultText.textContent = res.error;
-    } else {
-      elements.timeResultText.innerHTML = `⏱️ <strong>Tempo Restante:</strong> ${res.timeText} | Término estimado às <strong>${res.finishTimeFormatted}</strong>`;
-    }
-  }
-
-  // --------------------------------------------------
-  // Consumo 6h / 12h / 24h
-  // --------------------------------------------------
-  function updateConsumptionCalculation(rateMlH, params) {
-    const engine = window.__INFUSOES_ENGINE__;
-    if (!engine || !elements.consumptionResultText || !currentDrug) return;
-
-    const commPres = currentDrug.commercialPresentations && currentDrug.commercialPresentations[0];
-    const res = engine.calculateConsumption(rateMlH, params.concMgMl, params.concMcgMl, params.concUIMl, commPres);
-
-    if (!res) {
-      elements.consumptionResultText.textContent = "Preencha a velocidade da bomba.";
-      return;
-    }
-
-    let ampStr = "";
-    if (res.ampCount24h && commPres) {
-      ampStr = ` (${res.ampCount24h} frascos/ampolas de ${commPres.label})`;
-    }
-
-    elements.consumptionResultText.innerHTML = `
-      <strong>Previsão de Consumo:</strong><br>
-      • 6 horas: ${engine.formatNumber(res.vol6h, 1)} mL<br>
-      • 12 horas: ${engine.formatNumber(res.vol12h, 1)} mL<br>
-      • 24 horas: <strong>${engine.formatNumber(res.vol24h, 1)} mL</strong>${ampStr}
-    `;
-  }
 
   // --------------------------------------------------
   // Calculadora de Peso Ideal & Ajustado Modal
@@ -880,10 +626,21 @@
   }
 
   // --------------------------------------------------
-  // Diluições Personalizadas
+  // Diluição Personalizada (para o medicamento selecionado)
   // --------------------------------------------------
   function openCustomDilutionModal() {
     if (!elements.modalCustomDilution) return;
+
+    if (!currentDrug) {
+      alert("Selecione um medicamento primeiro.");
+      return;
+    }
+
+    const targetLabel = document.getElementById("customDilutionTargetDrugLabel");
+    if (targetLabel) {
+      targetLabel.textContent = `Para: ${currentDrug.name}`;
+    }
+
     elements.modalCustomDilution.style.display = "flex";
 
     const btnSave = document.getElementById("btnSaveCustomDilution");
@@ -915,7 +672,7 @@
         }
 
         const newDil = {
-          id: "custom_" + Date.now(),
+          id: "custom_dil_" + Date.now(),
           drugId: currentDrug.id,
           label: `${label} (${amount} ${unit} / ${volume} mL)`,
           concMcgMl,
@@ -925,13 +682,106 @@
 
         customDilutions.push(newDil);
         saveCustomDilutions();
-        selectDrug(currentDrug.id); // Recarrega dropdown
+        selectDrug(currentDrug.id); // Recarrega presets e seleciona droga
         elements.modalCustomDilution.style.display = "none";
       };
     }
 
     const btnClose = document.getElementById("btnCloseCustomDilutionModal");
     if (btnClose) btnClose.onclick = () => { elements.modalCustomDilution.style.display = "none"; };
+  }
+
+  // --------------------------------------------------
+  // Cadastrar Novo Medicamento Personalizado
+  // --------------------------------------------------
+  function openCustomDrugModal() {
+    if (!elements.modalCustomDrug) return;
+    elements.modalCustomDrug.style.display = "flex";
+
+    const btnSave = document.getElementById("btnSaveCustomDrug");
+    if (btnSave) {
+      btnSave.onclick = () => {
+        const engine = window.__INFUSOES_ENGINE__;
+        const drugName = document.getElementById("customDrugNameInput")?.value || "";
+        if (!drugName.trim()) {
+          alert("Informe o nome do medicamento.");
+          return;
+        }
+
+        const category = document.getElementById("customDrugCategorySelect")?.value || "vasopressores";
+        const prefUnit = document.getElementById("customDrugUnitSelect")?.value || "mcg/kg/min";
+        const reqWeight = document.getElementById("customDrugRequiresWeightSelect")?.value === "yes";
+
+        const label = document.getElementById("customDrugDilLabelInput")?.value || "Diluição Inicial";
+        const amount = engine.parseNumericInput(document.getElementById("customDrugDilAmountInput")?.value);
+        const unit = document.getElementById("customDrugDilUnitSelect")?.value;
+        const volume = engine.parseNumericInput(document.getElementById("customDrugDilVolInput")?.value);
+
+        if (isNaN(amount) || amount <= 0 || isNaN(volume) || volume <= 0) {
+          alert("Informe quantidade e volume final válidos para a diluição.");
+          return;
+        }
+
+        let concMcgMl = 0, concMgMl = 0, concUIMl = 0;
+        if (unit === "mg") {
+          concMgMl = amount / volume;
+          concMcgMl = concMgMl * 1000;
+        } else if (unit === "mcg") {
+          concMcgMl = amount / volume;
+          concMgMl = concMgMl / 1000;
+        } else if (unit === "g") {
+          concMgMl = (amount * 1000) / volume;
+          concMcgMl = concMgMl * 1000;
+        } else if (unit === "UI") {
+          concUIMl = amount / volume;
+        }
+
+        const newDrugId = "custom_drug_" + Date.now();
+        const newDrug = {
+          id: newDrugId,
+          name: drugName.trim(),
+          category: category,
+          preferredUnit: prefUnit,
+          allowedUnits: [prefUnit],
+          requiresWeight: reqWeight,
+          isCustom: true,
+          presets: [
+            {
+              label: `${label} (${amount} ${unit} / ${volume} mL)`,
+              amountMg: unit === "mg" ? amount : 0,
+              amountMcg: unit === "mcg" ? amount : 0,
+              amountUI: unit === "UI" ? amount : 0,
+              volumeMl: volume,
+              concMcgMl,
+              concMgMl,
+              concUIMl
+            }
+          ],
+          contexts: [
+            {
+              id: "padrao",
+              name: "Infusão Contínua",
+              unit: prefUnit,
+              ranges: [
+                { label: "Faixa Usual de Referência", min: 0, max: Infinity, level: "info", text: "Conferir protocolo institucional para medicamento personalizado." }
+              ]
+            }
+          ]
+        };
+
+        customDrugs.push(newDrug);
+        saveCustomDrugs();
+        if (window.__INFUSOES_CONFIG__ && window.__INFUSOES_CONFIG__.drugs) {
+          window.__INFUSOES_CONFIG__.drugs.push(newDrug);
+        }
+        populateDrugDropdown();
+        selectDrug(newDrugId);
+        elements.modalCustomDrug.style.display = "none";
+      };
+    }
+
+    const btnClose = document.getElementById("btnCloseCustomDrugModal");
+    if (btnClose) btnClose.onclick = () => { elements.modalCustomDrug.style.display = "none"; };
   }
 
   function loadCustomDilutions() {
@@ -947,6 +797,57 @@
     try {
       localStorage.setItem("examesHC_infusoes_custom_dilutions", JSON.stringify(customDilutions));
     } catch (e) {}
+  }
+
+  function loadCustomDrugs() {
+    try {
+      const stored = localStorage.getItem("examesHC_infusoes_custom_drugs");
+      if (stored) {
+        customDrugs = JSON.parse(stored);
+        if (window.__INFUSOES_CONFIG__ && window.__INFUSOES_CONFIG__.drugs) {
+          customDrugs.forEach(cd => {
+            if (!window.__INFUSOES_CONFIG__.drugs.some(d => d.id === cd.id)) {
+              window.__INFUSOES_CONFIG__.drugs.push(cd);
+            }
+          });
+        }
+      }
+    } catch (e) {
+      customDrugs = [];
+    }
+  }
+
+  function saveCustomDrugs() {
+    try {
+      localStorage.setItem("examesHC_infusoes_custom_drugs", JSON.stringify(customDrugs));
+    } catch (e) {}
+  }
+
+  function clearAllCustomData() {
+    if (confirm("Tem certeza que deseja apagar todos os medicamentos e diluições personalizados salvos neste navegador?")) {
+      customDilutions = [];
+      customDrugs = [];
+
+      try {
+        localStorage.removeItem("examesHC_infusoes_custom_dilutions");
+        localStorage.removeItem("examesHC_infusoes_custom_drugs");
+      } catch (e) {}
+
+      if (window.__INFUSOES_CONFIG__ && window.__INFUSOES_CONFIG__.drugs) {
+        window.__INFUSOES_CONFIG__.drugs = window.__INFUSOES_CONFIG__.drugs.filter(d => !d.isCustom);
+      }
+
+      populateDrugDropdown();
+
+      if (window.__INFUSOES_CONFIG__ && window.__INFUSOES_CONFIG__.drugs.length > 0) {
+        selectDrug(window.__INFUSOES_CONFIG__.drugs[0].id);
+      }
+
+      if (elements.modalCustomDilution) elements.modalCustomDilution.style.display = "none";
+      if (elements.modalCustomDrug) elements.modalCustomDrug.style.display = "none";
+
+      alert("Todos os dados personalizados salvos foram apagados com sucesso.");
+    }
   }
 
   function loadFavorites() {

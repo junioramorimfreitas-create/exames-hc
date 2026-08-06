@@ -1768,39 +1768,73 @@ updateFilterCount();
   const tabVitals = document.getElementById("tabVitals");
   const tabGlycemia = document.getElementById("tabGlycemia");
   const tabTemperature = document.getElementById("tabTemperature");
+  const tabInfusions = document.getElementById("tabInfusions");
 
   const examsSection = document.getElementById("examsSection");
   const antibioticsSection = document.getElementById("antibioticsSection");
   const vitalsSection = document.getElementById("vitalsSection");
   const glycemiaSection = document.getElementById("glycemiaSection");
   const temperatureSection = document.getElementById("temperatureSection");
+  const infusionsSection = document.getElementById("infusionsSection");
 
   const tabs = [
-    { tab: tabExams, sec: examsSection },
-    { tab: tabAntibiotics, sec: antibioticsSection },
-    { tab: tabVitals, sec: vitalsSection },
-    { tab: tabGlycemia, sec: glycemiaSection },
-    { tab: tabTemperature, sec: temperatureSection }
+    { id: "exames", tab: tabExams, sec: examsSection, hash: "exames" },
+    { id: "antibioticos", tab: tabAntibiotics, sec: antibioticsSection, hash: "antibioticos" },
+    { id: "vitals", tab: tabVitals, sec: vitalsSection, hash: "controles" },
+    { id: "glicemia", tab: tabGlycemia, sec: glycemiaSection, hash: "glicemia" },
+    { id: "temperatura", tab: tabTemperature, sec: temperatureSection, hash: "temperatura" },
+    { id: "infusoes", tab: tabInfusions, sec: infusionsSection, hash: "calculadora-infusoes", altHashes: ["infusoes", "calculadora-infusoes"] }
   ];
+
+  function activateTab(targetItem, updateHash = true) {
+    tabs.forEach(item => {
+      if (item.tab && item.sec) {
+        if (item === targetItem) {
+          item.tab.classList.add("active");
+          item.sec.classList.add("active");
+          item.sec.style.display = "block";
+          if (updateHash && window.history && window.history.replaceState) {
+            window.history.replaceState(null, "", `#${item.hash}`);
+          }
+        } else {
+          item.tab.classList.remove("active");
+          item.sec.classList.remove("active");
+          item.sec.style.display = "none";
+        }
+      }
+    });
+  }
 
   tabs.forEach(item => {
     if (item.tab && item.sec) {
       item.tab.addEventListener("click", () => {
-        tabs.forEach(other => {
-          if (other.tab && other.sec) {
-            if (other.tab === item.tab) {
-              other.tab.classList.add("active");
-              other.sec.classList.add("active");
-              other.sec.style.display = "block";
-            } else {
-              other.tab.classList.remove("active");
-              other.sec.classList.remove("active");
-              other.sec.style.display = "none";
-            }
-          }
-        });
+        activateTab(item, true);
       });
     }
   });
+
+  // Roteamento inicial por URL Hash ou Parâmetro ?ferramenta=
+  function handleRoute() {
+    const hash = (window.location && window.location.hash ? window.location.hash : "").replace("#", "").toLowerCase();
+    const hasSearchParams = typeof URLSearchParams !== "undefined" && window.location && window.location.search;
+    const urlParams = hasSearchParams ? new URLSearchParams(window.location.search) : null;
+    const param = (urlParams && urlParams.get("ferramenta") || "").toLowerCase();
+
+    const targetRoute = hash || param;
+    if (!targetRoute) return;
+
+    const matched = tabs.find(item => {
+      if (item.hash === targetRoute) return true;
+      if (item.altHashes && item.altHashes.includes(targetRoute)) return true;
+      return false;
+    });
+
+    if (matched) {
+      activateTab(matched, false);
+    }
+  }
+
+  window.addEventListener("hashchange", handleRoute);
+  handleRoute();
 })();
 

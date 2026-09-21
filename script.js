@@ -1776,6 +1776,7 @@ updateFilterCount();
 (function setupTabs() {
   const tabExams = document.getElementById("tabExams");
   const tabAntibiotics = document.getElementById("tabAntibiotics");
+  const tabPrescription = document.getElementById("tabPrescription");
   const tabVitals = document.getElementById("tabVitals");
   const tabGlycemia = document.getElementById("tabGlycemia");
   const tabTemperature = document.getElementById("tabTemperature");
@@ -1783,6 +1784,7 @@ updateFilterCount();
 
   const examsSection = document.getElementById("examsSection");
   const antibioticsSection = document.getElementById("antibioticsSection");
+  const prescriptionSection = document.getElementById("prescriptionSection");
   const vitalsSection = document.getElementById("vitalsSection");
   const glycemiaSection = document.getElementById("glycemiaSection");
   const temperatureSection = document.getElementById("temperatureSection");
@@ -1791,6 +1793,7 @@ updateFilterCount();
   const tabs = [
     { id: "exames", tab: tabExams, sec: examsSection, hash: "exames" },
     { id: "antibioticos", tab: tabAntibiotics, sec: antibioticsSection, hash: "antibioticos" },
+    { id: "prescricao", tab: tabPrescription, sec: prescriptionSection, hash: "prescricao", altHashes: ["prescricao", "prescricoes", "prescricao-sistemas"] },
     { id: "vitals", tab: tabVitals, sec: vitalsSection, hash: "controles" },
     { id: "glicemia", tab: tabGlycemia, sec: glycemiaSection, hash: "glicemia" },
     { id: "temperatura", tab: tabTemperature, sec: temperatureSection, hash: "temperatura" },

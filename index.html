@@ -24,6 +24,7 @@
     <div class="tab-navigation">
       <button type="button" class="tab-btn active" id="tabExams">Exames Laboratoriais</button>
       <button type="button" class="tab-btn" id="tabAntibiotics">Linha do Tempo de Antibióticos</button>
+      <button type="button" class="tab-btn" id="tabPrescription">Prescrição por Sistemas</button>
       <button type="button" class="tab-btn" id="tabVitals">Organizador de Controles</button>
       <button type="button" class="tab-btn" id="tabGlycemia">Evolução de Glicemia</button>
       <button type="button" class="tab-btn" id="tabTemperature">Evolução de Temperatura</button>
@@ -1035,6 +1036,78 @@
       </div>
     </div>
 
+    <!-- Seção de Prescrição por Sistemas -->
+    <div id="prescriptionSection" class="tab-content" style="display: none;">
+      <div class="dashboard-grid">
+        
+        <!-- Coluna da Esquerda: Entrada de Dados da Prescrição -->
+        <div class="left-panel">
+          <div class="row" style="margin-bottom: 12px;">
+            <div class="input-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom:6px;">
+              <label for="prescInput" style="margin-bottom:0; font-weight: 600;">Cole aqui a Prescrição Médica do Soul MV</label>
+              <span class="info-badge" style="font-size: 0.75rem; background: var(--bg-hover, #e2e8f0); padding: 2px 8px; border-radius: 4px; color: var(--text-secondary, #64748b);">Soul MV / PEP</span>
+            </div>
+            <textarea id="prescInput" placeholder="Cole aqui o texto copiado da prescrição do Soul MV (com cabeçalhos, tabela, itens numerados, dietas e antimicrobianos)..."></textarea>
+          </div>
+          
+          <div class="row">
+            <div class="actions">
+              <button type="button" class="btn-primary" id="btnOrganizePrescription">
+                Organizar Prescrição
+              </button>
+              <button type="button" class="btn-secondary" id="btnClearPrescInput">
+                Limpar Entrada
+              </button>
+            </div>
+          </div>
+
+          <!-- Informações de Apoio e Dicas Clínicas -->
+          <div class="row" style="margin-top: 16px;">
+            <div class="card-instruction" style="background: var(--bg-card, #f8fafc); border: 1px solid var(--border-color, #e2e8f0); border-radius: 8px; padding: 12px; font-size: 0.85rem; color: var(--text-secondary, #64748b);">
+              <strong style="color: var(--text-primary, #1e293b); display: block; margin-bottom: 6px;">💡 Dicas de Uso:</strong>
+              <ul style="margin: 0; padding-left: 18px; line-height: 1.4;">
+                <li>Copie todo o texto da prescrição do Soul MV e cole diretamente na caixa acima.</li>
+                <li>Drogas contínuas em BIC (Propofol, Fentanil, Noradrenalina...) são alocadas no início da linha de forma concisa.</li>
+                <li>Medicações SN / ACM são posicionadas automaticamente no final de cada sistema.</li>
+                <li>Itens suspensos e descartáveis de enfermagem são filtrados automaticamente.</li>
+                <li>À direita, você pode excluir itens clicando em <code>&times;</code> ou adicionar novos antes de copiar.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- Coluna da Direita: Saída Formatada e Cards Interativos -->
+        <div class="right-panel">
+          <div class="row" style="margin-bottom: 12px;">
+            <div class="input-header" style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+              <label for="prescOutput" style="margin-bottom:0; font-weight: 600;">Texto formatado para o prontuário / round</label>
+              <span id="prescStatus" class="status-text"></span>
+            </div>
+            <textarea id="prescOutput" readonly placeholder="A prescrição organizada pelos 7 sistemas aparecerá aqui pronta para cópia..."></textarea>
+          </div>
+          
+          <div class="row" style="margin-bottom: 16px;">
+            <div class="actions">
+              <button type="button" class="btn-primary" id="btnCopyPrescription">
+                📋 Copiar Prescrição Organizada
+              </button>
+            </div>
+          </div>
+
+          <!-- Painel Interativo de Sistemas Clínicos (Cards e Chips) -->
+          <div class="row">
+            <h3 style="font-size: 0.95rem; font-weight: 600; margin-bottom: 10px; color: var(--text-primary, #1e293b);">
+              Ajustes Finos por Sistema Orgânico:
+            </h3>
+            <div id="prescInteractiveCards" class="systems-cards-container">
+              <!-- Renderizado dinamicamente pelo prescriptionUI.js -->
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
     <!-- Seção de Controles / Sinais Vitais -->
     <div id="vitalsSection" class="tab-content" style="display: none;">
       <div class="dashboard-grid">
@@ -1604,6 +1677,8 @@
   <script src="vitalsParser.js"></script>
   <script src="glycemiaParser.js"></script>
   <script src="temperatureParser.js"></script>
+  <script src="prescriptionParser.js"></script>
+  <script src="prescriptionUI.js"></script>
 
   <!-- Módulos da Calculadora de Infusões -->
   <script src="infusoesConfig.js"></script>

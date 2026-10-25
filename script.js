@@ -1761,9 +1761,20 @@ Object.assign(window.__EXAMES_APP__, {
       const icon = themeToggle.querySelector(".theme-icon");
       if (icon) icon.textContent = isDark ? "☀️" : "🌙";
 
-      // Atualizar o gráfico para refletir as novas cores do tema
-      if (window.__EXAMES_APP__ && typeof window.__EXAMES_APP__.updateChart === "function") {
-        window.__EXAMES_APP__.updateChart();
+      // Atualizar todos os gráficos para refletir as novas cores do tema
+      if (window.__EXAMES_APP__) {
+        if (typeof window.__EXAMES_APP__.updateChart === "function") {
+          window.__EXAMES_APP__.updateChart();
+        }
+        if (typeof window.__EXAMES_APP__.updateVitalsChartTheme === "function") {
+          window.__EXAMES_APP__.updateVitalsChartTheme();
+        }
+        if (typeof window.__EXAMES_APP__.updateGlycemiaChartTheme === "function") {
+          window.__EXAMES_APP__.updateGlycemiaChartTheme();
+        }
+        if (typeof window.__EXAMES_APP__.updateTemperatureChartTheme === "function") {
+          window.__EXAMES_APP__.updateTemperatureChartTheme();
+        }
       }
     });
   }

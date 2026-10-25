@@ -27,8 +27,19 @@
     hemo: "🩸",
     renal: "💧",
     abd: "🍽️",
-    infec: "🦠"
+    infec: "🦠",
+    outros: "🧴"
   };
+
+  function getVisibleSystems() {
+    if (!currentSystemsState || currentSystemsState.length === 0) return [];
+    return currentSystemsState.filter(sys => {
+      if (sys.optional || sys.systemId === "outros") {
+        return sys.items && sys.items.length > 0;
+      }
+      return true;
+    });
+  }
 
   function showStatus(msg, type = "info") {
     if (!prescStatus) return;
@@ -41,40 +52,58 @@
     }
   }
 
-  // Atualiza o textarea de saída a partir do estado atual dos sistemas
+  // Gera texto puro e limpo para cópia (sem ** e sem <b>)
+  function getPlainTextOutput() {
+    const visible = getVisibleSystems();
+    if (visible.length === 0) return "";
+    return visible.map(sys => {
+      const content = (!sys.items || sys.items.length === 0)
+        ? "-"
+        : sys.items.map(i => i.formattedText).join(" + ");
+      return `${sys.systemName}: ${content}`;
+    }).join("\n");
+  }
+
+  // Atualiza o painel de saída: visualmente com nome dos sistemas em negrito
   function syncOutputFromState() {
-    if (!currentSystemsState || currentSystemsState.length === 0) {
-      if (prescOutput) prescOutput.value = "";
+    const visible = getVisibleSystems();
+    if (visible.length === 0) {
+      if (prescOutput) prescOutput.innerHTML = "";
       return;
     }
 
-    const lines = currentSystemsState.map(sys => {
-      if (!sys.items || sys.items.length === 0) {
-        return `${sys.systemName}: -`;
-      }
-      return `${sys.systemName}: ${sys.items.map(i => i.formattedText).join(" + ")}`;
+    const htmlLines = visible.map(sys => {
+      const content = (!sys.items || sys.items.length === 0)
+        ? "-"
+        : sys.items.map(i => i.formattedText).join(" + ");
+      return `<div class="presc-system-line"><strong class="presc-system-name">${sys.systemName}:</strong> ${content}</div>`;
     });
 
     if (prescOutput) {
-      prescOutput.value = lines.join("\n");
+      prescOutput.innerHTML = htmlLines.join("");
     }
   }
 
-  // Renderiza os cartões interativos dos 7 sistemas
+  // Renderiza os cartões interativos dos sistemas
   function renderCards() {
     if (!prescInteractiveContainer) return;
     prescInteractiveContainer.innerHTML = "";
 
-    if (!currentSystemsState || currentSystemsState.length === 0) {
+    const visibleSystems = getVisibleSystems();
+
+    if (visibleSystems.length === 0) {
+      prescInteractiveContainer.classList.remove("has-eight-cards");
       prescInteractiveContainer.innerHTML = `
         <div class="empty-state-notice">
-          Cole a prescrição do Soul MV à esquerda e clique em <strong>"Organizar Prescrição"</strong> para visualizar os 7 sistemas clínicos interativos.
+          Cole a prescrição do Soul MV à esquerda e clique em <strong>"Organizar Prescrição"</strong> para visualizar os sistemas clínicos interativos.
         </div>
       `;
       return;
     }
 
-    currentSystemsState.forEach((sys, sysIdx) => {
+    prescInteractiveContainer.classList.toggle("has-eight-cards", visibleSystems.length >= 8);
+
+    visibleSystems.forEach((sys, sysIdx) => {
       const card = document.createElement("div");
       card.className = `system-card system-${sys.systemId}`;
 
@@ -94,13 +123,14 @@
         </div>
       `;
 
-      // Botão de cópia individual da linha
+      // Botão de cópia individual da linha (texto puro e limpo, sem ** ou <b>)
       const btnCopyLine = header.querySelector(".btn-copy-line");
       btnCopyLine.addEventListener("click", () => {
-        const textToCopy = sys.items.length === 0 
-          ? `${sys.systemName}: -` 
-          : `${sys.systemName}: ${sys.items.map(i => i.formattedText).join(" + ")}`;
-        
+        const content = sys.items.length === 0 
+          ? "-" 
+          : sys.items.map(i => i.formattedText).join(" + ");
+        const textToCopy = `${sys.systemName}: ${content}`;
+
         navigator.clipboard.writeText(textToCopy).then(() => {
           btnCopyLine.textContent = "✓ Copiado!";
           setTimeout(() => { btnCopyLine.textContent = "📋 Copiar"; }, 2000);
@@ -210,20 +240,21 @@
   // Limpar entrada e resultados
   function handleClear() {
     if (prescInput) prescInput.value = "";
-    if (prescOutput) prescOutput.value = "";
+    if (prescOutput) prescOutput.innerHTML = "";
     currentSystemsState = [];
     renderCards();
     showStatus("Dados limpos.", "info");
   }
 
-  // Copiar resultado consolidado para o clipboard
+  // Copiar resultado consolidado para o clipboard (texto puro e limpo, sem ** ou <b>)
   function handleCopy() {
-    if (!prescOutput || !prescOutput.value.trim()) {
+    const textToCopy = getPlainTextOutput();
+    if (!textToCopy.trim()) {
       showStatus("Nada para copiar. Organize uma prescrição primeiro.", "error");
       return;
     }
 
-    navigator.clipboard.writeText(prescOutput.value).then(() => {
+    navigator.clipboard.writeText(textToCopy).then(() => {
       const originalText = btnCopyPrescription.textContent;
       btnCopyPrescription.textContent = "✓ Prescrição Copiada!";
       btnCopyPrescription.classList.add("btn-copied");
@@ -235,8 +266,14 @@
       }, 2500);
     }).catch(err => {
       console.error("Erro ao copiar:", err);
-      prescOutput.select();
+      const ta = document.createElement("textarea");
+      ta.value = textToCopy;
+      ta.style.position = "fixed";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
       document.execCommand("copy");
+      document.body.removeChild(ta);
       showStatus("Copiado para o prontuário!", "success");
     });
   }

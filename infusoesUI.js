@@ -401,16 +401,19 @@
       
       let badgeClass = "badge-info";
       let borderVar = "var(--primary)";
+      let activeBg = "var(--primary-glow)";
       if (r.level === "critical") {
         badgeClass = "badge-danger";
         borderVar = "var(--danger)";
+        activeBg = "var(--danger-glow)";
       } else if (r.level === "attention") {
-        badgeClass = "badge-warning";
+        badgeClass = "badge-attention";
         borderVar = "var(--warning, #f59e0b)";
+        activeBg = "rgba(245, 158, 11, 0.14)";
       }
 
       const activeStyle = isActive 
-        ? `border-left: 4px solid ${borderVar}; background: rgba(16, 102, 204, 0.12); font-weight: 700; border-radius: var(--radius-sm); padding: 8px 10px;` 
+        ? `border-left: 4px solid ${borderVar}; background: ${activeBg}; font-weight: 700; border-radius: var(--radius-sm); padding: 8px 10px;` 
         : `border-left: 3px solid var(--border-color); background: var(--bg-card); opacity: 0.85; border-radius: var(--radius-sm); padding: 8px 10px;`;
 
       html += `

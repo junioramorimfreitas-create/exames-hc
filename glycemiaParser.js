@@ -107,11 +107,11 @@
   function getThemeColors() {
     const isDark = document.body.classList.contains("dark-theme");
     return {
-      text: isDark ? "#b0b3b8" : "#4f5660",
-      grid: isDark ? "rgba(255, 255, 255, 0.08)" : "rgba(0, 0, 0, 0.06)",
-      tooltipBg: isDark ? "#242526" : "#ffffff",
-      tooltipText: isDark ? "#e4e6eb" : "#1c1e21",
-      tooltipBorder: isDark ? "#3e4042" : "#e4e6eb"
+      text: isDark ? "#94a3b8" : "#64748b",
+      grid: isDark ? "#222f46" : "#e2e8f0",
+      tooltipBg: isDark ? "#1e293b" : "#ffffff",
+      tooltipText: isDark ? "#f1f5f9" : "#0f172a",
+      tooltipBorder: isDark ? "#334155" : "#cbd5e1"
     };
   }
 
@@ -556,8 +556,13 @@
   // Initial load
   renderInsulinMarkersList();
 
-  // Expose API for testing
+  // Expose API for testing and theme updates
   app.parseGlycemia = parseGlycemia;
   app.formatGlycemiaOutput = formatGlycemiaOutput;
+  app.updateGlycemiaChartTheme = () => {
+    if (app.lastGlycemiaReadings) {
+      drawGlycemiaChart(app.lastGlycemiaReadings);
+    }
+  };
 
 })();

@@ -1543,11 +1543,100 @@ body.dark-theme .data-table tbody tr:hover td {
   padding: 3px 8px;
   font-size: 0.82rem;
   color: var(--text-primary, #1e293b);
+  cursor: pointer;
+  user-select: none;
   transition: all 0.15s ease;
 }
 
 .drug-chip:hover {
   border-color: var(--text-secondary);
+}
+
+.drug-chip.chip-selected {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px var(--primary-glow);
+}
+
+.chip-tag-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 2px;
+  padding-left: 6px;
+  border-left: 1px solid var(--border-color);
+}
+
+.chip-tag-btn,
+.btn-add-tag {
+  border: 1px solid var(--border-color);
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 4px;
+  cursor: pointer;
+  line-height: 1.3;
+  box-shadow: none;
+  transition: all 0.15s ease;
+}
+
+.chip-tag-bic:hover,
+.btn-add-bic:hover {
+  border-color: #8b5cf6;
+  color: #6d28d9;
+}
+
+body.dark-theme .chip-tag-bic:hover,
+body.dark-theme .btn-add-bic:hover {
+  border-color: #a78bfa;
+  color: #ddd6fe;
+}
+
+.chip-tag-bic.active,
+.btn-add-bic.active {
+  background: #7c3aed;
+  border-color: #7c3aed;
+  color: #ffffff;
+}
+
+body.dark-theme .chip-tag-bic.active,
+body.dark-theme .btn-add-bic.active {
+  background: #8b5cf6;
+  border-color: #a78bfa;
+  color: #ffffff;
+}
+
+.chip-tag-sn:hover,
+.btn-add-sn:hover {
+  border-color: #f59e0b;
+  color: #92400e;
+}
+
+body.dark-theme .chip-tag-sn:hover,
+body.dark-theme .btn-add-sn:hover {
+  border-color: #fbbf24;
+  color: #fde68a;
+}
+
+.chip-tag-sn.active,
+.btn-add-sn.active {
+  background: #d97706;
+  border-color: #d97706;
+  color: #ffffff;
+}
+
+body.dark-theme .chip-tag-sn.active,
+body.dark-theme .btn-add-sn.active {
+  background: #f59e0b;
+  border-color: #fbbf24;
+  color: #0b111e;
+}
+
+.add-tag-toggles {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
 }
 
 .drug-chip.chip-continuous {
@@ -1573,6 +1662,63 @@ body.dark-theme .drug-chip.chip-sn {
   color: #fde68a;
   background: rgba(245, 158, 11, 0.18);
   border-color: rgba(251, 191, 36, 0.45);
+}
+
+/* Destaque sutil na borda esquerda (3px) por via para medicações regulares */
+.drug-chip.chip-route-iv {
+  border-left: 3.5px solid #0ea5e9;
+  padding-left: 7px;
+}
+
+body.dark-theme .drug-chip.chip-route-iv {
+  border-left-color: #38bdf8;
+}
+
+.drug-chip.chip-route-enteral {
+  border-left: 3.5px solid #10b981;
+  padding-left: 7px;
+}
+
+body.dark-theme .drug-chip.chip-route-enteral {
+  border-left-color: #34d399;
+}
+
+.route-legend {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+}
+
+.route-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.route-legend-bar {
+  display: inline-block;
+  width: 4px;
+  height: 12px;
+  border-radius: 2px;
+}
+
+.route-legend-bar.bar-iv {
+  background: #0ea5e9;
+}
+
+body.dark-theme .route-legend-bar.bar-iv {
+  background: #38bdf8;
+}
+
+.route-legend-bar.bar-enteral {
+  background: #10b981;
+}
+
+body.dark-theme .route-legend-bar.bar-enteral {
+  background: #34d399;
 }
 
 .chip-badge-tag {

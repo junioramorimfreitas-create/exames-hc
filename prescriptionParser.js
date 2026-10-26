@@ -847,6 +847,15 @@
       }
 
       // Montar representação formatada concisa do item
+      const baseNamePart = drugName || item.header.split("-")[0].trim();
+      const baseDosePart = dose ? ` ${dose}` : "";
+      const baseFreqPart = freq && freq !== "SN" ? ` ${freq}` : "";
+      const baseRoutePart = route ? ` ${route}` : "";
+      const baseDayPart = dayCount ? ` (${dayCount})` : "";
+      const regularFormattedText = `${baseNamePart}${baseDosePart}${baseFreqPart}${baseRoutePart}${baseDayPart}`
+        .replace(/\s+/g, " ")
+        .trim();
+
       let formattedText = "";
 
       if (isContinuous) {
@@ -906,14 +915,9 @@
           formattedText = `[${parts.join(" + ")}]${routePart}${freqPart}`.trim();
         } else {
           // Medicação regular com dose, frequência, via e dia
-          const namePart = drugName || item.header.split("-")[0].trim();
-          const dosePart = dose ? ` ${dose}` : "";
-          const freqPart = freq && freq !== "SN" ? ` ${freq}` : "";
-          const routePart = route ? ` ${route}` : "";
-          const dayPart = dayCount ? ` (${dayCount})` : "";
-          const snSuffix = isSN ? " SN" : (isACM && !freqPart ? " ACM" : "");
+          const snSuffix = isSN ? " SN" : (isACM && !baseFreqPart ? " ACM" : "");
 
-          formattedText = `${namePart}${dosePart}${freqPart}${routePart}${dayPart}${snSuffix}`
+          formattedText = `${regularFormattedText}${snSuffix}`
             .replace(/\s+/g, " ")
             .trim();
         }
@@ -922,9 +926,11 @@
       if (matchedSystem && formattedText) {
         parsed.push({
           system: matchedSystem,
-          name: drugName || item.header,
+          name: drugName || baseNamePart,
           formattedText: formattedText,
+          regularFormattedText: regularFormattedText || formattedText.replace(/\s+(?:SN|ACM)$/i, "").trim(),
           freq: freq,
+          route: route,
           isContinuous: isContinuous,
           isSN: isSN || (isACM && !isContinuous),
           isDiet: isDiet,

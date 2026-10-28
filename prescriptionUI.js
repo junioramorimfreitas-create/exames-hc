@@ -21,6 +21,7 @@
   let currentSystemsState = [];
   let selectedChipItem = null; // Referência direta ao objeto item selecionado para exibir controles BIC/SN
 
+  // Ícones por sistema para enriquecer a visualização clínica
   const SYSTEM_ICONS = {
     neuro: "🧠",
     cardio: "🫀",
@@ -160,6 +161,9 @@
     if (prescOutput) {
       prescOutput.innerHTML = htmlLines.join("");
     }
+    if (window.__EXAMES_APP__ && typeof window.__EXAMES_APP__.notifyComposerUpdate === "function") {
+      window.__EXAMES_APP__.notifyComposerUpdate();
+    }
   }
 
   // Renderiza os cartões interativos dos sistemas
@@ -185,11 +189,10 @@
       const card = document.createElement("div");
       card.className = `system-card system-${sys.systemId}`;
 
-      const icon = SYSTEM_ICONS[sys.systemId] || "📋";
-
       // Header do Card
       const header = document.createElement("div");
       header.className = "system-card-header";
+      const icon = SYSTEM_ICONS[sys.systemId] || "💊";
       header.innerHTML = `
         <div class="system-title">
           <span class="system-icon">${icon}</span>
@@ -197,7 +200,7 @@
           <span class="system-count badge">${sys.items.length}</span>
         </div>
         <div class="system-card-actions">
-          <button type="button" class="btn-system-action btn-copy-line" title="Copiar apenas esta linha">📋 Copiar</button>
+          <button type="button" class="btn-system-action btn-copy-line" title="Copiar apenas esta linha">Copiar</button>
         </div>
       `;
 
@@ -210,8 +213,8 @@
         const textToCopy = `${sys.systemName}: ${content}`;
 
         navigator.clipboard.writeText(textToCopy).then(() => {
-          btnCopyLine.textContent = "✓ Copiado!";
-          setTimeout(() => { btnCopyLine.textContent = "📋 Copiar"; }, 2000);
+          btnCopyLine.textContent = "✓ Copiado";
+          setTimeout(() => { btnCopyLine.textContent = "Copiar"; }, 2000);
         });
       });
 

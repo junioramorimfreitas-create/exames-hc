@@ -235,7 +235,7 @@
     if (elements.weightNoticeContainer) {
       if (drug.noWeightNotice) {
         elements.weightNoticeContainer.style.display = "block";
-        elements.weightNoticeContainer.textContent = `ℹ️ ${drug.noWeightNotice}`;
+        elements.weightNoticeContainer.textContent = drug.noWeightNotice;
       } else {
         elements.weightNoticeContainer.style.display = "none";
       }
@@ -420,7 +420,7 @@
         <div style="${activeStyle}">
           <div style="display: flex; justify-content: space-between; align-items: center;">
             <span style="color: var(--text-primary); font-size: 0.85rem;">
-              ${isActive ? "👉 " : "• "}<strong>${r.text}</strong>
+              ${isActive ? "▸ " : "• "}<strong>${r.text}</strong>
             </span>
             ${isActive ? `<span class="status-badge ${badgeClass}" style="font-size: 0.75rem; padding: 2px 6px;">SELECIONADO</span>` : ""}
           </div>
@@ -479,7 +479,7 @@
     if (elements.unitErrorNoticeBox) {
       if (data.unitError) {
         elements.unitErrorNoticeBox.style.display = "block";
-        elements.unitErrorNoticeBox.innerHTML = `⚠️ <strong>Possível Erro de Unidade:</strong> ${data.unitError}`;
+        elements.unitErrorNoticeBox.innerHTML = `<strong>Possível Erro de Unidade:</strong> ${data.unitError}`;
       } else {
         elements.unitErrorNoticeBox.style.display = "none";
       }

@@ -11,8 +11,21 @@
   const vitalsChartContainer = document.getElementById("vitalsChartContainer");
   const vitalsChartControls = document.getElementById("vitalsChartControls");
 
+  const vitalsWeightInput = document.getElementById("vitalsWeightInput");
+  const vitalsHoursInput = document.getElementById("vitalsHoursInput");
+  const vitalsIncludeMlKgH = document.getElementById("vitalsIncludeMlKgH");
+  const vitalsDiuresisBadge = document.getElementById("vitalsDiuresisBadge");
+
+  const btnAddBhDay = document.getElementById("btnAddBhDay");
+  const vitalsBhAccumulatorCard = document.getElementById("vitalsBhAccumulatorCard");
+  const vitalsBhTotalBadge = document.getElementById("vitalsBhTotalBadge");
+  const vitalsIncludeAccumBH = document.getElementById("vitalsIncludeAccumBH");
+  const btnClearBhDays = document.getElementById("btnClearBhDays");
+  const vitalsBhHistoryList = document.getElementById("vitalsBhHistoryList");
+
   let vitalsChartInstance = null;
-  let vitalsChartVisible = false;
+  let vitalsChartVisible = true;
+  let bhSavedDays = []; // [{ dateStr, bhValue }]
 
   const keywordMap = {
     T: [/temperatura corporea/i, /temp\.\s*corp/i],
@@ -238,9 +251,80 @@
     return { dateStr, hours, rawVitals, vitalsData, gainsTotal, duTotal, ufTotal, otherPerdasTotal };
   }
 
+  function formatSignedFluid(v) {
+    const num = Number(v) || 0;
+    const absStr = String(Math.abs(num).toFixed(1)).replace(".0", "").replace(".", ",");
+    if (num > 0) return `+${absStr}`;
+    if (num < 0) return `-${absStr}`;
+    return "0";
+  }
+
+  function updateDiuresisBadge(duTotal) {
+    if (!vitalsDiuresisBadge) return null;
+    const w = parseFloat(String(vitalsWeightInput?.value || "").replace(",", "."));
+    const h = parseFloat(String(vitalsHoursInput?.value || "24").replace(",", ".")) || 24;
+    if (!Number.isFinite(w) || w <= 0 || !Number.isFinite(h) || h <= 0) {
+      vitalsDiuresisBadge.style.display = "none";
+      vitalsDiuresisBadge.textContent = "";
+      vitalsDiuresisBadge.classList.remove("oliguria");
+      return null;
+    }
+
+    const mlKgH = duTotal / w / h;
+    const formatted = mlKgH.toFixed(2).replace(".", ",");
+    const isOliguria = mlKgH < 0.5;
+    vitalsDiuresisBadge.style.display = "inline-flex";
+    vitalsDiuresisBadge.classList.toggle("oliguria", isOliguria);
+    vitalsDiuresisBadge.textContent = isOliguria
+      ? `Diurese: ${formatted} mL/kg/h (Oligúria)`
+      : `Diurese: ${formatted} mL/kg/h`;
+    return formatted;
+  }
+
+  function renderBhAccumulator() {
+    if (!vitalsBhAccumulatorCard || !vitalsBhHistoryList || !vitalsBhTotalBadge) return;
+    if (!bhSavedDays.length) {
+      vitalsBhAccumulatorCard.style.display = "none";
+      vitalsBhHistoryList.innerHTML = "";
+      vitalsBhTotalBadge.textContent = "0ml";
+      return;
+    }
+
+    vitalsBhAccumulatorCard.style.display = "block";
+    const totalBh = bhSavedDays.reduce((acc, item) => acc + item.bhValue, 0);
+    vitalsBhTotalBadge.textContent = `${formatSignedFluid(totalBh)}ml (${bhSavedDays.length}d)`;
+
+    vitalsBhHistoryList.innerHTML = bhSavedDays.map((item, idx) => `
+      <span class="bh-day-chip">
+        <span>${item.dateStr}: <strong>${formatSignedFluid(item.bhValue)}ml</strong></span>
+        <button type="button" class="bh-remove-btn" data-bh-idx="${idx}" title="Remover este dia">&times;</button>
+      </span>
+    `).join("");
+
+    vitalsBhHistoryList.querySelectorAll(".bh-remove-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const i = parseInt(btn.getAttribute("data-bh-idx"), 10);
+        if (!isNaN(i)) {
+          bhSavedDays.splice(i, 1);
+          renderBhAccumulator();
+          if (app.lastVitals) {
+            vitalsOutput.value = formatOutput(app.lastVitals);
+            if (typeof app.notifyComposerUpdate === "function") app.notifyComposerUpdate();
+          }
+        }
+      });
+    });
+  }
+
   function formatOutput(parsed) {
     const { dateStr, rawVitals, duTotal, ufTotal, otherPerdasTotal, gainsTotal } = parsed;
     const formatFluid = (v) => String(v.toFixed(1)).replace(".0", "").replace(".", ",");
+
+    const mlKgHFormatted = updateDiuresisBadge(duTotal);
+    const includeMlKgH = vitalsIncludeMlKgH ? vitalsIncludeMlKgH.checked : false;
+    const duLabel = (mlKgHFormatted && includeMlKgH)
+      ? `DU ${formatFluid(duTotal)}ml (${mlKgHFormatted} ml/kg/h)`
+      : `DU ${formatFluid(duTotal)}ml`;
 
     const params = [
       `FC ${getMinMax(rawVitals.FC)}`,
@@ -251,16 +335,25 @@
       `SpO2 ${getMinMax(rawVitals.SpO2)}`,
       `T ${getMinMax(rawVitals.T)}`,
       `Dx ${getMinMax(rawVitals.Dx)}`,
-      `DU ${formatFluid(duTotal)}ml`
+      duLabel
     ];
 
     if (ufTotal > 0) {
       params.push(`UF ${formatFluid(ufTotal)}ml`);
     }
 
+    const totalLosses = duTotal + ufTotal + otherPerdasTotal;
+    const bhDay = gainsTotal - totalLosses;
+
     params.push(`Outras perdas ${formatFluid(otherPerdasTotal)}ml`);
-    params.push(`Perdas ${formatFluid(duTotal + ufTotal + otherPerdasTotal)}ml`);
-    params.push(`BH ${formatFluid(gainsTotal - (duTotal + ufTotal + otherPerdasTotal))}ml`);
+    params.push(`Perdas ${formatFluid(totalLosses)}ml`);
+
+    let bhSegment = `BH ${formatFluid(bhDay)}ml`;
+    if (bhSavedDays.length > 0 && (!vitalsIncludeAccumBH || vitalsIncludeAccumBH.checked)) {
+      const totalAccum = bhSavedDays.reduce((acc, d) => acc + d.bhValue, 0);
+      bhSegment += ` (BH acum ${bhSavedDays.length}d: ${formatSignedFluid(totalAccum)}ml)`;
+    }
+    params.push(bhSegment);
 
     return `${dateStr} ${params.join(" | ")}`;
   }
@@ -453,10 +546,12 @@
     if (!input) {
       vitalsOutput.value = "";
       vitalsStatus.textContent = "";
+      if (vitalsDiuresisBadge) vitalsDiuresisBadge.style.display = "none";
       if (vitalsChartInstance) {
         vitalsChartInstance.destroy();
         vitalsChartInstance = null;
       }
+      if (typeof app.notifyComposerUpdate === "function") app.notifyComposerUpdate();
       return;
     }
 
@@ -468,10 +563,14 @@
       vitalsStatus.style.color = "var(--accent-color)";
 
       if (vitalsChartVisible) {
+        if (vitalsChartContainer) vitalsChartContainer.style.display = "block";
+        if (vitalsChartControls) vitalsChartControls.style.display = "flex";
+        setupDatasetToggleListeners();
         drawChart(parsed.hours, parsed.vitalsData);
       }
 
       app.lastVitals = parsed;
+      if (typeof app.notifyComposerUpdate === "function") app.notifyComposerUpdate();
     } catch (e) {
       console.error(e);
       vitalsOutput.value = "Erro ao processar os dados. Verifique a formatação.";
@@ -480,6 +579,58 @@
     }
   }
 
+  // Atualização imediata quando peso, período ou opção de mL/kg/h ou BH acum mudam
+  [vitalsWeightInput, vitalsHoursInput, vitalsIncludeMlKgH, vitalsIncludeAccumBH].forEach((el) => {
+    if (!el) return;
+    el.addEventListener("input", () => {
+      if (app.lastVitals) {
+        vitalsOutput.value = formatOutput(app.lastVitals);
+        if (typeof app.notifyComposerUpdate === "function") app.notifyComposerUpdate();
+      }
+    });
+    el.addEventListener("change", () => {
+      if (app.lastVitals) {
+        vitalsOutput.value = formatOutput(app.lastVitals);
+        if (typeof app.notifyComposerUpdate === "function") app.notifyComposerUpdate();
+      }
+    });
+  });
+
+  btnAddBhDay?.addEventListener("click", () => {
+    if (!app.lastVitals) {
+      handleGenerate();
+    }
+    if (!app.lastVitals) {
+      if (typeof app.showToast === "function") {
+        app.showToast("Gere os controles do dia primeiro antes de guardar no BH acumulado.");
+      }
+      return;
+    }
+    const p = app.lastVitals;
+    const bhValue = p.gainsTotal - (p.duTotal + p.ufTotal + p.otherPerdasTotal);
+    const existingIdx = bhSavedDays.findIndex((d) => d.dateStr === p.dateStr);
+    if (existingIdx !== -1) {
+      bhSavedDays[existingIdx].bhValue = bhValue;
+    } else {
+      bhSavedDays.push({ dateStr: p.dateStr, bhValue });
+    }
+    renderBhAccumulator();
+    vitalsOutput.value = formatOutput(app.lastVitals);
+    if (typeof app.showToast === "function") {
+      app.showToast(`Dia ${p.dateStr} guardado no BH Acumulado!`);
+    }
+    if (typeof app.notifyComposerUpdate === "function") app.notifyComposerUpdate();
+  });
+
+  btnClearBhDays?.addEventListener("click", () => {
+    bhSavedDays = [];
+    renderBhAccumulator();
+    if (app.lastVitals) {
+      vitalsOutput.value = formatOutput(app.lastVitals);
+      if (typeof app.notifyComposerUpdate === "function") app.notifyComposerUpdate();
+    }
+  });
+
   // Setup UI Listeners
   btnGenerateVitals?.addEventListener("click", handleGenerate);
 
@@ -487,11 +638,13 @@
     vitalsInput.value = "";
     vitalsOutput.value = "";
     vitalsStatus.textContent = "";
+    if (vitalsDiuresisBadge) vitalsDiuresisBadge.style.display = "none";
     if (vitalsChartInstance) {
       vitalsChartInstance.destroy();
       vitalsChartInstance = null;
     }
     app.lastVitals = null;
+    if (typeof app.notifyComposerUpdate === "function") app.notifyComposerUpdate();
   });
 
   btnCopyVitals?.addEventListener("click", () => {
@@ -529,9 +682,14 @@
     }
   });
 
-  // Expose API for testing and theme updates
+  // Expose API for testing, reset and theme updates
   app.parseVitalsAndFluids = parseVitalsAndFluids;
   app.formatVitalsOutput = formatOutput;
+  app.resetVitalsBhAccumulator = () => {
+    bhSavedDays = [];
+    renderBhAccumulator();
+    if (vitalsDiuresisBadge) vitalsDiuresisBadge.style.display = "none";
+  };
   app.updateVitalsChartTheme = () => {
     if (vitalsChartVisible && app.lastVitals) {
       drawChart(app.lastVitals.hours, app.lastVitals.vitalsData);

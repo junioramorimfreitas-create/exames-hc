@@ -1446,7 +1446,7 @@ function showToast(message) {
 
   const toast = document.createElement("div");
   toast.className = "toast";
-  toast.innerHTML = `<span>📋</span> <span>${message}</span>`;
+  toast.innerHTML = `<span>${message}</span>`;
   toastContainer.appendChild(toast);
   
   // Trigger transition
@@ -1550,34 +1550,91 @@ if (btnCopyText && outputText) {
   });
 }
 
-if (btnSelectAllExams && examCheckboxes) {
-  btnSelectAllExams.addEventListener("click", () => {
+function applyExamPreset(presetName) {
+  if (!examCheckboxes) return;
+
+  const presetMap = {
+    routine: {
+      categories: new Set(["Hemograma", "Marcadores inflamatórios", "Eletrólitos/Renal", "Gasometria", "Hepático", "Coagulação"]),
+      abbrs: new Set()
+    },
+    icu: {
+      categories: new Set(["Hemograma", "Marcadores inflamatórios", "Eletrólitos/Renal", "Gasometria", "Hepático", "Coagulação", "Proteínas", "Pancreático"]),
+      abbrs: new Set(["Tropo", "NTproBNP", "Glic", "Vancomicina"])
+    },
+    infecto: {
+      categories: new Set(["Hemograma", "Marcadores inflamatórios", "Eletrólitos/Renal", "Hepático", "Sorologias", "Virologia", "Imunológico", "Líquor", "Urina 1"]),
+      abbrs: new Set(["LDH", "Ferritina", "Vancomicina", "Fluconazol", "Voriconazol", "Itraconazol"])
+    },
+    transplant: {
+      categories: new Set(["Hemograma", "Marcadores inflamatórios", "Eletrólitos/Renal", "Gasometria", "Hepático", "Coagulação", "Proteínas", "Fármacos", "Líquido Ascítico"]),
+      abbrs: new Set(["CMV IgM", "CMV IgG", "PCR-CMV", "Amilase", "Lipase"])
+    },
+    nephro: {
+      categories: new Set(["Hemograma", "Eletrólitos/Renal", "Gasometria", "Proteínas", "Urina 1"]),
+      abbrs: new Set(["PTH", "VitD25", "Ferro", "Ferritina", "SatTransf", "PCR"])
+    }
+  };
+
+  if (presetName === "all") {
     examCheckboxes.forEach((cb) => { cb.checked = true; });
     if (statusEl) statusEl.textContent = "Todos os exames foram selecionados.";
-    autoGenerate();
+  } else if (presetName === "clear") {
+    examCheckboxes.forEach((cb) => { cb.checked = false; });
+    if (statusEl) statusEl.textContent = "Todos os exames foram desmarcados.";
+  } else if (presetMap[presetName]) {
+    const cfg = presetMap[presetName];
+    examCheckboxes.forEach((cb) => {
+      const cat = cb.dataset.category;
+      const val = cb.value;
+      cb.checked = cfg.categories.has(cat) || cfg.abbrs.has(val);
+    });
+    const labels = {
+      routine: "Rotina Geral",
+      icu: "UTI Completa",
+      infecto: "Infectologia",
+      transplant: "Hepato / Transplante",
+      nephro: "Nefrologia"
+    };
+    if (statusEl) statusEl.textContent = `Perfil aplicado: ${labels[presetName] || presetName}.`;
+  }
+
+  // Sincronizar pílulas de perfil rápido
+  const quickPresetsBar = document.getElementById("examQuickPresetsBar");
+  if (quickPresetsBar) {
+    quickPresetsBar.querySelectorAll(".preset-pill").forEach((pill) => {
+      pill.classList.toggle("active", pill.dataset.preset === presetName);
+    });
+  }
+
+  autoGenerate();
+}
+
+if (btnSelectAllExams && examCheckboxes) {
+  btnSelectAllExams.addEventListener("click", () => {
+    applyExamPreset("all");
   });
 }
 
 if (btnClearAllExams && examCheckboxes) {
   btnClearAllExams.addEventListener("click", () => {
-    examCheckboxes.forEach((cb) => { cb.checked = false; });
-    if (statusEl) statusEl.textContent = "Todos os exames foram desmarcados.";
-    autoGenerate();
+    applyExamPreset("clear");
   });
 }
 
 if (btnSelectRoutine && examCheckboxes) {
   btnSelectRoutine.addEventListener("click", () => {
-    const routineCategories = new Set(["Hemograma", "Marcadores inflamatórios", "Eletrólitos/Renal", "Gasometria", "Hepático", "Coagulação"]);
-    examCheckboxes.forEach((cb) => {
-      const cat = cb.dataset.category;
-      cb.checked = routineCategories.has(cat);
-    });
-    if (statusEl) statusEl.textContent =
-      "Selecionados exames de rotina (Hemograma, Marcadores, Inflamatórios, Eletrólitos/Renal, Gasometria, Hepático e Coagulação).";
-    autoGenerate();
+    applyExamPreset("routine");
   });
 }
+
+// Botões da barra rápida de perfis e do drawer
+document.querySelectorAll("#examQuickPresetsBar .preset-pill, .preset-drawer-btn").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    const preset = btn.dataset.preset;
+    if (preset) applyExamPreset(preset);
+  });
+});
 
 const categorySelectButtons = document.querySelectorAll(".category-select");
 const categoryClearButtons = document.querySelectorAll(".category-clear");
@@ -1625,6 +1682,18 @@ function autoGenerate() {
   if (!raw) {
     outputText.value = "";
     statusEl.textContent = "";
+    if (window.__EXAMES_APP__) {
+      window.__EXAMES_APP__.last = null;
+      if (typeof window.__EXAMES_APP__.updateTable === "function") {
+        window.__EXAMES_APP__.updateTable();
+      }
+      if (typeof window.__EXAMES_APP__.updateChart === "function") {
+        window.__EXAMES_APP__.updateChart();
+      }
+      if (typeof window.__EXAMES_APP__.notifyComposerUpdate === "function") {
+        window.__EXAMES_APP__.notifyComposerUpdate();
+      }
+    }
     return;
   }
 
@@ -1652,13 +1721,15 @@ function autoGenerate() {
   statusEl.textContent =
     `Exames reconhecidos: ${exams.length}. Gasometrias reconhecidas: ${gasos.length}.`;
 
+  const currentDateMap = buildDateMap(exams, selectedAbbrs);
+
   window.__EXAMES_APP__.last = {
     raw: raw,
     selectedAbbrs,
     exams,
     gasos,
     gasoMap,
-    dateMap: buildDateMap(exams, selectedAbbrs),
+    dateMap: currentDateMap,
     lines: prefs.viewMode === "line"
       ? generateLinesPerDate(exams, selectedAbbrs, gasoMap)
       : []
@@ -1675,6 +1746,11 @@ function autoGenerate() {
   // Atualização reativa do gráfico
   if (window.__EXAMES_APP__ && typeof window.__EXAMES_APP__.updateChart === "function") {
     window.__EXAMES_APP__.updateChart();
+  }
+
+  // Notificar compositor de evolução consolidada
+  if (window.__EXAMES_APP__ && typeof window.__EXAMES_APP__.notifyComposerUpdate === "function") {
+    window.__EXAMES_APP__.notifyComposerUpdate();
   }
 }
 
@@ -1729,7 +1805,9 @@ Object.assign(window.__EXAMES_APP__, {
   generateLinesPerDate,
   generateTextByCategories,
   formatSorologiaValue,
-  formatU1Value
+  formatU1Value,
+  applyExamPreset,
+  autoGenerate
 });
 
 // ---------- Alternância de Tema (Light/Dark Mode) ----------
@@ -1745,7 +1823,7 @@ Object.assign(window.__EXAMES_APP__, {
     document.body.classList.add("dark-theme");
     if (themeToggle) {
       const icon = themeToggle.querySelector(".theme-icon");
-      if (icon) icon.textContent = "☀️";
+      if (icon) icon.textContent = "☀";
     }
   }
 
@@ -1759,7 +1837,7 @@ Object.assign(window.__EXAMES_APP__, {
       } catch(e) {}
       
       const icon = themeToggle.querySelector(".theme-icon");
-      if (icon) icon.textContent = isDark ? "☀️" : "🌙";
+      if (icon) icon.textContent = isDark ? "☀" : "☾";
 
       // Atualizar todos os gráficos para refletir as novas cores do tema
       if (window.__EXAMES_APP__) {
@@ -1783,12 +1861,13 @@ Object.assign(window.__EXAMES_APP__, {
 // Inicializar contagem de filtros
 updateFilterCount();
 
-// ---------- Alternância de Abas ----------
+// ---------- Alternância de Abas & Sidebar Recolhível ----------
 (function setupTabs() {
   const tabExams = document.getElementById("tabExams");
   const tabAntibiotics = document.getElementById("tabAntibiotics");
   const tabPrescription = document.getElementById("tabPrescription");
   const tabVitals = document.getElementById("tabVitals");
+  const tabCultures = document.getElementById("tabCultures");
   const tabGlycemia = document.getElementById("tabGlycemia");
   const tabTemperature = document.getElementById("tabTemperature");
   const tabInfusions = document.getElementById("tabInfusions");
@@ -1797,18 +1876,110 @@ updateFilterCount();
   const antibioticsSection = document.getElementById("antibioticsSection");
   const prescriptionSection = document.getElementById("prescriptionSection");
   const vitalsSection = document.getElementById("vitalsSection");
+  const culturesSection = document.getElementById("culturesSection");
   const glycemiaSection = document.getElementById("glycemiaSection");
   const temperatureSection = document.getElementById("temperatureSection");
   const infusionsSection = document.getElementById("infusionsSection");
 
+  const activeToolTitle = document.getElementById("activeToolTitle");
+  const activeToolSubtitle = document.getElementById("activeToolSubtitle");
+  const appSidebar = document.getElementById("appSidebar");
+  const btnToggleSidebar = document.getElementById("btnToggleSidebar");
+  const btnMobileSidebar = document.getElementById("btnMobileSidebar");
+
+  // Estado da sidebar (expandida vs recolhida)
+  if (appSidebar && btnToggleSidebar) {
+    try {
+      if (localStorage.getItem("hc_sidebar_collapsed") === "1") {
+        appSidebar.classList.add("sidebar-collapsed");
+      }
+    } catch (e) {}
+
+    btnToggleSidebar.addEventListener("click", () => {
+      appSidebar.classList.toggle("sidebar-collapsed");
+      try {
+        localStorage.setItem(
+          "hc_sidebar_collapsed",
+          appSidebar.classList.contains("sidebar-collapsed") ? "1" : "0"
+        );
+      } catch (e) {}
+    });
+  }
+
+  if (btnMobileSidebar && appSidebar) {
+    btnMobileSidebar.addEventListener("click", () => {
+      appSidebar.classList.toggle("mobile-open");
+    });
+  }
+
   const tabs = [
-    { id: "exames", tab: tabExams, sec: examsSection, hash: "exames" },
-    { id: "antibioticos", tab: tabAntibiotics, sec: antibioticsSection, hash: "antibioticos" },
-    { id: "prescricao", tab: tabPrescription, sec: prescriptionSection, hash: "prescricao", altHashes: ["prescricao", "prescricoes", "prescricao-sistemas"] },
-    { id: "vitals", tab: tabVitals, sec: vitalsSection, hash: "controles" },
-    { id: "glicemia", tab: tabGlycemia, sec: glycemiaSection, hash: "glicemia" },
-    { id: "temperatura", tab: tabTemperature, sec: temperatureSection, hash: "temperatura" },
-    { id: "infusoes", tab: tabInfusions, sec: infusionsSection, hash: "calculadora-infusoes", altHashes: ["infusoes", "calculadora-infusoes"] }
+    {
+      id: "exames",
+      tab: tabExams,
+      sec: examsSection,
+      hash: "exames",
+      title: "Exames Laboratoriais",
+      subtitle: "Extração inteligente de laudos do HCMed / Soul MV com filtros rápidos por especialidade"
+    },
+    {
+      id: "prescricao",
+      tab: tabPrescription,
+      sec: prescriptionSection,
+      hash: "prescricao",
+      altHashes: ["prescricao", "prescricoes", "prescricao-sistemas"],
+      title: "Prescrição por Sistemas",
+      subtitle: "Organização automática da prescrição médica do Soul MV nos 7 sistemas orgânicos de UTI"
+    },
+    {
+      id: "vitals",
+      tab: tabVitals,
+      sec: vitalsSection,
+      hash: "controles",
+      title: "Controles & Balanço Hídrico",
+      subtitle: "Resumo de sinais vitais 24h, diurese em mL/kg/h e acumulador multi-dias de balanço hídrico"
+    },
+    {
+      id: "culturas",
+      tab: tabCultures,
+      sec: culturesSection,
+      hash: "culturas",
+      altHashes: ["culturas", "cultura", "microbiologia"],
+      title: "Culturas & Antibiograma",
+      subtitle: "Extração e fusão inteligente de culturas da página do HCMed com PDFs de antibiograma (BrCAST)"
+    },
+    {
+      id: "antibioticos",
+      tab: tabAntibiotics,
+      sec: antibioticsSection,
+      hash: "antibioticos",
+      title: "Linha do Tempo de Antibióticos",
+      subtitle: "Cronologia consolidada de ciclos de antimicrobianos a partir do Resumo do Caso do MV"
+    },
+    {
+      id: "glicemia",
+      tab: tabGlycemia,
+      sec: glycemiaSection,
+      hash: "glicemia",
+      title: "Evolução de Glicemia Capilar",
+      subtitle: "Histórico de dextros com estatísticas de controle glicêmico e marcadores de insulina"
+    },
+    {
+      id: "temperatura",
+      tab: tabTemperature,
+      sec: temperatureSection,
+      hash: "temperatura",
+      title: "Curva Térmica & Picos Febris",
+      subtitle: "Mapeamento de febres (T ≥ 37,7 °C) e correlação gráfica com início de antimicrobianos"
+    },
+    {
+      id: "infusoes",
+      tab: tabInfusions,
+      sec: infusionsSection,
+      hash: "calculadora-infusoes",
+      altHashes: ["infusoes", "calculadora-infusoes"],
+      title: "Calculadora de Infusões em BIC",
+      subtitle: "Conversão rápida entre velocidade da bomba (mL/h) e dose efetiva titulada por peso em UTI"
+    }
   ];
 
   function activateTab(targetItem, updateHash = true) {
@@ -1818,6 +1989,9 @@ updateFilterCount();
           item.tab.classList.add("active");
           item.sec.classList.add("active");
           item.sec.style.display = "block";
+          if (activeToolTitle && item.title) activeToolTitle.textContent = item.title;
+          if (activeToolSubtitle && item.subtitle) activeToolSubtitle.textContent = item.subtitle;
+          if (appSidebar) appSidebar.classList.remove("mobile-open");
           if (updateHash && window.history && window.history.replaceState) {
             window.history.replaceState(null, "", `#${item.hash}`);
           }
@@ -1862,4 +2036,68 @@ updateFilterCount();
   window.addEventListener("hashchange", handleRoute);
   handleRoute();
 })();
+
+// ---------- Gerenciador Universal de Popovers de Configurações (Engrenagem) ----------
+(function setupSettingsPopovers() {
+  function closeAllPopovers(exceptId = null) {
+    document.querySelectorAll(".settings-popover").forEach(pop => {
+      if (pop.id !== exceptId) {
+        pop.style.display = "none";
+        pop.classList.remove("open");
+      }
+    });
+    document.querySelectorAll("[data-popover-target]").forEach(btn => {
+      const targetId = btn.getAttribute("data-popover-target");
+      if (targetId !== exceptId) {
+        btn.classList.remove("active");
+      }
+    });
+  }
+
+  document.querySelectorAll("[data-popover-target]").forEach(btn => {
+    btn.addEventListener("click", e => {
+      e.stopPropagation();
+      const targetId = btn.getAttribute("data-popover-target");
+      const pop = document.getElementById(targetId);
+      if (!pop) return;
+
+      const isOpen = pop.classList.contains("open") || pop.style.display === "block";
+      closeAllPopovers(targetId);
+
+      if (isOpen) {
+        pop.style.display = "none";
+        pop.classList.remove("open");
+        btn.classList.remove("active");
+      } else {
+        pop.style.display = "block";
+        pop.classList.add("open");
+        btn.classList.add("active");
+      }
+    });
+  });
+
+  document.querySelectorAll("[data-close-popover]").forEach(btn => {
+    btn.addEventListener("click", e => {
+      e.stopPropagation();
+      closeAllPopovers();
+    });
+  });
+
+  document.querySelectorAll(".settings-popover").forEach(pop => {
+    pop.addEventListener("click", e => {
+      e.stopPropagation();
+    });
+  });
+
+  document.addEventListener("click", () => {
+    closeAllPopovers();
+  });
+
+  document.addEventListener("keydown", e => {
+    if (e.key === "Escape") {
+      closeAllPopovers();
+    }
+  });
+})();
+
 

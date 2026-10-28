@@ -4,6 +4,7 @@
 
   const rawInput = document.getElementById("rawInput");
   const tableContainer = document.getElementById("tableContainer");
+  const examsTablePanel = document.getElementById("examsTablePanel");
   const btnGenerateTable = document.getElementById("btnGenerateTable");
   const btnExportExcel = document.getElementById("btnExportExcel");
   const btnToggleTable = document.getElementById("btnToggleTable");
@@ -221,7 +222,9 @@
   function updateTable() {
     const raw = (rawInput?.value || "").trim();
     if (!raw) {
-      if (tableContainer) tableContainer.innerHTML = "";
+      if (tableContainer) {
+        tableContainer.innerHTML = `<div class="culture-empty-state">Cole o laudo de exames à esquerda para gerar a tabela comparativa por data/hora.</div>`;
+      }
       if (btnExportExcel) btnExportExcel.disabled = true;
       lastAOA = null;
       return;
@@ -239,11 +242,13 @@
   btnGenerateTable?.addEventListener("click", () => {
     updateTable();
     tableVisible = true;
+    if (examsTablePanel) examsTablePanel.style.display = "block";
     if (tableContainer) tableContainer.style.display = "block";
-    if (btnToggleTable) btnToggleTable.textContent = "Ocultar tabela";
+    if (btnToggleTable) btnToggleTable.classList.add("active");
   });
 
   btnExportExcel?.addEventListener("click", () => {
+    if (!lastAOA) updateTable();
     if (!lastAOA) return;
     exportExcel(lastAOA);
   });
@@ -252,15 +257,14 @@
     tableVisible = !tableVisible;
 
     if (tableVisible) {
+      if (examsTablePanel) examsTablePanel.style.display = "block";
       if (tableContainer) tableContainer.style.display = "block";
-      if (btnToggleTable) btnToggleTable.textContent = "Ocultar tabela";
-      // Se tornou visível e a tabela não foi gerada ainda, gera
-      if (!lastAOA) {
-        updateTable();
-      }
+      if (btnToggleTable) btnToggleTable.classList.add("active");
+      updateTable();
     } else {
+      if (examsTablePanel) examsTablePanel.style.display = "none";
       if (tableContainer) tableContainer.style.display = "none";
-      if (btnToggleTable) btnToggleTable.textContent = "Mostrar tabela";
+      if (btnToggleTable) btnToggleTable.classList.remove("active");
     }
   });
 

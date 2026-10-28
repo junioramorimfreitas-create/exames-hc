@@ -9,27 +9,94 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="page">
-    <div class="header-wrapper">
-      <h1>Organizador de Exames e Controles do HC</h1>
-      <div class="header-actions" style="display: flex; align-items: center; gap: 12px;">
-        <button type="button" id="themeToggle" class="btn-theme" aria-label="Alternar tema">
-          <span class="theme-icon">🌙</span>
+  <div class="app-shell" id="appShell">
+    <!-- Sidebar Lateral Recolhível -->
+    <aside class="app-sidebar" id="appSidebar" aria-label="Menu de Ferramentas Clínicas">
+      <div class="sidebar-brand">
+        <div class="brand-logo" title="Plataforma Clínica HC">🏥</div>
+        <div class="brand-text">
+          <span class="brand-title">HC Clínico</span>
+          <span class="brand-subtitle">UTI &amp; Enfermaria</span>
+        </div>
+        <button type="button" id="btnToggleSidebar" class="btn-sidebar-toggle" title="Recolher / Expandir menu lateral" aria-label="Recolher menu lateral">
+          <span class="sidebar-toggle-icon">◀</span>
         </button>
       </div>
-    </div>
-    <p class="subtitle">Selecione abaixo a ferramenta desejada</p>
 
-    <!-- Navegação por Abas -->
-    <div class="tab-navigation">
-      <button type="button" class="tab-btn active" id="tabExams">Exames Laboratoriais</button>
-      <button type="button" class="tab-btn" id="tabAntibiotics">Linha do Tempo de Antibióticos</button>
-      <button type="button" class="tab-btn" id="tabPrescription">Prescrição por Sistemas</button>
-      <button type="button" class="tab-btn" id="tabVitals">Organizador de Controles</button>
-      <button type="button" class="tab-btn" id="tabGlycemia">Evolução de Glicemia</button>
-      <button type="button" class="tab-btn" id="tabTemperature">Evolução de Temperatura</button>
-      <button type="button" class="tab-btn" id="tabInfusions">Calculadora de Infusões</button>
-    </div>
+      <nav class="sidebar-nav tab-navigation">
+        <div class="sidebar-group">
+          <div class="sidebar-group-label">Extratores do MV</div>
+          <button type="button" class="tab-btn active" id="tabExams" title="Exames Laboratoriais">
+            <span class="nav-icon">🧪</span>
+            <span class="nav-label">Exames Laboratoriais</span>
+          </button>
+          <button type="button" class="tab-btn" id="tabPrescription" title="Prescrição por Sistemas">
+            <span class="nav-icon">💊</span>
+            <span class="nav-label">Prescrição por Sistemas</span>
+          </button>
+          <button type="button" class="tab-btn" id="tabVitals" title="Organizador de Controles e Balanço Hídrico">
+            <span class="nav-icon">📊</span>
+            <span class="nav-label">Controles &amp; BH</span>
+          </button>
+          <button type="button" class="tab-btn" id="tabCultures" title="Organizador de Culturas e Antibiograma">
+            <span class="nav-icon">🦠</span>
+            <span class="nav-label">Culturas</span>
+          </button>
+        </div>
+
+        <div class="sidebar-group">
+          <div class="sidebar-group-label">Curvas &amp; Evolução</div>
+          <button type="button" class="tab-btn" id="tabAntibiotics" title="Linha do Tempo de Antibióticos">
+            <span class="nav-icon">⏳</span>
+            <span class="nav-label">Linha do Tempo ATB</span>
+          </button>
+          <button type="button" class="tab-btn" id="tabGlycemia" title="Evolução de Glicemia Capilar">
+            <span class="nav-icon">🩸</span>
+            <span class="nav-label">Evolução de Glicemia</span>
+          </button>
+          <button type="button" class="tab-btn" id="tabTemperature" title="Evolução de Temperatura e Curva Térmica">
+            <span class="nav-icon">🌡️</span>
+            <span class="nav-label">Curva Térmica</span>
+          </button>
+        </div>
+
+        <div class="sidebar-group">
+          <div class="sidebar-group-label">Calculadoras &amp; UTI</div>
+          <button type="button" class="tab-btn" id="tabInfusions" title="Calculadora de Infusões Contínuas">
+            <span class="nav-icon">💉</span>
+            <span class="nav-label">Infusões em BIC</span>
+          </button>
+        </div>
+      </nav>
+
+      <div class="sidebar-footer">
+        <button type="button" id="btnResetPatientSidebar" class="btn-sidebar-reset" title="Limpar todos os dados do paciente atual para iniciar o próximo leito">
+          <span class="nav-icon">🧹</span>
+          <span class="nav-label">Novo Paciente (Limpar)</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Área Principal de Conteúdo -->
+    <div class="page app-main">
+      <div class="header-wrapper app-topbar">
+        <div class="topbar-title-group">
+          <button type="button" id="btnMobileSidebar" class="btn-mobile-menu" aria-label="Abrir menu">☰</button>
+          <div>
+            <h1 id="activeToolTitle">Exames Laboratoriais</h1>
+            <p class="subtitle" id="activeToolSubtitle">Extração inteligente de laudos do HCMed / Soul MV com filtros rápidos por especialidade</p>
+          </div>
+        </div>
+        <div class="header-actions" style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+          <button type="button" id="btnOpenComposer" class="btn-composer-trigger" title="Reunir Controles, Exames, Culturas, ATB e Prescrição em uma única evolução">
+            <span>Montar Evolução</span>
+            <span id="composerCountBadge" class="composer-badge">0/6</span>
+          </button>
+          <button type="button" id="themeToggle" class="btn-theme" aria-label="Alternar tema" title="Alternar Modo Claro / Escuro">
+            <span class="theme-icon">☾</span>
+          </button>
+        </div>
+      </div>
 
     <!-- Seção de Exames -->
     <div id="examsSection" class="tab-content active">
@@ -41,7 +108,7 @@
         
         <!-- Entrada do laudo bruto -->
         <div class="row">
-          <div class="input-header" style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+          <div class="input-header" style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; flex-wrap: wrap; gap: 6px;">
             <label for="rawInput" style="margin-bottom:0;">Laudo bruto</label>
             <div style="display: flex; gap: 8px; align-items: center;">
               <button type="button" class="btn-secondary btn-small" id="btnToggleFilters" style="display: flex; align-items: center; gap: 6px;">
@@ -51,6 +118,18 @@
               <button type="button" class="btn-secondary btn-small" id="btnClearInput">Limpar Laudo</button>
             </div>
           </div>
+
+          <!-- Barra de Perfis Rápidos de Filtro por Especialidade -->
+          <div class="specialty-presets-bar" id="examQuickPresetsBar">
+            <span class="presets-label">Perfil rápido:</span>
+            <button type="button" class="preset-pill active" data-preset="routine" title="Hemograma, PCR, Função Renal, Eletrólitos, Gasometria, Hepático">Rotina Geral</button>
+            <button type="button" class="preset-pill" data-preset="icu" title="Rotina + Coagulação, Lactato/Gaso, CPK, LDH, Troponina, NT-proBNP">UTI Completa</button>
+            <button type="button" class="preset-pill" data-preset="infecto" title="Rotina + VHS, Ferritina, LDH, Sorologias, Virologia, Líquor">Infectologia</button>
+            <button type="button" class="preset-pill" data-preset="transplant" title="Hepático, Coagulação, Renal, Nível Sérico de Fármacos (FK/Vanco/Azóis), Líquido Ascítico">Hepato / Tx</button>
+            <button type="button" class="preset-pill" data-preset="nephro" title="Eletrólitos completos, Gasometria, PTH, VitD25, Rel Alb/Cr, Urina 1">Nefrologia</button>
+            <button type="button" class="preset-pill" data-preset="all" title="Marcar todos os exames disponíveis">Todos</button>
+          </div>
+
           <textarea id="rawInput" placeholder="Cole aqui o laudo inteiro com os exames..."></textarea>
         </div>
 
@@ -63,16 +142,28 @@
             <button type="button" id="btnCloseDrawer" class="btn-close-drawer" aria-label="Fechar filtros">&times;</button>
           </div>
           <div class="drawer-body">
-          <!-- Botões de seleção em massa -->
+          <!-- Botões de seleção em massa e Perfis de Especialidade -->
           <div class="exam-mass-actions" style="margin-bottom: 12px;">
+            <button type="button" class="btn-secondary btn-small" id="btnSelectRoutine">
+              Rotina Geral
+            </button>
+            <button type="button" class="btn-secondary btn-small preset-drawer-btn" data-preset="icu">
+              UTI Completa
+            </button>
+            <button type="button" class="btn-secondary btn-small preset-drawer-btn" data-preset="infecto">
+              Infectologia
+            </button>
+            <button type="button" class="btn-secondary btn-small preset-drawer-btn" data-preset="transplant">
+              Hepato / Tx
+            </button>
+            <button type="button" class="btn-secondary btn-small preset-drawer-btn" data-preset="nephro">
+              Nefrologia
+            </button>
             <button type="button" class="btn-secondary btn-small" id="btnSelectAllExams">
               Selecionar todos
             </button>
             <button type="button" class="btn-secondary btn-small" id="btnClearAllExams">
-              Desselecionar todos
-            </button>
-            <button type="button" class="btn-secondary btn-small" id="btnSelectRoutine">
-              Selecionar rotina
+              Limpar todos
             </button>
           </div>
 
@@ -895,91 +986,150 @@
         </div>
       </div>
 
-        <!-- Preferências de Data/Hora -->
-        <div class="row">
-          <label>Exibição de data/hora</label>
-          <div class="date-time-controls">
-            <div class="dt-block">
-              <div class="dt-title">Datas</div>
-              <div class="segmented" id="dateFormat">
-                <button type="button" class="seg-btn" data-format="ddmm">(dd/mm)</button>
-                <button type="button" class="seg-btn active" data-format="ddmmyy">(dd/mm/aa)</button>
-                <button type="button" class="seg-btn" data-format="ddmmyyyy">(dd/mm/aaaa)</button>
-              </div>
-            </div>
-
-            <div class="dt-block">
-              <div class="dt-title">Mostrar hora</div>
-              <div class="segmented" id="showTime">
-                <button type="button" class="seg-btn" data-showtime="yes">Sim</button>
-                <button type="button" class="seg-btn active" data-showtime="no">Não</button>
-              </div>
-            </div>
-          </div>
-          <p class="hint" style="margin-top: 8px;">A hora é extraída de “Coletado em: dd/mm/aaaa hh:mm” quando disponível.</p>
-        </div>
       </div>
 
       <!-- Painel da Direita: Saída de Resultados e Ações -->
       <div class="right-panel">
         
-        <!-- Botões de Ação do Output -->
-        <div class="row">
-          <label>Saída e Ações Rápidas</label>
-          <div class="actions">
-            <div class="segmented" id="viewMode" style="margin-right:8px;">
-              <button type="button" class="seg-btn active" id="btnModeLine">Linha Única</button>
-              <button type="button" class="seg-btn" id="btnModeCategories">Categorias</button>
-            </div>
-            <button class="btn-primary" id="btnCopyText">
-              Copiar texto
-            </button>
+        <!-- Saída do texto formatado -->
+        <div class="row" style="margin-bottom: 12px;">
+          <div class="input-header" style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; flex-wrap: wrap; gap: 6px;">
+            <label for="outputText" style="margin-bottom:0; font-weight: 600;">Texto gerado para o prontuário</label>
             <span id="status" class="status-text"></span>
           </div>
-        </div>
-
-        <!-- Saída do texto formatado -->
-        <div class="row">
-          <label for="outputText">Texto gerado para o prontuário</label>
           <textarea id="outputText" readonly placeholder="O texto gerado aparecerá aqui..."></textarea>
         </div>
-        
-        <!-- Tabela (Exames x Data/Hora) -->
-        <div class="row">
-          <label>Planilha e Tabela de Histórico</label>
-          <div class="actions" style="margin-bottom:12px;">
-            <button class="btn-secondary" id="btnToggleTable">
-              Mostrar tabela
+
+        <!-- Barra de Ações: Copiar + Tabela + Configurações (Engrenagem) -->
+        <div class="row" style="position: relative;">
+          <div class="actions" style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+            <button type="button" class="btn-primary" id="btnCopyText">
+              Copiar texto
             </button>
-            <button class="btn-secondary" id="btnGenerateTable">
-              Gerar tabela
+            <button type="button" class="btn-secondary" id="btnToggleTable" title="Abrir planilha e tabela de histórico por data/hora">
+              Tabela
             </button>
-            <button class="btn-secondary" id="btnExportExcel" disabled>
-              Exportar Excel
+            <button type="button" class="btn-icon-gear" id="btnExamsSettings" data-popover-target="examsSettingsPopover" title="Configurações de data/hora, modo de saída e ações rápidas" aria-label="Configurações de exames">
+              <svg class="gear-svg" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
             </button>
           </div>
-          <div id="tableContainer"></div>
-        </div>
 
+          <!-- Popover de Configurações de Exames Laboratoriais -->
+          <div id="examsSettingsPopover" class="settings-popover" style="display: none;">
+            <div class="settings-popover-header">
+              <strong>Configurações de Exames</strong>
+              <button type="button" class="btn-close-popover" data-close-popover="examsSettingsPopover">&times;</button>
+            </div>
+            <div class="settings-popover-body">
+              <div class="settings-group">
+                <span class="settings-group-label">Modo de Saída</span>
+                <div class="segmented" id="viewMode">
+                  <button type="button" class="seg-btn active" id="btnModeLine">Linha Única</button>
+                  <button type="button" class="seg-btn" id="btnModeCategories">Categorias</button>
+                </div>
+              </div>
+
+              <div class="settings-group">
+                <span class="settings-group-label">Formato da Data</span>
+                <div class="segmented" id="dateFormat">
+                  <button type="button" class="seg-btn" data-format="ddmm">(dd/mm)</button>
+                  <button type="button" class="seg-btn active" data-format="ddmmyy">(dd/mm/aa)</button>
+                  <button type="button" class="seg-btn" data-format="ddmmyyyy">(dd/mm/aaaa)</button>
+                </div>
+              </div>
+
+              <div class="settings-group">
+                <span class="settings-group-label">Mostrar Hora da Coleta</span>
+                <div class="segmented" id="showTime">
+                  <button type="button" class="seg-btn" data-showtime="yes">Sim</button>
+                  <button type="button" class="seg-btn active" data-showtime="no">Não</button>
+                </div>
+              </div>
+
+              <div class="settings-group">
+                <span class="settings-group-label">Ações Rápidas de Seleção</span>
+                <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                  <button type="button" class="btn-secondary btn-small preset-drawer-btn" data-preset="routine">Rotina Geral</button>
+                  <button type="button" class="btn-secondary btn-small preset-drawer-btn" data-preset="all">Selecionar todos</button>
+                  <button type="button" class="btn-secondary btn-small preset-drawer-btn" data-preset="clear">Limpar todos</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Painel Colapsável: Planilha e Tabela de Histórico (Acionado pelo botão "Tabela") -->
+        <div class="row" id="examsTablePanel" style="display: none; margin-top: 14px;">
+          <div class="table-panel-box">
+            <div class="table-panel-header">
+              <strong>Planilha e Tabela de Histórico</strong>
+              <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <button type="button" class="btn-secondary btn-small" id="btnGenerateTable">
+                  Atualizar tabela
+                </button>
+                <button type="button" class="btn-primary btn-small" id="btnExportExcel" disabled>
+                  Exportar Excel (.xlsx)
+                </button>
+              </div>
+            </div>
+            <div id="tableContainer" style="display: block;"></div>
+          </div>
+        </div>
 
       </div>
 
     </div> <!-- Fim dashboard-grid -->
 
-    <!-- Gráfico de Evolução (Largura Total) -->
-    <div class="row" style="margin-top: 32px;">
+    <!-- Gráfico de Evolução (Largura Total - Exibido por padrão) -->
+    <div class="row" style="margin-top: 28px;">
       <label>Gráfico de Evolução Temporal</label>
-      <div class="actions" style="margin-bottom:12px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
-        <button class="btn-secondary" id="btnToggleChart">
-          Mostrar gráfico
-        </button>
-        <div id="chartSelectorContainer" style="display: none; align-items: center; gap: 8px;">
-          <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-secondary);">Exame:</span>
-          <select id="chartExamSelector" class="chart-selector"></select>
+      <div class="actions" style="margin-bottom: 12px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+        <div id="chartSelectorContainer" class="chart-controls-toolbar" style="display: none;">
+          <div class="chart-control-group">
+            <span class="chart-control-label">Exame 1 (Eixo Esq):</span>
+            <select id="chartExamSelector" class="chart-selector"></select>
+          </div>
+
+          <div class="chart-control-group">
+            <span class="chart-control-label">Comparar com (Eixo Dir):</span>
+            <select id="chartExamSelector2" class="chart-selector">
+              <option value="">Nenhum (1 exame)</option>
+            </select>
+          </div>
+
+          <div class="chart-control-group">
+            <span class="chart-control-label">Período:</span>
+            <select id="chartPeriodSelect" class="chart-selector">
+              <option value="3d">Últimos 3 dias</option>
+              <option value="7d">Últimos 7 dias</option>
+              <option value="14d">Últimos 14 dias</option>
+              <option value="30d">Últimos 30 dias</option>
+              <option value="all" selected>Todo o período</option>
+            </select>
+          </div>
+
+          <div class="chart-control-group">
+            <span class="chart-control-label">Escala X:</span>
+            <div class="segmented" id="chartScaleMode">
+              <button type="button" class="seg-btn active" data-scalemode="category" title="Espaçamento igual entre cada coleta">Espaçamento Igual</button>
+              <button type="button" class="seg-btn" data-scalemode="time" title="Distância horizontal proporcional ao intervalo real de dias/horas entre coletas">Proporcional ao Tempo</button>
+            </div>
+          </div>
+
+          <!-- Pares Clínicos Rápidos em 1 Clique -->
+          <div class="chart-quick-pairs" id="chartQuickPairsBar">
+            <span class="presets-label">Pares clínicos:</span>
+            <button type="button" class="preset-pill chart-pair-btn" data-pair="Leuco,PCR" title="Comparar Leucócitos e PCR">Leuco × PCR</button>
+            <button type="button" class="preset-pill chart-pair-btn" data-pair="Cr,Ur" title="Comparar Creatinina e Ureia">Cr × Ur</button>
+            <button type="button" class="preset-pill chart-pair-btn" data-pair="Hb,Plaq" title="Comparar Hemoglobina e Plaquetas">Hb × Plaq</button>
+            <button type="button" class="preset-pill chart-pair-btn" data-pair="Na,K" title="Comparar Sódio e Potássio">Na × K</button>
+            <button type="button" class="preset-pill chart-pair-btn" data-pair="AST,ALT" title="Comparar AST (TGO) e ALT (TGP)">AST × ALT</button>
+            <button type="button" class="preset-pill chart-pair-btn" data-pair="BT,FA" title="Comparar Bilirrubina Total e Fosfatase Alcalina">BT × FA</button>
+          </div>
         </div>
       </div>
-      <div id="chartContainer" style="display: none;">
-        <canvas id="evolutionChart" style="max-height: 350px; width: 100%;"></canvas>
+      <div id="chartContainer" style="display: block;">
+        <div class="culture-empty-state">Cole o laudo de exames acima para visualizar o gráfico de evolução temporal automaticamente.</div>
       </div>
     </div>
     </div> <!-- Fim examsSection -->
@@ -1019,17 +1169,169 @@
             <textarea id="antOutput" readonly placeholder="A linha cronológica gerada aparecerá aqui..."></textarea>
           </div>
           
-          <div class="row">
-            <div class="actions">
+          <div class="row" style="position: relative;">
+            <div class="actions" style="display: flex; align-items: center; gap: 8px;">
               <button type="button" class="btn-primary" id="btnCopyAntTimeline">
                 Copiar resultado
               </button>
-              <select id="antDateFormat" class="chart-selector" style="font-size: 0.85rem; font-weight: 600;" title="Formato da Data">
-                <option value="dd/mm" selected>DD/MM</option>
-                <option value="dd/mm/aa">DD/MM/AA</option>
-                <option value="dd/mm/aaaa">DD/MM/AAAA</option>
-              </select>
+              <button type="button" class="btn-icon-gear" id="btnAntSettings" data-popover-target="antSettingsPopover" title="Configurações de formato de data" aria-label="Configurações de antibióticos">
+                <svg class="gear-svg" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+              </button>
             </div>
+
+            <!-- Popover de Configurações de Antibióticos -->
+            <div id="antSettingsPopover" class="settings-popover" style="display: none;">
+              <div class="settings-popover-header">
+                <strong>Configurações da Linha do Tempo</strong>
+                <button type="button" class="btn-close-popover" data-close-popover="antSettingsPopover">&times;</button>
+              </div>
+              <div class="settings-popover-body">
+                <div class="settings-group">
+                  <span class="settings-group-label">Formato da Data</span>
+                  <select id="antDateFormat" class="chart-selector" style="width: 100%; font-size: 0.85rem; font-weight: 600;">
+                    <option value="dd/mm" selected>DD/MM (ex.: 15/10 a 22/10)</option>
+                    <option value="dd/mm/aa">DD/MM/AA (ex.: 15/10/26 a 22/10/26)</option>
+                    <option value="dd/mm/aaaa">DD/MM/AAAA (ex.: 15/10/2026 a 22/10/2026)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Seção de Culturas e Antibiograma -->
+    <div id="culturesSection" class="tab-content" style="display: none;">
+      <div class="dashboard-grid">
+        
+        <!-- Coluna da Esquerda: Entrada de Dados -->
+        <div class="left-panel">
+          <div class="row" style="margin-bottom: 12px;">
+            <div class="input-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; flex-wrap: wrap; gap: 6px;">
+              <label for="culturesInput" style="margin-bottom: 0; font-weight: 600;">Cole aqui a página de exames do HCMed e/ou o texto dos PDFs</label>
+              <span class="info-badge" style="font-size: 0.75rem; background: var(--bg-hover, #e2e8f0); padding: 2px 8px; border-radius: 4px; color: var(--text-secondary, #64748b);">HCMed + PDF BrCAST</span>
+            </div>
+            <textarea id="culturesInput" placeholder="Cole aqui a página de exames do HCMed e os textos dos PDFs de antibiograma em qualquer ordem. O sistema identifica, cruza e consolida tudo automaticamente..."></textarea>
+          </div>
+
+          <div class="row">
+            <div class="actions" style="display: flex; gap: 8px; flex-wrap: wrap;">
+              <button type="button" class="btn-primary" id="btnParseCultures">
+                Processar Culturas
+              </button>
+              <button type="button" class="btn-secondary" id="btnClearCultures">
+                Limpar Entrada
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Coluna da Direita: Saída Formatada e Painel de Amostras -->
+        <div class="right-panel">
+          <div class="row" style="margin-bottom: 12px;">
+            <div class="input-header" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; flex-wrap: wrap; gap: 6px;">
+              <label for="culturesOutput" style="margin-bottom: 0; font-weight: 600;">Texto formatado para prontuário</label>
+              <span id="culturesStatus" class="status-text"></span>
+            </div>
+            <textarea id="culturesOutput" readonly placeholder="O resumo das culturas e antibiogramas aparecerá aqui..."></textarea>
+          </div>
+
+          <div class="row" style="margin-bottom: 18px; position: relative;">
+            <div class="actions" style="display: flex; align-items: center; gap: 8px;">
+              <button type="button" class="btn-primary" id="btnCopyCultures">
+                Copiar resultado
+              </button>
+              <button type="button" class="btn-icon-gear" id="btnCulturesSettings" data-popover-target="culturesSettingsPopover" title="Configurações de formatação e antibiograma" aria-label="Configurações de culturas">
+                <svg class="gear-svg" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+              </button>
+            </div>
+
+            <!-- Popover de Configurações de Formatação e Antibiograma -->
+            <div id="culturesSettingsPopover" class="settings-popover settings-popover-wide" style="display: none;">
+              <div class="settings-popover-header">
+                <strong>Configurações de Formatação e Antibiograma</strong>
+                <button type="button" class="btn-close-popover" data-close-popover="culturesSettingsPopover">&times;</button>
+              </div>
+              <div class="settings-popover-body">
+                <div class="culture-selects-grid">
+                  <div class="cult-ctrl-field">
+                    <span class="cult-ctrl-label">Exibição do Antibiograma:</span>
+                    <select id="cultAntibiogramMode" class="chart-selector">
+                      <option value="s_sae_r" selected>Sensíveis + SAE + Resistentes (S / SAE / R)</option>
+                      <option value="only_s">Apenas Sensíveis (S + SAE)</option>
+                      <option value="only_r">Apenas Resistentes (R)</option>
+                      <option value="none">Sem Antibiograma (Apenas Germe)</option>
+                    </select>
+                  </div>
+
+                  <div class="cult-ctrl-field">
+                    <span class="cult-ctrl-label">Ordenação:</span>
+                    <select id="cultSortOrder" class="chart-selector">
+                      <option value="chronological_desc" selected>Cronológica (Mais recentes primeiro)</option>
+                      <option value="chronological_asc">Cronológica (Mais antigas primeiro)</option>
+                      <option value="positives_first">Positivas primeiro</option>
+                    </select>
+                  </div>
+
+                  <div class="cult-ctrl-field">
+                    <span class="cult-ctrl-label">Formato da Data:</span>
+                    <select id="cultDateFormat" class="chart-selector">
+                      <option value="dd/mm">DD/MM</option>
+                      <option value="dd/mm/aa" selected>DD/MM/AA</option>
+                      <option value="dd/mm/aaaa">DD/MM/AAAA</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="culture-toggles-grid" style="margin-top: 10px;">
+                  <label class="exam-toggle">
+                    <input type="checkbox" id="cultShowMic" />
+                    <span>Exibir CIM / MIC</span>
+                  </label>
+                  <label class="exam-toggle">
+                    <input type="checkbox" id="cultGroupNegatives" checked />
+                    <span>Agrupar negativas (ex.: 2 amostras)</span>
+                  </label>
+                  <label class="exam-toggle">
+                    <input type="checkbox" id="cultAbbreviatePathogens" checked />
+                    <span>Abreviar patógenos (ex.: K. pneumoniae)</span>
+                  </label>
+                  <label class="exam-toggle">
+                    <input type="checkbox" id="cultIncludeDirect" checked />
+                    <span>Incluir Gram / BAAR / TRM-TB</span>
+                  </label>
+                  <label class="exam-toggle">
+                    <input type="checkbox" id="cultShowTime" />
+                    <span>Mostrar horário da coleta</span>
+                  </label>
+                  <label class="exam-toggle">
+                    <input type="checkbox" id="cultHideNegatives" />
+                    <span>Ocultar culturas negativas</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div id="culturesDiagnosticsContainer" class="cultures-diagnostics-container"></div>
+
+          <div class="row">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; margin-bottom: 8px;">
+              <label style="margin-bottom: 0;">Amostras Reconhecidas (Desmarque o que não quiser incluir)</label>
+              <div class="culture-material-legend">
+                <span class="mat-legend-item"><span class="mat-legend-dot dot-blood"></span>Sangue</span>
+                <span class="mat-legend-item"><span class="mat-legend-dot dot-urine"></span>Urina</span>
+                <span class="mat-legend-item"><span class="mat-legend-dot dot-liquor"></span>Líquor</span>
+                <span class="mat-legend-item"><span class="mat-legend-dot dot-pleural"></span>Pleural</span>
+                <span class="mat-legend-item"><span class="mat-legend-dot dot-ascitic"></span>Ascítico/Perit.</span>
+                <span class="mat-legend-item"><span class="mat-legend-dot dot-abscess"></span>Abscesso</span>
+                <span class="mat-legend-item"><span class="mat-legend-dot dot-pericardial"></span>Pericárdico</span>
+                <span class="mat-legend-item"><span class="mat-legend-dot dot-other"></span>Outros</span>
+              </div>
+            </div>
+            <div id="culturesCardsContainer" class="cultures-cards-list"></div>
           </div>
         </div>
 
@@ -1060,20 +1362,6 @@
               </button>
             </div>
           </div>
-
-          <!-- Informações de Apoio e Dicas Clínicas -->
-          <div class="row" style="margin-top: 16px;">
-            <div class="card-instruction" style="background: var(--bg-card, #f8fafc); border: 1px solid var(--border-color, #e2e8f0); border-radius: 8px; padding: 12px; font-size: 0.85rem; color: var(--text-secondary, #64748b);">
-              <strong style="color: var(--text-primary, #1e293b); display: block; margin-bottom: 6px;">💡 Dicas de Uso:</strong>
-              <ul style="margin: 0; padding-left: 18px; line-height: 1.4;">
-                <li>Copie todo o texto da prescrição do Soul MV e cole diretamente na caixa acima.</li>
-                <li>Drogas contínuas em BIC (Propofol, Fentanil, Noradrenalina...) são alocadas no início da linha de forma concisa.</li>
-                <li>Medicações SN / ACM são posicionadas automaticamente no final de cada sistema.</li>
-                <li>Itens suspensos e descartáveis de enfermagem são filtrados automaticamente.</li>
-                <li>À direita, você pode excluir itens clicando em <code>&times;</code> ou adicionar novos antes de copiar.</li>
-              </ul>
-            </div>
-          </div>
         </div>
 
         <!-- Coluna da Direita: Saída Formatada -->
@@ -1086,11 +1374,30 @@
             <div id="prescOutput" class="presc-output-box" contenteditable="true" spellcheck="false" data-placeholder="A prescrição organizada pelos 7 sistemas aparecerá aqui pronta para cópia..."></div>
           </div>
           
-          <div class="row">
-            <div class="actions">
+          <div class="row" style="position: relative;">
+            <div class="actions" style="display: flex; align-items: center; gap: 8px;">
               <button type="button" class="btn-primary" id="btnCopyPrescription">
-                📋 Copiar Prescrição Organizada
+                Copiar Prescrição Organizada
               </button>
+              <button type="button" class="btn-icon-gear" id="btnPrescSettings" data-popover-target="prescSettingsPopover" title="Instruções e opções da prescrição" aria-label="Configurações de prescrição">
+                <svg class="gear-svg" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+              </button>
+            </div>
+
+            <!-- Popover de Configurações / Instruções da Prescrição -->
+            <div id="prescSettingsPopover" class="settings-popover" style="display: none;">
+              <div class="settings-popover-header">
+                <strong>Regras de Organização por Sistemas</strong>
+                <button type="button" class="btn-close-popover" data-close-popover="prescSettingsPopover">&times;</button>
+              </div>
+              <div class="settings-popover-body" style="font-size: 0.82rem; color: var(--text-secondary);">
+                <ul style="margin: 0; padding-left: 18px; line-height: 1.45;">
+                  <li>Drogas contínuas em <strong>BIC</strong> (Noradrenalina, Fentanil, Propofol...) são posicionadas no início do sistema.</li>
+                  <li>Medicações <strong>SN / ACM</strong> são posicionadas automaticamente ao final de cada sistema.</li>
+                  <li>Itens suspensos e descartáveis de enfermagem são filtrados automaticamente.</li>
+                  <li>Nos cartões abaixo, clique no item para alternar <strong>BIC / SN</strong> ou exclua no <code>&times;</code>.</li>
+                </ul>
+              </div>
             </div>
           </div>
         </div>
@@ -1122,9 +1429,17 @@
         <!-- Coluna da Esquerda: Entrada de Dados -->
         <div class="left-panel">
           <div class="row" style="margin-bottom: 12px;">
-            <div class="input-header" style="margin-bottom:6px;">
+            <div class="input-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; flex-wrap: wrap; gap: 8px;">
               <label for="vitalsInput" style="margin-bottom:0; font-weight: 600;">Cole aqui a tabela de sinais vitais e balanço hídrico do MV</label>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <div class="vitals-param-field">
+                  <label for="vitalsWeightInput">Peso (kg):</label>
+                  <input type="number" id="vitalsWeightInput" placeholder="Ex: 70" min="1" max="350" step="0.1" />
+                </div>
+                <span id="vitalsDiuresisBadge" class="vitals-diuresis-badge" style="display: none;"></span>
+              </div>
             </div>
+
             <textarea id="vitalsInput" placeholder="Cole aqui os dados copiados do MV contendo Sinais Vitais e Balanço Hídrico..."></textarea>
           </div>
           
@@ -1150,25 +1465,64 @@
             <textarea id="vitalsOutput" readonly placeholder="Os controles formatados aparecerão aqui..."></textarea>
           </div>
           
-          <div class="row">
-            <div class="actions">
+          <div class="row" style="position: relative;">
+            <div class="actions" style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
               <button type="button" class="btn-primary" id="btnCopyVitals">
                 Copiar resultado
               </button>
+              <button type="button" class="btn-secondary btn-small" id="btnAddBhDay" title="Guardar o Balanço Hídrico atual no acumulado de vários dias">
+                + Guardar Dia no BH Acumulado
+              </button>
+              <button type="button" class="btn-icon-gear" id="btnVitalsSettings" data-popover-target="vitalsSettingsPopover" title="Configurações de período e diurese em mL/kg/h" aria-label="Configurações de controles">
+                <svg class="gear-svg" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+              </button>
             </div>
+
+            <!-- Popover de Configurações de Controles e Balanço Hídrico -->
+            <div id="vitalsSettingsPopover" class="settings-popover" style="display: none;">
+              <div class="settings-popover-header">
+                <strong>Configurações de Controles & BH</strong>
+                <button type="button" class="btn-close-popover" data-close-popover="vitalsSettingsPopover">&times;</button>
+              </div>
+              <div class="settings-popover-body">
+                <div class="settings-group">
+                  <span class="settings-group-label">Período do Balanço / Diurese (horas)</span>
+                  <input type="number" id="vitalsHoursInput" value="24" min="1" max="72" step="1" class="chart-selector" style="width: 100%;" />
+                </div>
+                <div class="settings-group">
+                  <label class="exam-toggle">
+                    <input type="checkbox" id="vitalsIncludeMlKgH" checked />
+                    <span>Incluir cálculo de mL/kg/h ao lado da diurese</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Painel de Balanço Hídrico Acumulado Multi-dias -->
+          <div id="vitalsBhAccumulatorCard" class="bh-accumulator-card" style="display: none;">
+            <div class="bh-acc-header">
+              <div>
+                <strong>Balanço Hídrico Acumulado</strong>
+                <span id="vitalsBhTotalBadge" class="bh-total-badge">0ml</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <label class="vitals-checkbox-label" style="font-size: 0.78rem;">
+                  <input type="checkbox" id="vitalsIncludeAccumBH" checked />
+                  <span>Anexar acumulado ao texto</span>
+                </label>
+                <button type="button" class="btn-secondary btn-small" id="btnClearBhDays" style="padding: 3px 10px; font-size: 0.75rem;">Limpar Dias</button>
+              </div>
+            </div>
+            <div id="vitalsBhHistoryList" class="bh-history-list"></div>
           </div>
         </div>
 
       </div>
 
       <!-- Gráfico de Sinais Vitais -->
-      <div class="row" style="margin-top: 32px;">
+      <div class="row" style="margin-top: 28px;">
         <label>Evolução de Sinais Vitais (24h)</label>
-        <div class="actions" style="margin-bottom:12px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
-          <button class="btn-secondary" id="btnToggleVitalsChart">
-            Mostrar gráfico de sinais vitais
-          </button>
-        </div>
         <!-- Controles de Visibilidade das Séries do Gráfico -->
         <div id="vitalsChartControls" style="display: none; margin-bottom: 16px; gap: 8px; flex-wrap: wrap; align-items: center;">
           <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); margin-right: 4px;">Exibir:</span>
@@ -1226,11 +1580,35 @@
             <textarea id="glycemiaOutput" readonly placeholder="A evolução formatada aparecerá aqui..."></textarea>
           </div>
           
-          <div class="row">
-            <div class="actions">
+          <div class="row" style="position: relative;">
+            <div class="actions" style="display: flex; align-items: center; gap: 8px;">
               <button type="button" class="btn-primary" id="btnCopyGlycemia">
                 Copiar resultado
               </button>
+              <button type="button" class="btn-icon-gear" id="btnGlycemiaSettings" data-popover-target="glycemiaSettingsPopover" title="Configurações do gráfico de glicemia" aria-label="Configurações de glicemia">
+                <svg class="gear-svg" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+              </button>
+            </div>
+
+            <!-- Popover de Configurações de Glicemia -->
+            <div id="glycemiaSettingsPopover" class="settings-popover" style="display: none;">
+              <div class="settings-popover-header">
+                <strong>Configurações de Glicemia</strong>
+                <button type="button" class="btn-close-popover" data-close-popover="glycemiaSettingsPopover">&times;</button>
+              </div>
+              <div class="settings-popover-body">
+                <div class="settings-group">
+                  <span class="settings-group-label">Período de Exibição do Gráfico</span>
+                  <select id="glycemiaPeriodSelect" class="chart-selector" style="width: 100%;">
+                    <option value="24h">Últimas 24h</option>
+                    <option value="3d">Últimos 3 dias</option>
+                    <option value="7d">Últimos 7 dias</option>
+                    <option value="14d">Últimos 14 dias</option>
+                    <option value="30d">Últimos 30 dias</option>
+                    <option value="all" selected>Todo o período</option>
+                  </select>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -1256,19 +1634,6 @@
             <button type="button" class="btn-secondary btn-small" id="btnClearInsulinMarkers">Limpar Tudo</button>
           </div>
           <div id="insulinMarkersList" style="margin-top: 12px; font-size: 0.8rem; color: var(--text-secondary); display: flex; gap: 8px; flex-wrap: wrap;"></div>
-        </div>
-
-        <!-- Seletor de Período do Gráfico -->
-        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
-          <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-secondary);">Período de exibição:</span>
-          <select id="glycemiaPeriodSelect" class="chart-selector" style="padding: 6px 12px; font-family: var(--font-main); font-weight: 600; font-size: 0.85rem; border-radius: var(--radius-pill); border: 1px solid var(--border-color); background-color: var(--bg-page); color: var(--text-primary);">
-            <option value="24h">Últimas 24h</option>
-            <option value="3d">Últimos 3 dias</option>
-            <option value="7d">Últimos 7 dias</option>
-            <option value="14d">Últimos 14 dias</option>
-            <option value="30d">Últimos 30 dias</option>
-            <option value="all" selected>Todo o período</option>
-          </select>
         </div>
 
         <div id="glycemiaChartContainer" style="height: 400px; width: 100%; position: relative;">
@@ -1332,11 +1697,35 @@
             <textarea id="temperatureOutput" readonly placeholder="A evolução formatada das febres aparecerá aqui..."></textarea>
           </div>
           
-          <div class="row">
-            <div class="actions">
+          <div class="row" style="position: relative;">
+            <div class="actions" style="display: flex; align-items: center; gap: 8px;">
               <button type="button" class="btn-primary" id="btnCopyTemperature">
                 Copiar resultado
               </button>
+              <button type="button" class="btn-icon-gear" id="btnTempSettings" data-popover-target="tempSettingsPopover" title="Configurações do gráfico de temperatura" aria-label="Configurações de temperatura">
+                <svg class="gear-svg" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+              </button>
+            </div>
+
+            <!-- Popover de Configurações de Temperatura -->
+            <div id="tempSettingsPopover" class="settings-popover" style="display: none;">
+              <div class="settings-popover-header">
+                <strong>Configurações de Temperatura</strong>
+                <button type="button" class="btn-close-popover" data-close-popover="tempSettingsPopover">&times;</button>
+              </div>
+              <div class="settings-popover-body">
+                <div class="settings-group">
+                  <span class="settings-group-label">Período de Exibição do Gráfico</span>
+                  <select id="temperaturePeriodSelect" class="chart-selector" style="width: 100%;">
+                    <option value="24h">Últimas 24h</option>
+                    <option value="3d">Últimos 3 dias</option>
+                    <option value="7d">Últimos 7 dias</option>
+                    <option value="14d">Últimos 14 dias</option>
+                    <option value="30d">Últimos 30 dias</option>
+                    <option value="all" selected>Todo o período</option>
+                  </select>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -1359,19 +1748,6 @@
           <div id="antibioticStartMarkersList" style="margin-top: 12px; font-size: 0.8rem; color: var(--text-secondary); display: flex; gap: 8px; flex-wrap: wrap;"></div>
         </div>
 
-        <!-- Seletor de Período do Gráfico -->
-        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
-          <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-secondary);">Período de exibição:</span>
-          <select id="temperaturePeriodSelect" class="chart-selector" style="padding: 6px 12px; font-family: var(--font-main); font-weight: 600; font-size: 0.85rem; border-radius: var(--radius-pill); border: 1px solid var(--border-color); background-color: var(--bg-page); color: var(--text-primary);">
-            <option value="24h">Últimas 24h</option>
-            <option value="3d">Últimos 3 dias</option>
-            <option value="7d">Últimos 7 dias</option>
-            <option value="14d">Últimos 14 dias</option>
-            <option value="30d">Últimos 30 dias</option>
-            <option value="all" selected>Todo o período</option>
-          </select>
-        </div>
-
         <div id="temperatureChartContainer" style="height: 400px; width: 100%; position: relative;">
           <canvas id="temperatureChart" style="max-height: 400px; width: 100%;"></canvas>
           <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 12px; font-style: italic; text-align: center;">
@@ -1387,7 +1763,7 @@
         <h2 style="font-size: 1.5rem; font-weight: 700; color: var(--text-primary); margin-bottom: 4px;">Calculadora de Infusões Contínuas</h2>
         <p class="subtitle" style="margin-bottom: 6px;">Conversão entre velocidade da bomba (mL/h) e dose efetiva administrada em UTI.</p>
         <div class="disclaimer-badge" style="font-size: 0.85rem; color: var(--text-secondary); background: var(--primary-glow); padding: 8px 12px; border-radius: var(--radius-sm); border-left: 3px solid var(--primary);">
-          ℹ️ Ferramenta auxiliar para pacientes adultos. Confira sempre peso, medicamento, concentração, unidade e programação da bomba.
+          Ferramenta auxiliar para pacientes adultos. Confira sempre peso, medicamento, concentração, unidade e programação da bomba.
         </div>
       </div>
 
@@ -1404,19 +1780,13 @@
 
           <!-- Seleção de Medicamento -->
           <div class="row">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-              <label for="infusionDrugSelect" style="margin-bottom: 0;">Medicamento</label>
-              <button type="button" class="btn-secondary btn-small" id="btnCustomDrug">+ Novo Medicamento</button>
-            </div>
+            <label for="infusionDrugSelect" style="margin-bottom: 6px;">Medicamento</label>
             <select id="infusionDrugSelect"></select>
           </div>
 
           <!-- Diluição / Concentração -->
           <div class="row">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-              <label for="infusionPresetSelect" style="margin-bottom: 0;">Diluição / Concentração</label>
-              <button type="button" class="btn-secondary btn-small" id="btnCustomDilution">+ Diluição Personalizada</button>
-            </div>
+            <label for="infusionPresetSelect" style="margin-bottom: 6px;">Diluição / Concentração</label>
             <select id="infusionPresetSelect"></select>
           </div>
 
@@ -1442,13 +1812,30 @@
 
         <!-- Coluna Direita: Cartão de Resultado e Alertas -->
         <div class="right-panel">
-          <div id="infusionResultCard" class="output-card" style="display: block;">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 12px;">
+          <div id="infusionResultCard" class="output-card" style="display: block; position: relative;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 12px; gap: 8px;">
               <div>
                 <h3 id="infusionResultTitle" style="font-size: 1.25rem; font-weight: 700; color: var(--primary); margin: 0;">NORADRENALINA</h3>
                 <span id="infusionResultDilutionLabel" style="font-size: 0.85rem; color: var(--text-secondary);">16 mg em 250 mL</span>
               </div>
-              <span id="infusionStatusBadge" class="status-badge badge-info">Faixa Usual</span>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span id="infusionStatusBadge" class="status-badge badge-info">Faixa Usual</span>
+                <button type="button" class="btn-icon-gear" id="btnInfusionsSettings" data-popover-target="infusionsSettingsPopover" title="Opções de diluição, novo medicamento e cálculo de peso ideal" aria-label="Configurações de infusões">
+                  <svg class="gear-svg" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- Popover de Configurações de Infusões -->
+            <div id="infusionsSettingsPopover" class="settings-popover" style="display: none; right: 12px; left: auto; top: 52px;">
+              <div class="settings-popover-header">
+                <strong>Personalização &amp; Peso Ideal</strong>
+                <button type="button" class="btn-close-popover" data-close-popover="infusionsSettingsPopover">&times;</button>
+              </div>
+              <div class="settings-popover-body" style="display: flex; flex-direction: column; gap: 8px;">
+                <button type="button" class="btn-secondary btn-small" id="btnCustomDilution" style="width: 100%; justify-content: flex-start;">+ Cadastrar Diluição Personalizada</button>
+                <button type="button" class="btn-secondary btn-small" id="btnCustomDrug" style="width: 100%; justify-content: flex-start;">+ Cadastrar Novo Medicamento</button>
+              </div>
             </div>
 
             <!-- Destaque do Resultado Principal -->
@@ -1504,14 +1891,54 @@
     </div>
 
     <footer class="footer">
-      <p class="hint">Versão 2.2 - Calculadora de Infusões de UTI Incorporada</p>
+      <p class="hint">Versão 3.0 - Plataforma Clínica Integrada do HC (Sidebar, Evolução Consolidada, Alertas &amp; Diurese mL/kg/h)</p>
     </footer>
+    </div> <!-- Fim .page.app-main -->
+  </div> <!-- Fim .app-shell -->
+
+  <!-- GAVETA LATERAL: Montar Evolução Consolidada -->
+  <div id="evolutionComposerDrawer" class="composer-drawer" aria-hidden="true">
+    <div class="drawer-header">
+      <div>
+        <h2>Montar Evolução Consolidada</h2>
+        <p style="font-size: 0.78rem; color: var(--text-secondary); margin-top: 2px;">Reúna e ordene os blocos gerados nas abas em um único texto para o PEP</p>
+      </div>
+      <button type="button" id="btnCloseComposer" class="btn-close-drawer" aria-label="Fechar evolução consolidada">&times;</button>
+    </div>
+    <div class="drawer-body composer-body">
+      <div class="composer-controls-bar">
+        <label class="vitals-checkbox-label">
+          <input type="checkbox" id="composerShowTitles" checked />
+          <span>Incluir títulos nas seções (ex: "Exames:", "Controles:")</span>
+        </label>
+        <button type="button" class="btn-secondary btn-small" id="btnRefreshComposer" title="Sincronizar novamente com as abas">Atualizar</button>
+      </div>
+
+      <div id="composerBlocksList" class="composer-blocks-list"></div>
+
+      <div class="composer-preview-section">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+          <label for="composerFinalOutput" style="margin-bottom: 0;">Texto Consolidado (Editável antes de copiar)</label>
+          <span id="composerStatus" class="status-text"></span>
+        </div>
+        <textarea id="composerFinalOutput" placeholder="Processe dados em qualquer aba (Exames, Controles, ATB, Prescrição...) e eles aparecerão automaticamente aqui..."></textarea>
+      </div>
+
+      <div class="composer-footer-actions">
+        <button type="button" class="btn-primary" id="btnCopyConsolidated" style="flex: 1;">
+          Copiar Evolução Completa
+        </button>
+        <button type="button" class="btn-secondary" id="btnResetAllTabs" style="color: var(--danger);" title="Limpar todas as abas para iniciar o próximo paciente">
+          Limpar Paciente
+        </button>
+      </div>
+    </div>
   </div>
 
   <!-- MODAL 1: Peso Ideal e Ajustado -->
   <div id="modalIdealWeight" class="modal-overlay" style="display: none;">
     <div class="modal-card">
-      <h3>🧮 Calculadora de Peso Ideal e Ajustado</h3>
+      <h3>Calculadora de Peso Ideal e Ajustado</h3>
       <div style="margin-bottom: 12px;">
         <label>Sexo Biológico:</label>
         <select id="calcGenderSelect">
@@ -1567,7 +1994,7 @@
       <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px;">
         <button type="button" class="btn-primary" id="btnSaveCustomDilution">Salvar Diluição Localmente</button>
         <button type="button" class="btn-secondary" id="btnCloseCustomDilutionModal">Cancelar</button>
-        <button type="button" class="btn-secondary id-clear-custom" id="btnClearCustomData1" style="color: var(--danger); border-color: var(--danger); margin-left: auto;">🗑️ Apagar Dados Salvos</button>
+        <button type="button" class="btn-secondary id-clear-custom" id="btnClearCustomData1" style="color: var(--danger); border-color: var(--danger); margin-left: auto;">Apagar Dados Salvos</button>
       </div>
     </div>
   </div>
@@ -1646,7 +2073,7 @@
       <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px;">
         <button type="button" class="btn-primary" id="btnSaveCustomDrug">Salvar Medicamento Localmente</button>
         <button type="button" class="btn-secondary" id="btnCloseCustomDrugModal">Cancelar</button>
-        <button type="button" class="btn-secondary id-clear-custom" id="btnClearCustomData2" style="color: var(--danger); border-color: var(--danger); margin-left: auto;">🗑️ Apagar Dados Salvos</button>
+        <button type="button" class="btn-secondary id-clear-custom" id="btnClearCustomData2" style="color: var(--danger); border-color: var(--danger); margin-left: auto;">Apagar Dados Salvos</button>
       </div>
     </div>
   </div>
@@ -1656,7 +2083,7 @@
   <!-- MODAL 4: Disclaimer Inicial -->
   <div id="modalDisclaimer" class="modal-overlay" style="display: none;">
     <div class="modal-card" style="max-width: 500px;">
-      <h3>⚠️ Termo de Uso e Responsabilidade Clínica</h3>
+      <h3>Termo de Uso e Responsabilidade Clínica</h3>
       <p style="font-size: 0.88rem; color: var(--text-primary); line-height: 1.4;">
         Esta ferramenta é um assistente de cálculo para profissionais de saúde em UTI. As faixas de infusão são referências gerais para adultos e devem ser validadas conforme o protocolo da sua instituição.
       </p>
@@ -1686,6 +2113,8 @@
   <script src="temperatureParser.js"></script>
   <script src="prescriptionParser.js"></script>
   <script src="prescriptionUI.js"></script>
+  <script src="cultureParser.js"></script>
+  <script src="evolutionComposer.js"></script>
 
   <!-- Módulos da Calculadora de Infusões -->
   <script src="infusoesConfig.js"></script>

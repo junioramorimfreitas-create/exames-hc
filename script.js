@@ -100,6 +100,7 @@ const examDefinitions = [
   { match: "FOSFORO", abbr: "P", category: "Eletrólitos/Renal" },
   { match: "CALCIO TOTAL", abbr: "CaT", category: "Eletrólitos/Renal" },
   { match: "CALCIO IONICO", abbr: "CaIon", category: "Eletrólitos/Renal" },
+  { match: "CALCIO IONIZADO", abbr: "CaIon", category: "Eletrólitos/Renal" },
   { match: "ACIDO URICO", abbr: "AcUrico", category: "Eletrólitos/Renal" },
   { match: "RELACAO DE MICROALBUMINURIA/CREATININA", abbr: "RelAlb/Cr", category: "Eletrólitos/Renal" },
 
@@ -510,6 +511,7 @@ function parseExams(rawText) {
   let currentTime = "";
   let currentSection = "";
   let pendingTiterExam = null;
+  let pendingGasoCaIon = false;
 
   for (let rawLine of lines) {
     const line = rawLine.trim();
@@ -536,6 +538,7 @@ function parseExams(rawText) {
       currentDate = coletado.date;
       currentTime = coletado.time || "";
       currentSection = ""; // Bug 7: resetar contexto de seção ao iniciar nova coleta
+      pendingGasoCaIon = false;
       for (let i = exams.length - 1; i >= 0; i--) {
         if (!exams[i].date || exams[i].date === "-") {
           exams[i].date = currentDate;
@@ -551,12 +554,21 @@ function parseExams(rawText) {
     // Não requer " - " — qualquer linha que identifique o tipo de fluido é tratada como cabeçalho
     if (/(URINA TIPO 1|URINA T1|URINA T\.1|URINA AMOSTRA ISOLADA|PLEURAL|ASCITICO|ASCITE|SINOVIAL|PERICARDICO)/i.test(line)) {
       currentSection = line.trim();
+      pendingGasoCaIon = false;
       continue;
     }
 
     // Cabeçalho da seção (nome do exame/painel)
     if (/GASOMETRIA/i.test(line)) {
       currentSection = line.trim();
+      pendingGasoCaIon = false;
+      if (!currentDate) {
+        const mDate = line.match(/(\d{2}\/\d{2}\/\d{4})(?:\s+(\d{2}):(\d{2}))?/);
+        if (mDate) {
+          currentDate = mDate[1];
+          if (mDate[2] && mDate[3]) currentTime = `${mDate[2]}:${mDate[3]}`;
+        }
+      }
       continue;
     }
 
@@ -567,18 +579,21 @@ function parseExams(rawText) {
     ) {
       const section = line.split("- SANGUE")[0].trim();
       currentSection = section || line;
+      pendingGasoCaIon = false;
       continue;
     }
 
     // Cabeçalho de seções de outros materiais (ex.: líquor)
     if (/\s-\s[^-]+\s-\s*,/i.test(line)) {
       currentSection = line.trim();
+      pendingGasoCaIon = false;
       continue;
     }
 
     // Alguns laudos de líquor vêm com separadores inconsistentes (ex.: "- -")
     if (/(LIQUOR|LCR)/i.test(normalize(line)) && /\s-\s/i.test(line)) {
       currentSection = line.trim();
+      pendingGasoCaIon = false;
       continue;
     }
 
@@ -637,6 +652,49 @@ function parseExams(rawText) {
     }
 
     if (currentSection && /GASOMETRIA/i.test(currentSection)) {
+      const normGasoLine = normalize(line);
+
+      // Caso o rótulo de Cálcio Iônico tenha vindo isolado na linha anterior da gasometria
+      if (pendingGasoCaIon) {
+        pendingGasoCaIon = false;
+        const mNextVal = line.match(/^([<>*]?\s*[+-]?\s*\d[\d.,]*)\s*(.*)$/);
+        if (mNextVal) {
+          exams.push({
+            date: currentDate || "",
+            time: currentTime || "",
+            section: currentSection || "",
+            name: "CALCIO IONICO",
+            value: mNextVal[1].trim().replace(/([+-])\s+/g, "$1"),
+            unit: (mNextVal[2] || "").trim(),
+            normName: "CALCIO IONICO",
+            fromGaso: true
+          });
+          continue;
+        }
+      }
+
+      // Captura Cálcio Iônico dentro do bloco de gasometria (ex.: "CÁLCIO IÔNICO", "Cálcio Ionizado", "Ca2+", "cCa2+", "Ca++")
+      const mCaLabel = normGasoLine.match(/^(?:CALCIO\s+ION(?:ICO|IZADO)\b|C?CA\s*(?:2\+|\+\+)(?=$|[\s:=(]))(?:\s*\([^)]*\))?[\s:=]*(.*)$/i);
+      if (mCaLabel) {
+        const restAfterLabel = (mCaLabel[1] || "").trim();
+        if (!restAfterLabel) {
+          pendingGasoCaIon = true;
+        } else {
+          const mVal = restAfterLabel.match(/^([<>*]?\s*[+-]?\s*\d[\d.,]*)\s*(.*)$/);
+          if (mVal) {
+            exams.push({
+              date: currentDate || "",
+              time: currentTime || "",
+              section: currentSection || "",
+              name: "CALCIO IONICO",
+              value: mVal[1].trim().replace(/([+-])\s+/g, "$1"),
+              unit: (mVal[2] || "").trim(),
+              normName: "CALCIO IONICO",
+              fromGaso: true
+            });
+          }
+        }
+      }
       continue;
     }
 
@@ -1214,8 +1272,8 @@ function buildDateMap(exams, selectedAbbrs) {
     }
     const bucket = dateMap.get(collectionKey);
 
-    if (!bucket[def.abbr]) {
-      bucket[def.abbr] = { value: ex.value, category: def.category };
+    if (!bucket[def.abbr] || (bucket[def.abbr].fromGaso && !ex.fromGaso)) {
+      bucket[def.abbr] = { value: ex.value, category: def.category, fromGaso: !!ex.fromGaso };
     }
   }
   return dateMap;

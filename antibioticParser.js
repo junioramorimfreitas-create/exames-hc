@@ -20,30 +20,31 @@
     const line = cleanText(rawLine);
 
     // ---- Tuberculostáticos (combinações primeiro, mais específico → menos específico) ----
+    const compact = line.replace(/\s+/g, "");
 
     // RIPE = Rifampicina + Isoniazida + Pirazinamida + Etambutol (4 drogas)
-    if (line.includes("rifampicina") && line.includes("isoniazida") &&
-        line.includes("pirazinamida") && line.includes("etambutol")) {
+    if (compact.includes("rifampicina") && compact.includes("isoniazida") &&
+        compact.includes("pirazinamida") && compact.includes("etambutol")) {
       return "RIPE";
     }
 
     // RI = Rifampicina + Isoniazida (2 drogas, sem Pirazinamida/Etambutol)
-    if (line.includes("rifampicina") && line.includes("isoniazida")) {
+    if (compact.includes("rifampicina") && compact.includes("isoniazida")) {
       return "RI";
     }
 
     // Isolados — só casa se NÃO for combinação já tratada acima
-    if (line.includes("rifampicina") && !line.includes("isoniazida") &&
-        !line.includes("pirazinamida") && !line.includes("etambutol")) {
+    if (compact.includes("rifampicina") && !compact.includes("isoniazida") &&
+        !compact.includes("pirazinamida") && !compact.includes("etambutol")) {
       return "Rifampicina";
     }
-    if (line.includes("isoniazida") && !line.includes("rifampicina")) {
+    if (compact.includes("isoniazida") && !compact.includes("rifampicina")) {
       return "Isoniazida";
     }
-    if (line.includes("pirazinamida") && !line.includes("rifampicina")) {
+    if (compact.includes("pirazinamida") && !compact.includes("rifampicina")) {
       return "Pirazinamida";
     }
-    if (line.includes("etambutol") && !line.includes("rifampicina")) {
+    if (compact.includes("etambutol") && !compact.includes("rifampicina")) {
       return "Etambutol";
     }
 

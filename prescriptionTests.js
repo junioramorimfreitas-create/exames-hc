@@ -699,6 +699,62 @@ Prescrição......: 26539825`;
   }
   console.log("✓ Caso 4 passou com sucesso!\n");
 
+  // TESTE 5: Esquema RIPE, RI e tuberculostáticos isolados (com e sem quebra de linha)
+  console.log("--- TESTE CASO 5: Tuberculostáticos (RIPE, RI e drogas isoladas) ---");
+  const case5Sample = `MV PEP Prontuário Eletrônico do Paciente
+Qtde Prescrita ANTIMICROBIANOS Dose Padrão Duração Frequência Datas/Horários
+12 (D4/99)
+rifampicina/isoniazida/pirazinamida/et
+ambutol(150+75+400+275
+4 COMPRIMID
+O
+1X MANHÃ ORAL
+- 1X
+MANHÃ
+[05/11] . 06
+Obs.: Adminitrar com estômago vazio (1 hora antes ou 2 horas após uma refeição)
+13 (D10/180)
+rifampicina/isoniazida (150+75)mg
+comprimido
+4 COMPRIMID
+O
+1X MANHÃ ORAL
+14 (D2/30) etambutol 400mg -
+comprimido
+1200 MILIGRAMA 1X MANHÃ ORAL
+15 (D2/30) isoniazida 100mg -
+comprimido
+300 MILIGRAMA 1X MANHÃ ORAL
+16 (D2/30) pirazinamida 500mg -
+comprimido
+1500 MILIGRAMA 1X MANHÃ ORAL
+17 (D2/30) rifampicina 300mg -
+capsula
+600 MILIGRAMA 1X MANHÃ ORAL`;
+
+  const res5 = parser.organizePrescription(case5Sample);
+  console.log(res5.plainText);
+
+  if (!res5.plainText.includes("RIPE 4 cp 1x manhã VO (D4/99)")) {
+    throw new Error("Caso 5 Falhou: RIPE com quebra de linha ('et\\nambutol') não foi lido como 'RIPE 4 cp 1x manhã VO (D4/99)'");
+  }
+  if (!res5.plainText.includes("RI 4 cp 1x manhã VO (D10/180)")) {
+    throw new Error("Caso 5 Falhou: Esquema RI (rifampicina/isoniazida) não foi lido como 'RI 4 cp 1x manhã VO (D10/180)'");
+  }
+  if (!res5.plainText.includes("Etambutol 1,2g 1x manhã VO (D2/30)")) {
+    throw new Error("Caso 5 Falhou: Etambutol isolado não foi lido corretamente");
+  }
+  if (!res5.plainText.includes("Isoniazida 300mg 1x manhã VO (D2/30)")) {
+    throw new Error("Caso 5 Falhou: Isoniazida isolada não foi lida corretamente");
+  }
+  if (!res5.plainText.includes("Pirazinamida 1,5g 1x manhã VO (D2/30)")) {
+    throw new Error("Caso 5 Falhou: Pirazinamida isolada não foi lida corretamente");
+  }
+  if (!res5.plainText.includes("Rifampicina 600mg 1x manhã VO (D2/30)")) {
+    throw new Error("Caso 5 Falhou: Rifampicina isolada não foi lida corretamente");
+  }
+  console.log("✓ Caso 5 passou com sucesso!\n");
+
   console.log("==================================================");
   console.log("TODOS OS TESTES PASSARAM COM 100% DE SUCESSO!");
   console.log("==================================================");

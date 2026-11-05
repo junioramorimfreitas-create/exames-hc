@@ -112,12 +112,27 @@
         { test: /penicilina/i, name: "Penicilina" },
         { test: /tigeciclina/i, name: "Tigeciclina" },
         { test: /doxiciclina/i, name: "Doxiciclina" },
-        { test: /rifampicina\s*\+\s*isoniazida.*pirazinamida.*etambutol|\bripe\b/i, name: "RIPE" },
-        { test: /rifampicina\s*\+\s*isoniazida/i, name: "Rifampicina/Isoniazida" },
-        { test: /rifampicina/i, name: "Rifampicina" },
-        { test: /isoniazida/i, name: "Isoniazida" },
-        { test: /pirazinamida/i, name: "Pirazinamida" },
-        { test: /etambutol/i, name: "Etambutol" },
+        {
+          test: /\bripe\b|\brhze\b|r\s*i\s*f\s*a\s*m\s*p\s*i\s*c\s*i\s*n\s*a|i\s*s\s*o\s*n\s*i\s*a\s*z\s*i\s*d\s*a|p\s*i\s*r\s*a\s*z\s*i\s*n\s*a\s*m\s*i\s*d\s*a|e\s*t\s*a\s*m\s*b\s*u\s*t\s*o\s*l/i,
+          name: (txt) => {
+            const clean = cleanText(txt);
+            const compact = clean.replace(/\s+/g, "");
+            if (/\bripe\b|\brhze\b/.test(clean)) return "RIPE";
+            const hasR = compact.includes("rifampicina");
+            const hasI = compact.includes("isoniazida");
+            const hasP = compact.includes("pirazinamida");
+            const hasE = compact.includes("etambutol");
+            if (hasR && hasI && hasP && hasE) return "RIPE";
+            if (hasR && hasI && hasP && !hasE) return "RIP";
+            if (hasR && hasI && !hasP && !hasE) return "RI";
+            const names = [];
+            if (hasR) names.push("Rifampicina");
+            if (hasI) names.push("Isoniazida");
+            if (hasP) names.push("Pirazinamida");
+            if (hasE) names.push("Etambutol");
+            return names.join("/") || "Rifampicina";
+          }
+        },
         { test: /dapsona/i, name: "Dapsona" },
         { test: /ivermectina/i, name: "Ivermectina" },
         { test: /albendazol/i, name: "Albendazol" }
@@ -734,7 +749,7 @@
         if (/mililitro/i.test(rawUnit)) {
           const converted = tryConvertOralSolutionMlToMg(mainLines, cleanMain, rawVal);
           dose = converted || formatDose(rawVal, rawUnit);
-        } else if (/comprimid/i.test(rawUnit) && !/\+/.test(drugIdentityLines)) {
+        } else if (/comprimid/i.test(rawUnit) && !/\+/.test(drugIdentityLines) && !/(?:rifampicina|isoniazida|pirazinamida|etambutol)\s*[/+]/i.test(cleanIdentity.replace(/\s+/g, ""))) {
           const strengthMatch = drugIdentityLines.match(/(\d+(?:[.,]\d+)?)\s*mg\b/i);
           const count = parseFloat(rawVal.replace(",", "."));
           if (strengthMatch && !isNaN(count) && count > 0) {

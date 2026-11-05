@@ -156,6 +156,8 @@ const examDefinitions = [
   { match: "TIROXINA (T4)", abbr: "T4", category: "Hormônios/Marcadores" },
   { match: "TIROXINA LIVRE (T4L)", abbr: "T4L", category: "Hormônios/Marcadores" },
   { match: "HORMONIO TIREO-ESTIMULANTE (TSH)", abbr: "TSH", category: "Hormônios/Marcadores" },
+  { match: "ANTICORPO ANTI-TIREOGLOBULINA", abbr: "Anti-TG", category: "Hormônios/Marcadores" },
+  { match: "TIREOGLOBULINA", abbr: "TG", category: "Hormônios/Marcadores" },
   { match: "HORMONIO FOLICUL0-ESTIMULANTE (FSH)", abbr: "FSH", category: "Hormônios/Marcadores" },
   { match: "HORMONIO FOLICULO-ESTIMULANTE (FSH)", abbr: "FSH", category: "Hormônios/Marcadores" },
   { match: "PROLACTINA", abbr: "Prolactina", category: "Hormônios/Marcadores" },
@@ -288,7 +290,7 @@ const examOrder = [
   "TGL", "CT", "HDL", "LDL", "VLDL", "nHDL",
   "ProtTot", "Alb", "Glob", "CPK", "LDH",
   "Ret", "Hapto", "VitB12", "AF", "Ferro", "Ferritina", "CTLF", "SatTransf", "Transf",
-  "VitD25", "PTH", "Tropo", "NTproBNP", "Glic", "Insulina", "HbA1c", "T3", "T4", "T4L", "TSH", "LH", "FSH", "Estradiol", "TestoLivre", "TestoTotal", "SHBG", "Prolactina", "AFP",
+  "VitD25", "PTH", "Tropo", "NTproBNP", "Glic", "Insulina", "HbA1c", "T3", "T4", "T4L", "TSH", "TG", "Anti-TG", "LH", "FSH", "Estradiol", "TestoLivre", "TestoTotal", "SHBG", "Prolactina", "AFP",
   "Amilase", "Lipase",
   "TP", "INR", "TTPA", "R", "DD",
   "ID Histoplasma", "ID Aspergillus", "ID P. brasiliensis",
@@ -591,6 +593,7 @@ function parseExams(rawText) {
     if (/Automatizado|Colorimétrico|Enzimático|Eletrodo íon seletivo|Cinético UV|IFCC|Citometria de fluxo|PCR em Tempo Real|HPLC|Imunoensaio|Quimioluminescência|CMIA/i.test(line)) continue;
     if (/Alteração nos valores de referência/i.test(line)) continue;
     if (/^Nota\s*:/i.test(line)) continue;
+    if (/^(Obs\.?|Observa[cç][oõ]es)\s*:/i.test(line)) continue;
     if (/Titulos ate 1\/2/i.test(normalize(line))) continue;
 
     // Culturas positivas em microbiologia podem vir como "1 - Microrganismo"

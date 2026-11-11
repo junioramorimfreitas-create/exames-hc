@@ -2052,6 +2052,9 @@ updateFilterCount();
           item.sec.style.display = "block";
           if (activeToolTitle && item.title) activeToolTitle.textContent = item.title;
           if (activeToolSubtitle && item.subtitle) activeToolSubtitle.textContent = item.subtitle;
+          if (item.title && typeof document !== "undefined") {
+            document.title = `${item.title} — O melhor amigo do residente`;
+          }
           if (appSidebar) appSidebar.classList.remove("mobile-open");
           if (updateHash && window.history && window.history.replaceState) {
             window.history.replaceState(null, "", `#${item.hash}`);

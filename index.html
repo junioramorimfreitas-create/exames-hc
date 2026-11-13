@@ -66,6 +66,10 @@
             <span class="nav-icon">💉</span>
             <span class="nav-label">Infusões em BIC</span>
           </button>
+          <button type="button" class="tab-btn" id="tabVancomycin" title="Calculadora de Vancocinemia por Duas Coletas (Sawchuk–Zaske)">
+            <span class="nav-icon">🧬</span>
+            <span class="nav-label">Vancocinemia (AUC24)</span>
+          </button>
         </div>
       </nav>
 
@@ -1898,6 +1902,267 @@
       </footer>
     </div>
 
+    <!-- Seção Calculadora de Vancocinemia (Duas Coletas - Sawchuk–Zaske) -->
+    <div id="vancomycinSection" class="tab-content" style="display: none;">
+      <div class="vanco-topbar">
+        <div class="segmented-control vanco-subtabs" role="tablist" aria-label="Visualização de Vancocinemia">
+          <button type="button" class="seg-btn active" id="btnVancoSubtabCalc" role="tab" aria-selected="true">Calculadora</button>
+          <button type="button" class="seg-btn" id="btnVancoSubtabInfo" role="tab" aria-selected="false">Informa&ccedil;&otilde;es &amp; Configura&ccedil;&otilde;es</button>
+        </div>
+        <div class="vanco-topbar-actions">
+          <button type="button" class="btn-secondary btn-small" id="btnClearVancoForm">Limpar</button>
+          <button type="button" class="btn-primary btn-small" id="btnCopyVancoSummary">Copiar Resumo</button>
+        </div>
+      </div>
+
+      <!-- SUB-ABA 1: Calculadora Enxuta -->
+      <div id="vancoSubtabCalc" class="vanco-subtab-panel active">
+        <div class="vanco-layout-grid">
+          <!-- COLUNA ESQUERDA: Formulário Compacto em Card Único -->
+          <div class="vanco-form-col">
+            <div class="vanco-group-card vanco-compact-card">
+              <!-- Bloco 1: Esquema Atual & MIC -->
+              <div class="vanco-compact-section">
+                <div class="vanco-compact-heading">1. Esquema atual</div>
+                <div class="vanco-fields-grid">
+                  <div class="vanco-field">
+                    <label for="vancoDoseMg">Dose (mg)</label>
+                    <input type="text" id="vancoDoseMg" inputmode="decimal" placeholder="1000" />
+                    <div class="vanco-field-error" id="err_doseMg"></div>
+                  </div>
+                  <div class="vanco-field">
+                    <label for="vancoTauHours">Intervalo &tau; (h)</label>
+                    <input type="text" id="vancoTauHours" inputmode="decimal" placeholder="12" />
+                    <div class="vanco-field-error" id="err_tauHours"></div>
+                  </div>
+                  <div class="vanco-field">
+                    <label for="vancoDoseNumber">Dose n&ordm;</label>
+                    <input type="text" id="vancoDoseNumber" inputmode="numeric" placeholder="3" value="3" />
+                    <div class="vanco-field-error" id="err_doseNumber"></div>
+                  </div>
+                  <div class="vanco-field">
+                    <label for="vancoMicMgL">MIC (mg/L)</label>
+                    <input type="text" id="vancoMicMgL" inputmode="decimal" value="1" placeholder="1" />
+                    <div class="vanco-field-error" id="err_micMgL"></div>
+                  </div>
+                </div>
+
+                <div class="vanco-fields-grid" style="margin-top: 8px;">
+                  <div class="vanco-field">
+                    <label for="vancoInfusionStart">In&iacute;cio da infus&atilde;o</label>
+                    <input type="datetime-local" id="vancoInfusionStart" />
+                    <div class="vanco-field-error" id="err_infusionStart"></div>
+                  </div>
+                  <div class="vanco-field">
+                    <label for="vancoInfusionEnd">Fim da infus&atilde;o</label>
+                    <input type="datetime-local" id="vancoInfusionEnd" />
+                    <div class="vanco-field-error" id="err_infusionEnd"></div>
+                  </div>
+                  <div class="vanco-field vanco-field-full">
+                    <div style="display: flex; justify-content: space-between; align-items: center; gap: 6px; margin-bottom: 4px;">
+                      <label for="vancoNextDosePlanned" style="margin-bottom: 0;">Pr&oacute;xima dose (prevista)</label>
+                      <button type="button" class="btn-link-compact" id="btnVancoAutoNextDose" title="Calcular Início + τ">In&iacute;cio + &tau;</button>
+                    </div>
+                    <input type="datetime-local" id="vancoNextDosePlanned" />
+                    <div class="vanco-field-error" id="err_nextDosePlanned"></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Bloco 2: Coletas -->
+              <div class="vanco-compact-section">
+                <div class="vanco-compact-heading">2. Coletas (mesmo intervalo)</div>
+                <div class="vanco-fields-grid">
+                  <div class="vanco-field">
+                    <label for="vancoC1Value">C1 — 1&ordf; coleta (mg/L)</label>
+                    <input type="text" id="vancoC1Value" inputmode="decimal" placeholder="Ex: 30" />
+                    <div class="vanco-field-error" id="err_c1Value"></div>
+                  </div>
+                  <div class="vanco-field">
+                    <label for="vancoC1Time">Hor&aacute;rio C1 (1–2h p&oacute;s-fim)</label>
+                    <input type="datetime-local" id="vancoC1Time" />
+                    <div class="vanco-field-error" id="err_c1Time"></div>
+                  </div>
+                  <div class="vanco-field">
+                    <label for="vancoC2Value">C2 — Vale (mg/L)</label>
+                    <input type="text" id="vancoC2Value" inputmode="decimal" placeholder="Ex: 12" />
+                    <div class="vanco-field-error" id="err_c2Value"></div>
+                  </div>
+                  <div class="vanco-field">
+                    <label for="vancoC2Time">Hor&aacute;rio C2 (pr&eacute;-dose)</label>
+                    <input type="datetime-local" id="vancoC2Time" />
+                    <div class="vanco-field-error" id="err_c2Time"></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Bloco 3: Simulação Manual (retrátil) -->
+              <details class="vanco-advanced-details">
+                <summary>Simular outra dose manual (opcional)</summary>
+                <div class="vanco-fields-grid" style="margin-top: 8px;">
+                  <div class="vanco-field">
+                    <label for="vancoSimDoseInput">Dose (mg)</label>
+                    <input type="text" id="vancoSimDoseInput" inputmode="decimal" placeholder="Ex: 1250" />
+                  </div>
+                  <div class="vanco-field">
+                    <label for="vancoSimTauInput">Intervalo (h)</label>
+                    <input type="text" id="vancoSimTauInput" inputmode="decimal" placeholder="12" />
+                  </div>
+                </div>
+              </details>
+
+            </div>
+          </div>
+
+          <!-- COLUNA DIREITA: Resultados Essenciais & Gráfico -->
+          <div class="vanco-results-col">
+            <div id="vancoValidationBanner" class="alert-box box-danger" style="display: none;"></div>
+            <div id="vancoWarningsBanner" class="alert-box box-attention" style="display: none;"></div>
+
+            <!-- Card Unificado: Exposição Atual vs. Sugestão de Manutenção -->
+            <div class="output-card vanco-summary-card">
+              <div class="vanco-summary-split">
+                <!-- Lado Esquerdo: Esquema Atual -->
+                <div id="vancoCurrentCard" class="vanco-summary-pane">
+                  <div class="vanco-pane-head">
+                    <span class="vanco-eyebrow">Esquema atual</span>
+                    <span id="vancoCurrentStatusBadge" class="status-badge badge-info">--</span>
+                  </div>
+                  <div class="vanco-auc-hero">
+                    <strong id="vancoCurrentAuc24Val" class="vanco-kpi-value">-- mg&middot;h/L</strong>
+                    <span class="vanco-kpi-target">Meta: 400–600 &middot; AUC/MIC: <strong id="vancoCurrentAucMicVal">--</strong></span>
+                  </div>
+                  <div class="vanco-extrapolated-inline">
+                    <span>Pico est.: <strong id="vancoCurrentPeakEstVal">--</strong></span>
+                    <span>Vale est.: <strong id="vancoCurrentTroughEstVal">--</strong></span>
+                  </div>
+                </div>
+
+                <!-- Lado Direito: Sugestão de Manutenção -->
+                <div id="vancoSuggestionCard" class="vanco-summary-pane vanco-summary-pane-right">
+                  <span class="vanco-eyebrow">Sugest&atilde;o de manuten&ccedil;&atilde;o</span>
+                  <div id="vancoSuggestedDoseBox" class="vanco-suggested-highlight">--</div>
+                  <div id="vancoPredictedBlock">
+                    <div class="vanco-predicted-inline">
+                      <span>AUC24 prev.: <strong id="vancoPredictedAuc24Val">--</strong></span>
+                      <span>AUC/MIC prev.: <strong id="vancoPredictedAucMicVal">--</strong></span>
+                    </div>
+                    <div class="vanco-meta-sub" style="margin-top: 4px;">
+                      <span id="vancoPredictedPeakTroughVal">--</span>
+                    </div>
+                  </div>
+                  <div class="vanco-meta-sub">
+                    <span>Te&oacute;rica (500): <strong id="vancoTheoreticalDoseBox">--</strong></span>
+                  </div>
+                  <p id="vancoSuggestionExplanation" class="vanco-suggestion-desc-compact" style="display: none;"></p>
+                </div>
+              </div>
+
+              <div id="vancoLimitationsBox" class="alert-box box-attention" style="display: none; margin-top: 10px;"></div>
+              <div id="vancoAltIntervalsBox" class="alert-box box-info" style="display: none; margin-top: 8px;"></div>
+              <div id="vancoSimResultBox" class="vanco-sim-result-compact" style="display: none;"></div>
+            </div>
+
+            <!-- Gráfico da Curva Concentração × Tempo -->
+            <div id="vancoChartCard" class="output-card vanco-result-card vanco-chart-compact">
+              <div id="vancoChartAreaSummary" class="vanco-area-summary" style="display: none;"></div>
+              <div style="height: 290px; width: 100%; position: relative;">
+                <canvas id="vancoConcentrationChart"></canvas>
+              </div>
+            </div>
+
+            <!-- Gaveta "Ver cálculo" (fechada por padrão) -->
+            <details id="vancoVerCalculoDetails" class="output-card vanco-ver-calculo">
+              <summary>Ver c&aacute;lculo (k, t1/2, Vd, CL, concentra&ccedil;&otilde;es e intervalos)</summary>
+              <div id="vancoVerCalculoBody" style="margin-top: 10px;"></div>
+            </details>
+          </div>
+        </div>
+      </div>
+
+      <!-- SUB-ABA 2: Informações & Configurações -->
+      <div id="vancoSubtabInfo" class="vanco-subtab-panel" style="display: none;">
+        <div class="vanco-info-grid">
+          <div class="output-card vanco-result-card">
+            <h3 class="vanco-info-title">Escopo Cl&iacute;nico &amp; Orienta&ccedil;&otilde;es de Coleta</h3>
+            <p class="vanco-info-text">
+              Esta calculadora utiliza o m&eacute;todo de <strong>Sawchuk–Zaske</strong> (modelo monocompartimental, infus&atilde;o IV intermitente e elimina&ccedil;&atilde;o de primeira ordem) para <strong>adultos com fun&ccedil;&atilde;o renal est&aacute;vel, sem terapia renal substitutiva (TRS)</strong>, recebendo doses regulares pr&oacute;ximas do estado de equil&iacute;brio.
+            </p>
+            <ul class="vanco-info-list">
+              <li><strong>Momento de coleta:</strong> a 3&ordf; dose &eacute; refer&ecirc;ncia habitual para aproximar equil&iacute;brio; as duas amostras devem pertencer ao mesmo intervalo.</li>
+              <li><strong>1&ordf; coleta (C1):</strong> colher <strong>1 a 2 horas ap&oacute;s o fim da infus&atilde;o</strong> (evita fase de distribui&ccedil;&atilde;o).</li>
+              <li><strong>2&ordf; coleta (C2):</strong> colher <strong>imediatamente antes da pr&oacute;xima dose</strong> (vale real).</li>
+              <li><strong>Unidades:</strong> <code>mg/L</code> e <code>&micro;g/mL</code> s&atilde;o numericamente equivalentes; aceita v&iacute;rgula decimal e virada de data.</li>
+              <li><strong>Meta terap&ecirc;utica:</strong> AUC24 de <strong>400–600 mg&middot;h/L</strong> (ponto de c&aacute;lculo 500 mg&middot;h/L) tem como cen&aacute;rio de refer&ecirc;ncia infec&ccedil;&atilde;o grave por MRSA com MIC &le; 1 mg/L (medida por microdilui&ccedil;&atilde;o em caldo ou presumida). Outras indica&ccedil;&otilde;es, m&eacute;todos de MIC ou MIC &gt; 1 mg/L exigem interpreta&ccedil;&atilde;o cl&iacute;nica individualizada (o sistema n&atilde;o sugere escalonamento autom&aacute;tico para MIC &gt; 1 mg/L devido ao risco de nefrotoxicidade).</li>
+            </ul>
+          </div>
+
+          <div class="output-card vanco-result-card">
+            <h3 class="vanco-info-title">Limites Locais de Dose do Servi&ccedil;o</h3>
+            <label class="vanco-check-label" style="margin-bottom: 10px;">
+              <input type="checkbox" id="vancoLocalRulesEnabled" checked />
+              <span>Aplicar incrementos e limites locais ao sugerir dose administr&aacute;vel</span>
+            </label>
+            <div class="vanco-fields-grid">
+              <div class="vanco-field">
+                <label for="vancoDoseStepMg">Incremento (mg)</label>
+                <input type="text" id="vancoDoseStepMg" inputmode="decimal" value="250" />
+              </div>
+              <div class="vanco-field">
+                <label for="vancoMinDoseAdminMg">M&iacute;nimo / dose (mg)</label>
+                <input type="text" id="vancoMinDoseAdminMg" inputmode="decimal" value="250" />
+              </div>
+              <div class="vanco-field">
+                <label for="vancoMaxDoseAdminMg">M&aacute;ximo / dose (mg)</label>
+                <input type="text" id="vancoMaxDoseAdminMg" inputmode="decimal" value="2000" />
+              </div>
+              <div class="vanco-field">
+                <label for="vancoMaxDailyDoseMg">M&aacute;ximo di&aacute;rio (mg/24h)</label>
+                <input type="text" id="vancoMaxDailyDoseMg" inputmode="decimal" value="4500" />
+              </div>
+            </div>
+            <p class="vanco-hint" style="margin-top: 8px;">
+              Os valores padr&atilde;o permanentes ficam em <code>vancocinemiaConfig.js</code> &rarr; <code>localDoseLimits</code>.
+            </p>
+          </div>
+
+          <div class="output-card vanco-result-card">
+            <h3 class="vanco-info-title">Casos de Refer&ecirc;ncia (Farm&aacute;cia Cl&iacute;nica)</h3>
+            <p class="vanco-info-text" style="margin-bottom: 10px;">
+              Clique em um caso para preencher automaticamente a calculadora e conferir o comportamento esperado:
+            </p>
+            <div id="vancoReferenceCasesBar" style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px;"></div>
+
+            <div style="padding-top: 12px; border-top: 1px solid var(--border-color);">
+              <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                <span style="font-size: 0.84rem; font-weight: 600;">Valida&ccedil;&atilde;o automatizada do motor:</span>
+                <button type="button" class="btn-secondary btn-small" id="btnRunVancoTests">Executar testes de confer&ecirc;ncia</button>
+              </div>
+              <div id="vancoTestsOutput" class="vanco-tests-output" style="display: none;"></div>
+            </div>
+          </div>
+
+          <div class="output-card vanco-result-card">
+            <h3 class="vanco-info-title">Equa&ccedil;&otilde;es (Sawchuk–Zaske) &amp; Refer&ecirc;ncias</h3>
+            <pre class="vanco-formulas-box">k = ln(C1 / C2) / Δt
+C_pico = C1 × exp(k × a)
+C_vale = C2 × exp(−k × b)
+Vd = (D / T) × (1 − exp(−k × T)) / [k × (C_pico − C_vale × exp(−k × T))]
+CL = k × Vd   |   t1/2 = ln(2) / k
+AUCτ = D / CL   |   AUC24 = AUCτ × 24 / τ   |   AUC/MIC = AUC24 / MIC</pre>
+            <div class="vanco-refs-links" style="margin-top: 10px;">
+              <div><a href="https://www.ashp.org/-/media/assets/policy-guidelines/docs/therapeutic-guidelines/therapeutic-guidelines-monitoring-vancomycin-ASHP-IDSA-PIDS.pdf" target="_blank" rel="noopener noreferrer">Diretriz ASHP/IDSA/PIDS/SIDP (2020)</a></div>
+              <div><a href="https://clincalc.com/vancomycin/" target="_blank" rel="noopener noreferrer">Equa&ccedil;&otilde;es de Sawchuk–Zaske (ClinCalc)</a></div>
+              <div><a href="https://med.stanford.edu/content/dam/sm/bugsanddrugs/documents/antimicrobial-dosing-protocols/SHC-Vancomycin-Dosing-Guide.pdf" target="_blank" rel="noopener noreferrer">Protocolo de Monitoriza&ccedil;&atilde;o de Stanford</a></div>
+            </div>
+            <p class="vanco-hint" style="margin-top: 10px;">
+              Ferramenta auxiliar de farmacocin&eacute;tica cl&iacute;nica. Confira sempre hor&aacute;rios reais de bomba, fun&ccedil;&atilde;o renal e valide ajustes com a equipe m&eacute;dica e farm&aacute;cia cl&iacute;nica.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <footer class="footer">
       <p class="hint">Versão 3.0 - Plataforma Clínica Integrada do HC (Sidebar, Evolução Consolidada, Alertas &amp; Diurese mL/kg/h)</p>
     </footer>
@@ -2129,5 +2394,11 @@
   <script src="infusoesEngine.js"></script>
   <script src="infusoesUI.js"></script>
   <script src="infusoesTests.js"></script>
+
+  <!-- Módulos da Calculadora de Vancocinemia (Sawchuk–Zaske) -->
+  <script src="vancocinemiaConfig.js"></script>
+  <script src="vancocinemiaEngine.js"></script>
+  <script src="vancocinemiaUI.js"></script>
+  <script src="vancocinemiaTests.js"></script>
 </body>
 </html>

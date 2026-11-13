@@ -254,6 +254,11 @@
     document.getElementById("btnClearGlycemiaInput")?.click();
     document.getElementById("btnClearTemperatureInput")?.click();
 
+    // 6. Limpar Vancocinemia (quando carregada)
+    if (typeof app.clearVancomycinForm === "function") {
+      app.clearVancomycinForm();
+    }
+
     renderComposerDrawer();
     if (typeof app.showToast === "function") {
       app.showToast("Dados limpos. Pronto para o próximo paciente.");

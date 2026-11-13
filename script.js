@@ -1914,6 +1914,9 @@ Object.assign(window.__EXAMES_APP__, {
         if (typeof window.__EXAMES_APP__.updateTemperatureChartTheme === "function") {
           window.__EXAMES_APP__.updateTemperatureChartTheme();
         }
+        if (typeof window.__EXAMES_APP__.updateVancomycinChartTheme === "function") {
+          window.__EXAMES_APP__.updateVancomycinChartTheme();
+        }
       }
     });
   }
@@ -1932,6 +1935,7 @@ updateFilterCount();
   const tabGlycemia = document.getElementById("tabGlycemia");
   const tabTemperature = document.getElementById("tabTemperature");
   const tabInfusions = document.getElementById("tabInfusions");
+  const tabVancomycin = document.getElementById("tabVancomycin");
 
   const examsSection = document.getElementById("examsSection");
   const antibioticsSection = document.getElementById("antibioticsSection");
@@ -1941,6 +1945,7 @@ updateFilterCount();
   const glycemiaSection = document.getElementById("glycemiaSection");
   const temperatureSection = document.getElementById("temperatureSection");
   const infusionsSection = document.getElementById("infusionsSection");
+  const vancomycinSection = document.getElementById("vancomycinSection");
 
   const activeToolTitle = document.getElementById("activeToolTitle");
   const activeToolSubtitle = document.getElementById("activeToolSubtitle");
@@ -2040,6 +2045,15 @@ updateFilterCount();
       altHashes: ["infusoes", "calculadora-infusoes"],
       title: "Calculadora de Infusões em BIC",
       subtitle: "Conversão rápida entre velocidade da bomba (mL/h) e dose efetiva titulada por peso em UTI"
+    },
+    {
+      id: "vancocinemia",
+      tab: tabVancomycin,
+      sec: vancomycinSection,
+      hash: "vancocinemia",
+      altHashes: ["vancocinemia", "vancomicina", "calculadora-vancocinemia"],
+      title: "Calculadora de Vancocinemia (AUC24)",
+      subtitle: "Método de Sawchuk–Zaske por duas coletas (1 compartimento, infusão IV intermitente)"
     }
   ];
 

@@ -3161,6 +3161,530 @@ body.dark-theme .cult-diag-badge.badge-info {
   font-size: 0.88rem;
 }
 
+/* ==========================================================================
+   Calculadora de Vancocinemia (Sawchuk–Zaske — Design Enxuto)
+   ========================================================================== */
+
+.vanco-topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.vanco-subtabs {
+  width: auto;
+  max-width: 100%;
+}
+
+.vanco-subtabs .seg-btn {
+  flex: 0 0 auto;
+  padding: 6px 14px !important;
+  font-size: 0.82rem !important;
+}
+
+.vanco-topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.vanco-layout-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+@media (min-width: 1080px) {
+  .vanco-layout-grid {
+    grid-template-columns: minmax(340px, 410px) 1fr;
+    gap: 20px;
+  }
+}
+
+.vanco-form-col,
+.vanco-results-col {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.vanco-group-card,
+.vanco-result-card,
+.vanco-summary-card,
+.vanco-ver-calculo {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 14px;
+  box-shadow: var(--shadow-sm);
+}
+
+.vanco-compact-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.vanco-compact-section {
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.vanco-compact-section:last-of-type {
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.vanco-compact-heading {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--primary);
+  margin-bottom: 8px;
+}
+
+.vanco-fields-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px 10px;
+}
+
+@media (min-width: 480px) {
+  .vanco-fields-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .vanco-fields-3col {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .vanco-sample-compact-grid {
+    grid-template-columns: 0.85fr 1.35fr;
+  }
+}
+
+.vanco-field-full {
+  grid-column: 1 / -1;
+}
+
+.vanco-field label {
+  font-size: 0.74rem;
+  margin-bottom: 3px;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.vanco-compact-card input[type="text"],
+.vanco-compact-card input[type="datetime-local"],
+.vanco-compact-card select {
+  padding: 7px 10px;
+  font-size: 0.84rem;
+  border-radius: var(--radius-sm);
+}
+
+.btn-link-compact {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--primary);
+  border-radius: var(--radius-pill);
+  padding: 1px 8px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: none;
+}
+
+.btn-link-compact:hover {
+  background: var(--primary-glow);
+  border-color: var(--primary);
+}
+
+.vanco-sample-row {
+  padding: 9px 10px;
+  background: var(--bg-page);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  margin-bottom: 8px;
+}
+
+.vanco-sample-row:last-child {
+  margin-bottom: 0;
+}
+
+.vanco-sample-row-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 6px;
+  font-size: 0.8rem;
+}
+
+.vanco-sample-row-head span {
+  font-size: 0.71rem;
+  color: var(--text-secondary);
+}
+
+.vanco-advanced-details {
+  border-top: 1px dashed var(--border-color);
+  padding-top: 10px;
+}
+
+.vanco-advanced-details summary,
+.vanco-ver-calculo summary {
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  user-select: none;
+}
+
+.vanco-advanced-details summary:hover,
+.vanco-ver-calculo summary:hover {
+  color: var(--primary);
+}
+
+.vanco-advanced-body {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.vanco-hint {
+  display: block;
+  font-size: 0.73rem;
+  color: var(--text-secondary);
+  margin-top: 4px;
+  line-height: 1.35;
+}
+
+.vanco-field-error {
+  display: none;
+  margin-top: 3px;
+  font-size: 0.73rem;
+  font-weight: 600;
+  color: var(--danger);
+  line-height: 1.25;
+}
+
+.vanco-input-invalid {
+  border-color: var(--danger) !important;
+  box-shadow: 0 0 0 3px var(--danger-glow) !important;
+}
+
+.vanco-checklist-box {
+  padding: 8px 10px;
+  background: var(--bg-page);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.vanco-check-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--text-primary);
+  margin-bottom: 0;
+  cursor: pointer;
+  line-height: 1.3;
+}
+
+.vanco-check-label input[type="checkbox"] {
+  margin-top: 2px;
+  width: auto;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+/* Card Unificado de Resultados */
+.vanco-summary-split {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+}
+
+@media (min-width: 680px) {
+  .vanco-summary-split {
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+}
+
+.vanco-summary-pane {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+@media (min-width: 680px) {
+  .vanco-summary-pane-right {
+    padding-left: 16px;
+    border-left: 1px solid var(--border-color);
+  }
+}
+
+.vanco-pane-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.vanco-eyebrow {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-secondary);
+}
+
+.vanco-regimen-sub {
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.vanco-auc-hero {
+  background: var(--primary-glow);
+  border: 1px solid rgba(16, 102, 204, 0.25);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.vanco-kpi-value {
+  font-size: 1.55rem;
+  font-weight: 700;
+  color: var(--primary);
+  line-height: 1.15;
+}
+
+.vanco-kpi-target {
+  font-size: 0.74rem;
+  color: var(--text-secondary);
+}
+
+.vanco-extrapolated-inline,
+.vanco-predicted-inline,
+.vanco-meta-sub {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+}
+
+.vanco-extrapolated-inline strong,
+.vanco-predicted-inline strong,
+.vanco-meta-sub strong {
+  color: var(--text-primary);
+}
+
+.vanco-suggestion-title-compact {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.25;
+}
+
+.vanco-suggested-highlight {
+  padding: 9px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  background: rgba(16, 185, 129, 0.08);
+  font-size: 0.92rem;
+  color: var(--text-primary);
+}
+
+.vanco-suggestion-desc-compact {
+  font-size: 0.76rem;
+  color: var(--text-secondary);
+  line-height: 1.35;
+  margin: 2px 0 0;
+}
+
+.vanco-sim-result-compact {
+  margin-top: 10px;
+  padding: 8px 10px;
+  background: var(--bg-page);
+  border: 1px dashed var(--border-color);
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+}
+
+.vanco-sim-metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  font-size: 0.8rem;
+}
+
+.vanco-pk-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 8px;
+}
+
+.vanco-pk-item {
+  background: var(--bg-page);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.82rem;
+}
+
+.vanco-pk-label {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+}
+
+.vanco-pk-item small {
+  font-size: 0.68rem;
+  color: var(--text-secondary);
+}
+
+.vanco-intervals-line {
+  margin-top: 8px;
+  padding: 8px 10px;
+  background: var(--bg-page);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  font-size: 0.76rem;
+  color: var(--text-secondary);
+}
+
+.vanco-area-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.vanco-area-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  background: var(--primary-glow);
+  color: var(--text-primary);
+  font-size: 0.78rem;
+  border: 1px solid rgba(16, 102, 204, 0.28);
+}
+
+.vanco-area-pill-secondary {
+  background: rgba(16, 185, 129, 0.12);
+  border-color: rgba(16, 185, 129, 0.35);
+}
+
+.vanco-area-meta {
+  font-size: 0.74rem;
+  color: var(--text-secondary);
+}
+
+/* Aba Informações & Configurações */
+.vanco-info-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+@media (min-width: 900px) {
+  .vanco-info-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.vanco-info-title {
+  margin: 0 0 8px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.vanco-info-text {
+  font-size: 0.84rem;
+  color: var(--text-primary);
+  line-height: 1.5;
+  margin-bottom: 8px;
+}
+
+.vanco-info-list {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.vanco-formulas-box {
+  margin: 0;
+  padding: 10px 12px;
+  background: var(--bg-page);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  line-height: 1.5;
+  overflow-x: auto;
+  color: var(--text-primary);
+}
+
+.vanco-refs-links {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.vanco-refs-links a {
+  color: var(--primary);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.vanco-refs-links a:hover {
+  text-decoration: underline;
+}
+
+.vanco-tests-output {
+  margin-top: 10px;
+  padding: 10px 12px;
+  background: var(--bg-page);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+
 
 
 
